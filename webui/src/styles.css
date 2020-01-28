@@ -1,0 +1,39 @@
+.tab-list {
+  border-bottom: 1px solid #ccc;
+  padding-left: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.tab-list-item {
+  display: inline-block;
+  list-style: none;
+  margin-bottom: -1px;
+  padding: 0.5rem 0.75rem;
+}
+
+.tab-list-active {
+  background-color: white;
+  border: solid #ccc;
+  border-width: 1px 1px 0 1px;
+}
+
+.input-number {
+  width: 5em;
+}
+
+.table-stream {
+  border-collapse: separate;
+  border-spacing: 15px 1rem;
+}
+
+.tr-stream {
+  padding: 5px;
+  text-align: left;
+}
+
+.pointer-area {
+  cursor: pointer;
+  pointer-events: auto;
+}
+

@@ -1,0 +1,100 @@
+diff --git a/driver/MTAL_LKernelAPI.c b/driver/MTAL_LKernelAPI.c
+index 164f315..a993b41 100644
+--- a/driver/MTAL_LKernelAPI.c
++++ b/driver/MTAL_LKernelAPI.c
+@@ -35,7 +35,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/version.h>
+ 
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) || LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
+ #include <linux/timekeeping.h>
+ #else
+ #include <linux/time.h>
+@@ -214,7 +214,10 @@ uint64_t MTAL_LK_GetCounterFreq(void)
+ uint64_t MTAL_LK_GetSystemTime(void)
+ {
+     uint64_t timeVal = 0ull;
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
++    struct timespec64 ts64;
++    ktime_get_real_ts64(&ts64);
++#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
+     struct timespec64 ts64;
+     getnstimeofday64(&ts64);
+ #else
+diff --git a/driver/module_timer.c b/driver/module_timer.c
+index 5f64a8e..372afa3 100644
+--- a/driver/module_timer.c
++++ b/driver/module_timer.c
+@@ -35,7 +35,11 @@
+ #include "module_main.h"
+ #include "module_timer.h"
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
++static struct hrtimer my_hrtimer_;
++#else
+ static struct tasklet_hrtimer my_hrtimer_;
++#endif
+ static uint64_t base_period_;
+ static uint64_t max_period_allowed;
+ static uint64_t min_period_allowed;
+@@ -80,8 +84,8 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
+     ///ret_overrun = hrtimer_forward(timer, kt_now, period);
+     ret_overrun = hrtimer_forward_now(timer, period);
+     // comment it when running in VM
+-    if(ret_overrun > 1)
+-        printk(KERN_INFO "Timer overrun ! (%d times)\n", ret_overrun);
++    /*if(ret_overrun > 1)
++        printk(KERN_INFO "Timer overrun ! (%d times)\n", ret_overrun);*/
+     return HRTIMER_RESTART;
+ 
+ }
+@@ -89,9 +93,12 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
+ int init_clock_timer(void)
+ {
+     stop_ = 0;
+-    ///hrtimer_init(&my_hrtimer_, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
++    hrtimer_init(&my_hrtimer_, CLOCK_MONOTONIC, HRTIMER_MODE_PINNED);
++    my_hrtimer_.function = &timer_callback;
++#else
+     tasklet_hrtimer_init(&my_hrtimer_, timer_callback, CLOCK_MONOTONIC/*_RAW*/, HRTIMER_MODE_PINNED/*HRTIMER_MODE_ABS*/);
+-    ///my_hrtimer_.function = &timer_callback;
++#endif
+ 
+     //base_period_ = 100 * ((unsigned long)1E6L); // 100 ms
+     base_period_ = 1333333; // 1.3 ms
+@@ -108,8 +115,12 @@ void kill_clock_timer(void)
+ 
+ int start_clock_timer(void)
+ {
+-    ktime_t period = ktime_set(0, base_period_); //100 ms
++    ktime_t period = ktime_set(0, base_period_);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
++    hrtimer_start(&my_hrtimer_, period, HRTIMER_MODE_REL);
++#else
+     tasklet_hrtimer_start(&my_hrtimer_, period, HRTIMER_MODE_ABS);
++#endif
+ 
+     return 0;
+ }
+@@ -117,7 +128,11 @@ int start_clock_timer(void)
+ void stop_clock_timer(void)
+ {
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
++    hrtimer_cancel(&my_hrtimer_);
++#else
+     tasklet_hrtimer_cancel(&my_hrtimer_);
++#endif
+     /*int ret_cancel = 0;
+     while(hrtimer_callback_running(&my_hrtimer_))
+         ++ret_cancel;
+@@ -145,4 +160,4 @@ void set_base_period(uint64_t base_period)
+     min_period_allowed = base_period_ / 7;
+     max_period_allowed = (base_period_ * 10) / 6;
+     printk(KERN_INFO "Base period set to %lld ns\n", base_period_);
+-}
+\ No newline at end of file
++}

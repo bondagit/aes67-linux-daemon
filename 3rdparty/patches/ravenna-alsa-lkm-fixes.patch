@@ -1,0 +1,35 @@
+diff --git a/driver/PTP.c b/driver/PTP.c
+index 4b2242a..1bf593a 100644
+--- a/driver/PTP.c
++++ b/driver/PTP.c
+@@ -90,7 +90,7 @@ uint32_t get_FS(uint32_t ui32SamplingRate)
+ 			return 2;
+ 		default:
+ 			// TODO: should assert
+-			MTAL_DP("Caudio_streamer_clock::get_FS error: unknown SamplingRate = %u\n", ui32SamplingRate);
++			//MTAL_DP("Caudio_streamer_clock::get_FS error: unknown SamplingRate = %u\n", ui32SamplingRate);
+ 		case 48000:
+ 		case 44100:
+ 			return 1;
+@@ -110,7 +110,7 @@ uint32_t get_samplerate_base(uint32_t ui32SamplingRate)
+ 
+ 		default:
+ 			// TODO: should assert
+-			MTAL_DP("Caudio_streamer_clock::get_samplerate_base error: unknown SamplingRate = %u\n", ui32SamplingRate);
++			//MTAL_DP("Caudio_streamer_clock::get_samplerate_base error: unknown SamplingRate = %u\n", ui32SamplingRate);
+ 		case 352800:
+ 		case 176400:
+ 		case 88200:
+diff --git a/driver/module_netlink.c b/driver/module_netlink.c
+index 48de263..dcdcce0 100644
+--- a/driver/module_netlink.c
++++ b/driver/module_netlink.c
+@@ -158,7 +158,7 @@ void recv_reply_from_user_land(struct sk_buff *skb)
+ 			// check if the given size if sufficient to copy the answered data
+ 			if (response_from_user_land->dataSize >= msg->dataSize)
+ 			{
+-				if (response_from_user_land->data == NULL)
++				if (response_from_user_land->data != NULL)
+ 				{
+ 					memcpy(response_from_user_land->data, msg->data, msg->dataSize);
+ 				}

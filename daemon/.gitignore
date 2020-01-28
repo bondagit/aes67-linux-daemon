@@ -1,0 +1,11 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# cmake 
+/CMakeFiles
+/Testings
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+aes67-daemon
+
