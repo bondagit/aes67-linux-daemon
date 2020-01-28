@@ -32,7 +32,7 @@ This directory contains the AES67 daemon WebUI configuration implemented using R
 With the WebUI a user can do the following operations:
 
 * change the daemon configuration, this causes a daemon restart
-* edit PTP clock slave configuration and monitor status PTP status
+* edit PTP clock slave configuration and monitor PTP slave status
 * add and edit RTP Sources
 * add, edit and monitor RTP Sinks
 
