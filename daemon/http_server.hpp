@@ -34,8 +34,6 @@ class HttpServer {
         config_(config) {};
   bool start();
   bool stop();
-  int get_http_status(const std::error_code& code) const;
-  std::string get_http_error(const std::error_code& code) const;
 
  private:
   std::shared_ptr<SessionManager> session_manager_;

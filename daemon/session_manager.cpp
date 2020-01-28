@@ -625,7 +625,6 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   info.stream.m_ui32PlayOutDelay = sink.delay;
   info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();
   info.ignore_refclk_gmid = sink.ignore_refclk_gmid;
-
   info.io = sink.io;
 
   if (!sink.use_sdp) {

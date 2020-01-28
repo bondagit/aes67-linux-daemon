@@ -22,7 +22,7 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * SAP discovery protocol implementation
 * IGMP handling for SAP and RTP sessions
 
-The directory also contains the daemon regression tests in the [tests](tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](tests) subdirectory and run *./daemon-test -l all*    
+The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](daemon/tests) subdirectory and run *./daemon-test -l all*    
 
 See the [README](daemon/README.md) file in this directory for additional information about the AES67 daemon configuration and the HTTP REST API.
 
