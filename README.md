@@ -82,6 +82,7 @@ To run a simple demo use the [run\_demo.sh](run_demo.sh) script. See [script not
 The demo performs the following operations:
 
 * setup system parameters
+* stop pulse audio, this uses and keeps busy the ALSA playback and capture devices causing troubles
 * install the ALSA RAVENNA/AES67 module
 * start the ptp4l as master clock on the network loopback device
 * start the AES67 daemon and creates a source and a sink according to the status file in the demo directory

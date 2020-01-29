@@ -41,9 +41,15 @@ trap cleanup EXIT
 
 #configure system parms
 sudo sysctl -w net/ipv4/igmp_max_memberships=64
+
 #stop pulseaudio, this seems to open/close ALSA continuosly
+echo autospawn = no > $HOME/.config/pulse/client.conf
+pulseaudio --kill >/dev/null 2>&1
+rm $HOME/.config/pulse/client.conf
+#disable pulseaudio
 systemctl --user stop pulseaudio.socket > /dev/null 2>&1
 systemctl --user stop pulseaudio.sservice > /dev/null 2>&1
+
 #install kernel module
 sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
 
