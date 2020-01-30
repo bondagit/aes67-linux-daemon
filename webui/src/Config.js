@@ -135,7 +135,7 @@ class Config extends Component {
             <th align="left"> <input type='number' min='192' max='8192' className='input-number' value={this.state.maxTicFrameSize} onChange={e => this.setState({maxTicFrameSize: e.target.value, maxTicFrameSizeErr: !e.currentTarget.checkValidity()})} disabled required/> </th>
           </tr>
           <tr>
-            <th align="left"> <label>Default Sample rate</label> </th>
+            <th align="left"> <label>Initial Sample rate</label> </th>
             <th align="left"> 
 	      <select value={this.state.sampleRate} onChange={e => this.setState({sampleRate: e.target.value})}>
                 <option value="44100">44.1 kHz</option>
@@ -161,7 +161,7 @@ class Config extends Component {
             <th align="left"> <input type='number' min='1024' max='65536'  className='input-number' value={this.state.rtpPort} onChange={e => this.setState({rtpPort: e.target.value, rtpPortErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>
-            <th align="left"> <label>SAP interval (ms)</label> </th>
+            <th align="left"> <label>SAP interval (sec)</label> </th>
             <th align="left"> <input type='number' min='0' max='255'  className='input-number' value={this.state.sapInterval} onChange={e => this.setState({sapInterval: e.target.value, sapIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>

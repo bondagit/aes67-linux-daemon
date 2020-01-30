@@ -202,7 +202,7 @@ where:
 > In case of a high value of *tic_frame_size_at_1fs*, this must be set to 8192.
 
 > **sap\_interval**
-> JSON number specifying the SAP interval to use. Use 0 for automatic and RFC compliant interval. Default is 30secs.
+> JSON number specifying the SAP interval in seconds to use. Use 0 for automatic and RFC compliant interval. Default is 30secs.
 
 > **mac\_addr**
 > JSON string specifying the MAC address of the specified network device.
@@ -281,7 +281,7 @@ where:
 > A reference clock source is traceable if it is known to be delivering traceable time.
 
 > **map**
-> JSON array of integers specifying the mapping between the RTP source and the ALSA playback device channels used during playback. The length of this map determines number of channels of the source.
+> JSON array of integers specifying the mapping between the RTP source and the ALSA playback device channels used during playback. The length of this map determines the number of channels of the source.
 
 ### RTP source SDP<a name="rtp-source-sdp"></a> ###
 
@@ -344,7 +344,7 @@ where:
 > JSON boolean specifying whether the grand master reference clock ID specified in the SDP file of the source must be compared with the master reference clock to which the current PTP slave clock is syncronized.
 
 > **map**
-> JSON array of integers specifying the mapping between the RTP sink and the ALSA capture device channels used during recording. The length of this map determines number of channels of the sink.
+> JSON array of integers specifying the mapping between the RTP sink and the ALSA capture device channels used during recording. The length of this map determines the number of channels of the sink.
 
 ### JSON RTP sink status<a name="rtp-sink-status"></a> ###
 

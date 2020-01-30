@@ -64,7 +64,7 @@ The daemon has been tested on **Ubuntu 18.04** and **19.10** using:
 * mpm version >= 3.5.2
 * boost libraries version >= 1.65.1
 
-The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo). See [script notes](#notes).
+The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo). See [PulseAudio and scripts notes](#notes).
  
 ## How to build ##
 To compile the AES67 daemon and the WebUI use the [build.sh](build.sh) script. See [script notes](#notes).    
@@ -82,7 +82,7 @@ To run a simple demo use the [run\_demo.sh](run_demo.sh) script. See [script not
 The demo performs the following operations:
 
 * setup system parameters
-* stop pulse audio, this uses and keeps busy the ALSA playback and capture devices causing troubles
+* stop PulseAudio, this uses and keeps busy the ALSA playback and capture devices causing instability problems. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module
 * start the ptp4l as master clock on the network loopback device
 * start the AES67 daemon and creates a source and a sink according to the status file in the demo directory
@@ -94,6 +94,10 @@ The demo performs the following operations:
 
 ## Notes ##
 <a name="notes"></a>
+
 * All the scripts in this repository are provided as a reference to help setting up the system and run a simple demo.    
-  They have been tested on **Ubuntu 18.04** and **19.10** distros only.
+  They have been tested on **Ubuntu 18.04** and **19.10** distros only.    
+* PulseAudio can create instability problems.    
+Before running the daemon verify that PulseAudio is not running with  *ps ax | grep pulseaudio*     
+In case it's running try to execute the script *daemon/scripts/disable_pulseaudio.sh* to stop it. If after this the process is still alive consider renaming the executable with *sudo mv /usr/bin/pulseaudio /usr/bin/_pulseaudio* and reboot the system.
 
