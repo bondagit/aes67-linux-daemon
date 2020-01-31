@@ -30,8 +30,7 @@
 
 static inline std::string remove_undesired_chars(const std::string& s) {
   std::regex html_regex("[^ A-Za-z0-9:~._/=%\()\\r\\n\\t\?#-]?");
-  std::string r = std::regex_replace(s, html_regex, "");
-  return r;
+  return std::regex_replace(s, html_regex, "");
 }
 
 static std::string escape_json(const std::string& js) {
@@ -328,7 +327,7 @@ StreamSource json_to_source(const std::string& id, const std::string& json) {
        ALSA output channels used to playing */
     BOOST_FOREACH (boost::property_tree::ptree::value_type& v,
                    pt.get_child("map")) {
-      source.map.push_back(std::stoi(v.second.data()));
+      source.map.emplace_back(std::stoi(v.second.data()));
     }
     source.max_samples_per_packet = pt.get<uint32_t>("max_samples_per_packet");
     source.codec = remove_undesired_chars(pt.get<std::string>("codec"));
@@ -374,7 +373,7 @@ StreamSink json_to_sink(const std::string& id, const std::string& json) {
        ALSA input channels used to recording */
     BOOST_FOREACH (boost::property_tree::ptree::value_type& v,
                    pt.get_child("map")) {
-      sink.map.push_back(std::stoi(v.second.data()));
+      sink.map.emplace_back(std::stoi(v.second.data()));
     }
   } catch (boost::property_tree::json_parser::json_parser_error& je) {
     throw std::runtime_error("error parsing JSON at line " +
@@ -425,9 +424,9 @@ static void parse_json_sources(boost::property_tree::ptree& pt,
        ALSA output channels used to playing */
     BOOST_FOREACH (const boost::property_tree::ptree::value_type& vm,
                    v.second.get_child("map")) {
-      source.map.push_back(std::stoi(vm.second.data()));
+      source.map.emplace_back(std::stoi(vm.second.data()));
     }
-   sources.push_back(source);
+   sources.emplace_back(std::move(source));
   }
 }
 
@@ -465,9 +464,9 @@ static void parse_json_sinks(boost::property_tree::ptree& pt,
        ALSA input channels used to recording */
     BOOST_FOREACH (const boost::property_tree::ptree::value_type& vm,
                    v.second.get_child("map")) {
-      sink.map.push_back(std::stoi(vm.second.data()));
+      sink.map.emplace_back(std::stoi(vm.second.data()));
     }
-    sinks.push_back(sink);
+    sinks.emplace_back(std::move(sink));
   }
 }
 

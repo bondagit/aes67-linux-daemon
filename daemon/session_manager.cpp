@@ -759,7 +759,7 @@ std::error_code SessionManager::get_sink_status(
     return DaemonErrc::invalid_stream_id;
   }
 
-  std::unique_lock sinks_lock(sinks_mutex_);
+  std::shared_lock sinks_lock(sinks_mutex_);
   auto const it = sinks_.find(id);
   if (it == sinks_.end()) {
     BOOST_LOG_TRIVIAL(error)
@@ -851,12 +851,12 @@ size_t SessionManager::process_sap() {
     }
   }
 
-  // check for sources that are no more announced and send deletion/s
+  // check for sources that are no longer announced and send deletion/s
   for (auto const& [msg_id_hash, pair] : announced_sources_) {
     const auto &id = pair.first;
     const auto &src_addr = pair.second;
 
-    // check if this source is no more announced
+    // check if this source is no longer announced
     if (active_sources.find(msg_id_hash) ==
           active_sources.end()) {
       // retrieve deleted source SDP
