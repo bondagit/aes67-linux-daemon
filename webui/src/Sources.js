@@ -170,6 +170,7 @@ class Sources extends Component {
   closeEdit() {
     this.setState({editIsOpen: false});
     this.setState({removeIsOpen: false});
+    this.fetchSources();
   }
   
   onEditClick(id) {

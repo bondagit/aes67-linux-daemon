@@ -254,7 +254,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
         }
         case 'c':
           /* c=IN IP4 239.1.0.12/15 */
-          /* connction info of audio media */
+          /* connection info of audio media */
           if (status == sdp_parser_status::media) {
             std::vector<std::string> fields;
             boost::split(fields, val,
@@ -494,6 +494,9 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   if (info.enabled) {
     ret = driver_->add_rtp_stream(info.stream, info.handle);
     if (ret) {
+      if (it != sources_.end()) {
+        sources_.erase(source.id);
+      }
       return ret;
     }
     igmp_.join(config_->get_ip_addr_str(),
@@ -709,6 +712,9 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
 
   auto ret = driver_->add_rtp_stream(info.stream, info.handle);
   if (ret) {
+    if (it != sinks_.end()) {
+      sinks_.erase(sink.id);
+    }
     return ret;
   }
 

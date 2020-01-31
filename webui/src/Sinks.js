@@ -193,6 +193,7 @@ class Sinks extends Component {
   closeEdit() {
     this.setState({editIsOpen: false});
     this.setState({removeIsOpen: false});
+    this.fetchSinks();
   }
   
   onEditClick(id) {
