@@ -495,12 +495,19 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
     ret = driver_->add_rtp_stream(info.stream, info.handle);
     if (ret) {
       if (it != sources_.end()) {
+        /* update operation failed */
         sources_.erase(source.id);
+        igmp_.leave(config_->get_ip_addr_str(),
+                    ip::address_v4(info.stream.m_ui32DestIP).to_string());
       }
       return ret;
     }
-    igmp_.join(config_->get_ip_addr_str(),
-               ip::address_v4(info.stream.m_ui32DestIP).to_string());
+
+    if (it == sources_.end()) {
+      /* if add join multicast */
+      igmp_.join(config_->get_ip_addr_str(),
+                 ip::address_v4(info.stream.m_ui32DestIP).to_string());
+    }
   }
  
   // update source map 
@@ -713,12 +720,16 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   auto ret = driver_->add_rtp_stream(info.stream, info.handle);
   if (ret) {
     if (it != sinks_.end()) {
+      /* update operation failed */
       sinks_.erase(sink.id);
+      igmp_.leave(config_->get_ip_addr_str(),
+                  ip::address_v4(info.stream.m_ui32DestIP).to_string());
     }
     return ret;
   }
 
   if (it == sinks_.end()) {
+    /* if add join multicast */
     igmp_.join(config_->get_ip_addr_str(),
                ip::address_v4(info.stream.m_ui32DestIP).to_string());
   }
