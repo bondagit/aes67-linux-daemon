@@ -4,7 +4,9 @@
 #
 
 sudo apt update
+sudo apt-get install -y psmisc
 sudo apt-get install -y build-essential
+sudo apt-get install -y clang
 sudo apt-get install -y git
 sudo apt-get install -y cmake
 sudo apt-get install -y npm

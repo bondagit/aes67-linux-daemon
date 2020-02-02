@@ -3,6 +3,9 @@
 # Tested on Ubuntu 18.04
 #
 
+#export CC=/usr/bin/clang
+#export CXX=/usr/bin/clang++
+
 cd 3rdparty
 if [ ! -d ravenna-alsa-lkm.git ]; then
   git clone https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm.git
@@ -13,6 +16,7 @@ if [ ! -d ravenna-alsa-lkm.git ]; then
   git apply ../../patches/ravenna-alsa-lkm-kernel-v5.patch
   git apply ../../patches/ravenna-alsa-lkm-enable-loopback.patch  
   git apply ../../patches/ravenna-alsa-lkm-fixes.patch
+  #git apply ../../patches/ravenna-alsa-lkm-arm.patch
   echo "Building ravenna-alsa-lkm kernel module ..."
   make
   cd ../..
