@@ -68,6 +68,8 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
   if (ip::address_v4::from_string(config.rtp_mcast_base_.c_str()).to_ulong() ==
       INADDR_NONE)
     config.rtp_mcast_base_ = "239.1.0.1";
+  if (config.ptp_domain_ > 127)
+    config.ptp_domain_ = 0;
 
   auto [mac_addr, mac_str] = get_interface_mac(config.interface_name_);
   if (mac_str.empty()) {

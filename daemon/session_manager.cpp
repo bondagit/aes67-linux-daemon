@@ -918,6 +918,11 @@ bool SessionManager::worker() {
 
   sap_.set_multicast_interface(config_->get_ip_addr_str());
 
+  // join PTP multicast address for specific domain
+  uint32_t ptp_addr = ip::address_v4::from_string(ptp_dflt_mcast_addr).to_ulong() +
+                      config_->get_ptp_domain();
+  igmp_.join(config_->get_ip_addr_str(), ip::address_v4(ptp_addr).to_string());
+
   while (running_) {
     // check if it's time to update the PTP status
     if (std::chrono::duration_cast<second_t> (clock_::now() - ptp_timepoint).count() > 
@@ -944,6 +949,7 @@ bool SessionManager::worker() {
         // update PTP clock status
         std::unique_lock ptp_lock(ptp_mutex_);
 
+	// update status
         ptp_status_.gmid = ptp_clock_id;
         ptp_status_.jitter = ptp_status.i32Jitter;
         std::string new_ptp_status;
@@ -967,9 +973,17 @@ bool SessionManager::worker() {
             (void)driver_->set_sample_rate(driver_->get_current_sample_rate());
           }
         }
-        // update config
-        ptp_config_.domain = ptp_config.ui8Domain;
-        ptp_config_.dscp = ptp_config.ui8DSCP;
+
+        // update PTP multicast join
+        uint32_t new_ptp_addr = ip::address_v4::from_string(ptp_dflt_mcast_addr).to_ulong() +
+                                ptp_config.ui8Domain;
+	if (new_ptp_addr != ptp_addr) {
+          // leave old PTP multicast address for specific domain
+          igmp_.leave(config_->get_ip_addr_str(), ip::address_v4(ptp_addr).to_string());
+	  ptp_addr = new_ptp_addr;
+          // join new PTP multicast address for specific domain
+          igmp_.join(config_->get_ip_addr_str(), ip::address_v4(ptp_addr).to_string());
+	}
       }
       ptp_interval = 10;
     }
@@ -1010,6 +1024,8 @@ bool SessionManager::worker() {
     // send deletion for this source
     sap_.deletion(static_cast<uint16_t>(msg_id_hash), addr, sdp);
   }
+  // leave PTP primary multicast
+  igmp_.leave(config_->get_ip_addr_str(), ip::address_v4(ptp_addr).to_string());
 
   return true;
 }

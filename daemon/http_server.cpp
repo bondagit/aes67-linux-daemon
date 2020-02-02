@@ -137,16 +137,16 @@ bool HttpServer::start() {
   svr_.Post("/api/ptp/config", [this](const Request& req, Response& res) {
     try {
       PTPConfig ptpConfig = json_to_ptp_config(req.body);
+      auto ret = session_manager_->set_ptp_config(ptpConfig);
+      if (ret) {
+        set_error(ret, "failed to set ptp config", res);
+        return;
+      }
       Config config(*config_);
       config.set_ptp_domain(ptpConfig.domain);
       config.set_ptp_dscp(ptpConfig.dscp);
       if (!config_->save(config, false)) {
         set_error(500, "failed to save config", res);
-        return;
-      }
-      auto ret = session_manager_->set_ptp_config(ptpConfig);
-      if (ret) {
-        set_error(ret, "failed to set ptp config", res);
         return;
       }
       set_headers(res);

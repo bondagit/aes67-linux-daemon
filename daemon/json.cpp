@@ -426,7 +426,7 @@ static void parse_json_sources(boost::property_tree::ptree& pt,
                    v.second.get_child("map")) {
       source.map.emplace_back(std::stoi(vm.second.data()));
     }
-   sources.emplace_back(std::move(source));
+    sources.emplace_back(std::move(source));
   }
 }
 

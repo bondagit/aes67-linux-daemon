@@ -147,6 +147,8 @@ class SessionManager {
   size_t process_sap();
 
  protected:
+  constexpr static const char ptp_dflt_mcast_addr[] = "224.0.1.129";
+
   std::string get_removed_source_sdp_(uint32_t id, uint32_t src_addr) const;
   std::string get_source_sdp_(uint32_t id, const StreamInfo& info) const;
   StreamSource get_source_(uint8_t id, const StreamInfo& info) const;
@@ -157,7 +159,10 @@ class SessionManager {
   // singleton, use create() to build
   SessionManager(std::shared_ptr<DriverManager> driver,
                  std::shared_ptr<Config> config)
-      : driver_(driver), config_(config){};
+      : driver_(driver), config_(config){
+    ptp_config_.domain = config->get_ptp_domain();
+    ptp_config_.dscp = config->get_ptp_dscp();
+  };
 
   std::shared_ptr<DriverManager> driver_;
   std::shared_ptr<Config> config_;

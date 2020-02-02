@@ -95,7 +95,7 @@ class PTP extends Component {
           </tr>
           <tr>
             <th align="left"> <label>Domain</label> </th>
-             <th align="left"> <input type='number' min='0' max='255' className='input-number' value={this.state.domain} onChange={e => this.setState({domain: e.target.value, domainErr: !e.currentTarget.checkValidity()})} required/> </th>
+             <th align="left"> <input type='number' min='0' max='127' className='input-number' value={this.state.domain} onChange={e => this.setState({domain: e.target.value, domainErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>
             <th align="left"> <label>DSCP</label> </th>
