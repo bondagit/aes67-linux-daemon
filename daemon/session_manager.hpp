@@ -147,7 +147,8 @@ class SessionManager {
   size_t process_sap();
 
  protected:
-  constexpr static const char ptp_dflt_mcast_addr[] = "224.0.1.129";
+  constexpr static const char ptp_primary_mcast_addr[] = "224.0.1.129";
+  constexpr static const char ptp_pdelay_mcast_addr[] = "224.0.1.107";
 
   std::string get_removed_source_sdp_(uint32_t id, uint32_t src_addr) const;
   std::string get_source_sdp_(uint32_t id, const StreamInfo& info) const;
