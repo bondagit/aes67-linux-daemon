@@ -42,13 +42,15 @@ trap cleanup EXIT
 #configure system parms
 sudo sysctl -w net/ipv4/igmp_max_memberships=64
 
-#stop pulseaudio, this seems to open/close ALSA continuosly
-echo autospawn = no > $HOME/.config/pulse/client.conf
-pulseaudio --kill >/dev/null 2>&1
-rm $HOME/.config/pulse/client.conf
-#disable pulseaudio
-systemctl --user stop pulseaudio.socket > /dev/null 2>&1
-systemctl --user stop pulseaudio.sservice > /dev/null 2>&1
+if [ -x /usr/bin/pulseaudio ]; then
+  #stop pulseaudio, this seems to open/close ALSA continuosly
+  echo autospawn = no > $HOME/.config/pulse/client.conf
+  pulseaudio --kill >/dev/null 2>&1
+  rm $HOME/.config/pulse/client.conf
+  #disable pulseaudio
+  systemctl --user stop pulseaudio.socket > /dev/null 2>&1
+  systemctl --user stop pulseaudio.sservice > /dev/null 2>&1
+fi
 
 #install kernel module
 sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
@@ -74,7 +76,7 @@ sleep 30
 
 #starting recording on sink
 echo "Starting to record 60 secs from sink ..."
-arecord -D hw:1,0 -f cd -d 60 -r 44100 -c 2 -t wav ./demo/sink_test.wav > /dev/null 2>&1 &
+arecord -D hw:1,0 -f cd -d 60 -r 44100 -c 2 -t wav /tmp/sink_test.wav > /dev/null 2>&1 &
 sleep 10
 
 #starting playback on source
@@ -85,7 +87,8 @@ while killall -0 arecord 2>/dev/null ; do
   sleep 1
 done
 killall speaker-test
-if [ -f ./demo/sink_test.wav ] ; then
+if [ -f /tmp/sink_test.wav ] ; then
+  mv /tmp/sink_test.wav demo/
   echo "Recording to file \"demo/sink_test.wav\" successfull"
 else
   echo "Recording failed"

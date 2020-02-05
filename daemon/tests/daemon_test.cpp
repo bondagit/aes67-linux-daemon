@@ -31,7 +31,9 @@
 #define BOOST_TEST_MODULE DaemonTest
 #include <boost/test/unit_test.hpp>
 
+#if ! (defined (__arm__) || defined (__arm64__))
 #define _MEMORY_CHECK_
+#endif
 
 constexpr static const char g_daemon_address[] = "127.0.0.1";
 constexpr static uint16_t g_daemon_port = 9999;

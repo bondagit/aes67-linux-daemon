@@ -39,7 +39,7 @@ With the WebUI a user can do the following operations:
 ### [3rdparty](3rdparty) directory ###
 
 This directory used to download the 3rdparty open source used by the daemon.    
-The **patches** subdirectory contains patches applied to the ALSA RAVENNA/AES67 module to compile with the Linux Kernel 5.x and to enable operations on the network loopback device (for testing purposes).
+The **patches** subdirectory contains patches applied to the ALSA RAVENNA/AES67 module to compile with the Linux Kernel 5.x and on ARMv7 32bit platform and to enable operations on the network loopback device (for testing purposes).
 
  The ALSA RAVENNA/AES67 kernel module is responsible for:
 
@@ -55,14 +55,17 @@ See [ALSA RAVENNA/AES67 Driver README](https://bitbucket.org/MergingTechnologies
 This directory contains a the daemon configuration and status files used to run a short demo on the network loopback device. The [demo](#demo) is described below.
 
 ## Prerequisite ##
-The daemon has been tested on **Ubuntu 18.04** and **19.10** using:
+The daemon and the demo have been tested on **Ubuntu 18.04** distro on **x86/ARMv7** plattforms and on **19.10** distro on **x86** using:
 
-* Linux kernel version >= 5.0.0 
-* GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required)
+* Linux kernel version >= 4.14.x
+* GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required, clang is required to compile on ARMv7)
 * cmake version >= 3.10.2
 * node version >= 8.10.0
 * mpm version >= 3.5.2
 * boost libraries version >= 1.65.1
+
+The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing ARMv7.
+See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
 
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo). See [PulseAudio and scripts notes](#notes).
  

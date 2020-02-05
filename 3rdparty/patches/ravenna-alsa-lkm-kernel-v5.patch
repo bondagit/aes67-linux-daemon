@@ -24,13 +24,13 @@ index 164f315..a993b41 100644
      getnstimeofday64(&ts64);
  #else
 diff --git a/driver/module_timer.c b/driver/module_timer.c
-index 5f64a8e..372afa3 100644
+index 5f64a8e..0ba770f 100644
 --- a/driver/module_timer.c
 +++ b/driver/module_timer.c
 @@ -35,7 +35,11 @@
  #include "module_main.h"
  #include "module_timer.h"
- 
+
 +#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
 +static struct hrtimer my_hrtimer_;
 +#else
@@ -39,6 +39,25 @@ index 5f64a8e..372afa3 100644
  static uint64_t base_period_;
  static uint64_t max_period_allowed;
  static uint64_t min_period_allowed;
+@@ -57,15 +61,15 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
+
+         if (now > next_wakeup)
+         {
+-            printk(KERN_INFO "Timer won't sleep, clock_timer is recall instantly\n");
++            //printk(KERN_INFO "Timer won't sleep, clock_timer is recall instantly\n");
+             period = ktime_set(0, 0);
+         }
+         else if (ktime_to_ns(period) > max_period_allowed || ktime_to_ns(period) < min_period_allowed)
+         {
+-            printk(KERN_INFO "Timer period out of range: %lld [ms]. Target period = %lld\n", ktime_to_ns(period) / 1000000, base_period_ / 1000000);
++            //printk(KERN_INFO "Timer period out of range: %lld [ms]. Target period = %lld\n", ktime_to_ns(period) / 1000000, base_period_ / 1000000);
+             if (ktime_to_ns(period) > (unsigned long)5E9L)
+             {
+-                printk(KERN_ERR "Timer period greater than 5s, set it to 1s!\n");
++                //printk(KERN_ERR "Timer period greater than 5s, set it to 1s!\n");
+                 period = ktime_set(0,((unsigned long)1E9L)); //1s
+             }
+         }
 @@ -80,8 +84,8 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
      ///ret_overrun = hrtimer_forward(timer, kt_now, period);
      ret_overrun = hrtimer_forward_now(timer, period);
@@ -48,7 +67,7 @@ index 5f64a8e..372afa3 100644
 +    /*if(ret_overrun > 1)
 +        printk(KERN_INFO "Timer overrun ! (%d times)\n", ret_overrun);*/
      return HRTIMER_RESTART;
- 
+
  }
 @@ -89,9 +93,12 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
  int init_clock_timer(void)
@@ -62,11 +81,11 @@ index 5f64a8e..372afa3 100644
      tasklet_hrtimer_init(&my_hrtimer_, timer_callback, CLOCK_MONOTONIC/*_RAW*/, HRTIMER_MODE_PINNED/*HRTIMER_MODE_ABS*/);
 -    ///my_hrtimer_.function = &timer_callback;
 +#endif
- 
+
      //base_period_ = 100 * ((unsigned long)1E6L); // 100 ms
      base_period_ = 1333333; // 1.3 ms
 @@ -108,8 +115,12 @@ void kill_clock_timer(void)
- 
+
  int start_clock_timer(void)
  {
 -    ktime_t period = ktime_set(0, base_period_); //100 ms
@@ -76,13 +95,13 @@ index 5f64a8e..372afa3 100644
 +#else
      tasklet_hrtimer_start(&my_hrtimer_, period, HRTIMER_MODE_ABS);
 +#endif
- 
+
      return 0;
  }
 @@ -117,7 +128,11 @@ int start_clock_timer(void)
  void stop_clock_timer(void)
  {
- 
+
 +#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
 +    hrtimer_cancel(&my_hrtimer_);
 +#else
@@ -98,3 +117,5 @@ index 5f64a8e..372afa3 100644
 -}
 \ No newline at end of file
 +}
+
+
