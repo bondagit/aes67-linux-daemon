@@ -16,11 +16,11 @@ The daemon uses the following open source:
 This directory contains the AES67 daemon source code.     
 The daemon can be cross-compiled for multiple platforms and implements the following functionalities:
 
-* communication and configuration with the ALSA RAVENNA/AES67 driver via netlink  
-* HTTP REST API for control and configuration
+* control and configuration of up to 64 sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
+* HTTP REST API for control and configuration
 * SAP discovery protocol implementation
-* IGMP handling for SAP and RTP sessions
+* IGMP handling for SAP, RTP and PTP multicast traffic
 
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](daemon/tests) subdirectory and run *./daemon-test -l all*    
 
