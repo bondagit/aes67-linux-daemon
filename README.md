@@ -38,8 +38,8 @@ With the WebUI a user can do the following operations:
 
 ### [3rdparty](3rdparty) directory ###
 
-This directory used to download the 3rdparty open source used by the daemon.    
-The **patches** subdirectory contains patches applied to the ALSA RAVENNA/AES67 module to compile with the Linux Kernel 5.x and on ARMv7 32bit platform and to enable operations on the network loopback device (for testing purposes).
+This directory is used to download the 3rdparty open source.
+The [patches](3rdparty/patches) subdirectory contains patches applied to the ALSA RAVENNA/AES67 module to compile with the Linux Kernel 5.x and on ARMv7 platforms and to enable operations on the network loopback device (for testing purposes).
 
  The ALSA RAVENNA/AES67 kernel module is responsible for:
 
@@ -55,7 +55,7 @@ See [ALSA RAVENNA/AES67 Driver README](https://bitbucket.org/MergingTechnologies
 This directory contains a the daemon configuration and status files used to run a short demo on the network loopback device. The [demo](#demo) is described below.
 
 ## Prerequisite ##
-The daemon and the demo have been tested on **Ubuntu 18.04** distro on **x86/ARMv7** plattforms and on **19.10** distro on **x86** using:
+The daemon and the demo have been tested with **Ubuntu 18.04** distro on **x86/ARMv7** and with **Ubuntu 19.10** distro on **x86** using:
 
 * Linux kernel version >= 4.14.x
 * GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required, clang is required to compile on ARMv7)
@@ -64,7 +64,7 @@ The daemon and the demo have been tested on **Ubuntu 18.04** distro on **x86/ARM
 * mpm version >= 3.5.2
 * boost libraries version >= 1.65.1
 
-The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing ARMv7.
+The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing on ARMv7.
 See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
 
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo). See [PulseAudio and scripts notes](#notes).
@@ -85,7 +85,7 @@ To run a simple demo use the [run\_demo.sh](run_demo.sh) script. See [script not
 The demo performs the following operations:
 
 * setup system parameters
-* stop PulseAudio, this uses and keeps busy the ALSA playback and capture devices causing instability problems. See [PulseAudio](#notes).
+* stop PulseAudio (if installed). This uses and keeps busy the ALSA playback and capture devices causing instability problems. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module
 * start the ptp4l as master clock on the network loopback device
 * start the AES67 daemon and creates a source and a sink according to the status file in the demo directory
