@@ -179,12 +179,11 @@ class SessionManager {
   mutable std::shared_mutex sinks_mutex_;
 
   /* current announced sources */
-  std::map<uint32_t /* msg_id_hash */,
-           std::pair<uint8_t /* id */, uint32_t /* src_addr */> >
+  std::map<uint32_t /* msg_id_hash */, uint32_t /* src_addr */>
       announced_sources_;
 
   /* number of deletions sent for a  a deleted source */
-  std::map<uint32_t /* msg_id_hash */, int /* count */> 
+  std::unordered_map<uint32_t /* msg_id_hash */, int /* count */> 
       deleted_sources_count_;
 
   PTPConfig ptp_config_;

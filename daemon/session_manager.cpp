@@ -536,7 +536,8 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
            << static_cast<double>(info.stream.m_ui32MaxSamplesPerPacket) * 1000 /
               static_cast<double>(sample_rate);
   std::string ptime = ss_ptime.str();
-  ptime.erase(ptime.find_last_not_of('0') + 1, std::string::npos); // remove trailing zeros
+  // remove trailing zeros or dot 
+  ptime.erase(ptime.find_last_not_of("0.") + 1, std::string::npos);
 
   // build SDP
   std::stringstream ss;
@@ -855,11 +856,10 @@ size_t SessionManager::process_sap() {
       // compute source hash
       uint32_t msg_id_hash = (static_cast<uint32_t>(id) << 16) + msg_crc;
       // add/update this source in the announced sources
-      announced_sources_[msg_id_hash] =
-          std::make_pair(id, info.stream.m_ui32RTCPSrcIP);
-      // add this source to the active sources
+      announced_sources_[msg_id_hash] = info.stream.m_ui32RTCPSrcIP;
+      // add this source to the currently active sources
       active_sources.insert(msg_id_hash);
-      // remove this source from deleted sources
+      // remove this source from deleted sources (if present)
       deleted_sources_count_.erase(msg_id_hash);
       // send announcement for this source
       sap_.announcement(msg_crc, info.stream.m_ui32RTCPSrcIP, sdp);
@@ -869,15 +869,12 @@ size_t SessionManager::process_sap() {
   }
 
   // check for sources that are no longer announced and send deletion/s
-  for (auto const& [msg_id_hash, pair] : announced_sources_) {
-    const auto &id = pair.first;
-    const auto &src_addr = pair.second;
-
+  for (auto const& [msg_id_hash, src_addr] : announced_sources_) {
     // check if this source is no longer announced
     if (active_sources.find(msg_id_hash) ==
           active_sources.end()) {
       // retrieve deleted source SDP
-      std::string sdp = get_removed_source_sdp_(id, src_addr);
+      std::string sdp = get_removed_source_sdp_(msg_id_hash >> 16, src_addr);
       // send deletion for this source
       sap_.deletion(static_cast<uint16_t>(msg_id_hash), src_addr, sdp);
       // update amount of byte sent
@@ -943,10 +940,8 @@ bool SessionManager::worker() {
                  (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[5]),
                  (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[6]),
                  (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[7]));
-
         // update PTP clock status
         std::unique_lock ptp_lock(ptp_mutex_);
-
 	// update status
         ptp_status_.gmid = ptp_clock_id;
         ptp_status_.jitter = ptp_status.i32Jitter;
@@ -1001,15 +996,11 @@ bool SessionManager::worker() {
   }
 
   // at end, send deletion for all announced sources
-  for (auto const& [msg_id_hash, pair] : announced_sources_) {
-    const auto &id = pair.first;
-    const auto &addr = pair.second;
-
+  for (auto const& [msg_id_hash, src_addr] : announced_sources_) {
     // retrieve deleted source SDP
-    std::string sdp = get_removed_source_sdp_(id, addr);
-
+    std::string sdp = get_removed_source_sdp_(msg_id_hash >> 16, src_addr);
     // send deletion for this source
-    sap_.deletion(static_cast<uint16_t>(msg_id_hash), addr, sdp);
+    sap_.deletion(static_cast<uint16_t>(msg_id_hash), src_addr, sdp);
   }
 
   // leave PTP multicast addresses

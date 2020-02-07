@@ -39,8 +39,8 @@ constexpr static const char g_daemon_address[] = "127.0.0.1";
 constexpr static uint16_t g_daemon_port = 9999;
 constexpr static const char g_sap_address[] = "224.2.127.254";
 constexpr static uint16_t g_sap_port = 9875;
-constexpr static uint16_t udp_size = 1024;
-constexpr static uint16_t sap_header = 24;
+constexpr static uint16_t g_udp_size = 1024;
+constexpr static uint16_t g_sap_header_len = 24;
 
 using namespace boost::process;
 using namespace boost::asio::ip;
@@ -232,17 +232,17 @@ struct Client {
   }
 
   bool sap_wait_announcement(int id, const std::string& sdp, int count = 1) {
-    char data[udp_size];
+    char data[g_udp_size];
     while (count-- > 0) {
       BOOST_TEST_MESSAGE("waiting announcement for source " +
                          std::to_string(id));
       std::string sap_sdp;
       do {
-        auto len = socket_.receive(boost::asio::buffer(data, udp_size));
-        if (len <= sap_header) {
+        auto len = socket_.receive(boost::asio::buffer(data, g_udp_size));
+        if (len <= g_sap_header_len) {
           continue;
 	}
-	sap_sdp.assign(data + sap_header, data + len);
+	sap_sdp.assign(data + g_sap_header_len, data + len);
       } while(data[0] != 0x20 || sap_sdp != sdp);
       BOOST_CHECK_MESSAGE(true, "SAP announcement SDP and source SDP match");
     }
@@ -250,14 +250,14 @@ struct Client {
   }
 
   void sap_wait_all_deletions() {
-    char data[udp_size];
+    char data[g_udp_size];
     std::set<uint8_t> ids;
     while (ids.size() < 64) {
-      auto len = socket_.receive(boost::asio::buffer(data, udp_size));
-      if (len <= sap_header) {
+      auto len = socket_.receive(boost::asio::buffer(data, g_udp_size));
+      if (len <= g_sap_header_len) {
         continue;
       }
-      std::string sap_sdp_(data + sap_header, data + len);
+      std::string sap_sdp_(data + g_sap_header_len, data + len);
       if (data[0] == 0x24 && sap_sdp_.length() > 3) {
          //o=- 56 0 IN IP4 127.0.0.1
          ids.insert(std::atoi(sap_sdp_.c_str() + 3));
@@ -268,16 +268,16 @@ struct Client {
   }
 
   bool sap_wait_deletion(int id, const std::string& sdp, int count = 1) {
-    char data[udp_size];
+    char data[g_udp_size];
     while (count-- > 0) {
       BOOST_TEST_MESSAGE("waiting deletion for source " + std::to_string(id));
       std::string sap_sdp;
       do {
-        auto len = socket_.receive(boost::asio::buffer(data, udp_size));
-        if (len <= sap_header) {
+        auto len = socket_.receive(boost::asio::buffer(data, g_udp_size));
+        if (len <= g_sap_header_len) {
           continue;
 	}
-	sap_sdp.assign(data + sap_header, data + len);
+	sap_sdp.assign(data + g_sap_header_len, data + len);
       } while(data[0] != 0x24 || sdp.find(sap_sdp) == std::string::npos);
       BOOST_CHECK_MESSAGE(true, "SAP deletion SDP matches");
     }

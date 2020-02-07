@@ -38,11 +38,12 @@ class IGMP {
   };
 
   bool join(const std::string& interface_ip, const std::string& mcast_ip) {
+    uint32_t mcast_ip_addr = ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
     std::lock_guard<std::mutex> lock(mutex);
 
-    auto it = mcast_ref.find(mcast_ip);
+    auto it = mcast_ref.find(mcast_ip_addr);
     if (it != mcast_ref.end() && (*it).second > 0) {
-      mcast_ref[mcast_ip]++;
+      mcast_ref[mcast_ip_addr]++;
       return true;
     }
 
@@ -66,19 +67,20 @@ class IGMP {
 
     BOOST_LOG_TRIVIAL(info) << "igmp:: joined multicast group " 
                              << mcast_ip << " on " << interface_ip;
-    mcast_ref[mcast_ip] = 1;
+    mcast_ref[mcast_ip_addr] = 1;
     return true;
   }
 
   bool leave(const std::string& interface_ip, const std::string& mcast_ip) {
+    uint32_t mcast_ip_addr = ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
     std::lock_guard<std::mutex> lock(mutex);
 
-    auto it = mcast_ref.find(mcast_ip);
+    auto it = mcast_ref.find(mcast_ip_addr);
     if (it == mcast_ref.end() || (*it).second == 0) {
       return false;
     }
 
-    if (--mcast_ref[mcast_ip] > 0) {
+    if (--mcast_ref[mcast_ip_addr] > 0) {
       return true;
     }
 
@@ -102,7 +104,7 @@ class IGMP {
   io_service io_service_;
   ip::udp::socket socket_{io_service_};
   udp::endpoint listen_endpoint_{udp::endpoint(address_v4::any(), 0)};
-  std::map<std::string, int> mcast_ref;
+  std::unordered_map<uint32_t, int> mcast_ref;
   std::mutex mutex;
 };
 
