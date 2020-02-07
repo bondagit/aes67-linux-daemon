@@ -16,11 +16,11 @@ The daemon uses the following open source:
 This directory contains the AES67 daemon source code.     
 The daemon can be cross-compiled for multiple platforms and implements the following functionalities:
 
-* communication and configuration with the ALSA RAVENNA/AES67 driver via netlink  
-* HTTP REST API for control and configuration
+* control and configuration of up to 64 sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
+* HTTP REST API for control and configuration
 * SAP discovery protocol implementation
-* IGMP handling for SAP and RTP sessions
+* IGMP handling for SAP, RTP and PTP multicast traffic
 
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](daemon/tests) subdirectory and run *./daemon-test -l all*    
 
@@ -112,9 +112,9 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
   * go to Sinks tab and add a new Sink using the plus button, use the specified Source URL and press the Submit button
   * edit the newly created Sink and copy the SDP file reported in SDP
 * open the Hasseb WebUI and do the following:
- * deselect the "PTP slave only" checkbox to enable PTP master
- * select the "Add SDP file manually" checkbox and copy the previous Source SDP into the SDP field
- * press the Submit button
+  * deselect the "PTP slave only" checkbox to enable PTP master on Hasseb device
+  * select the "Add SDP file manually" checkbox and copy the previous Source SDP into the SDP field
+  * press the Submit button
 * return to the daemon WebUI, click on the PTP tab and wait for the "PTP Status" to report "locked"
 * open a shell on the Linux host and start the playback on the ravenna ALSA device. For example to playback a test sound use: *speaker-test -D plughw:RAVENNA -r 48000 -c 2 -t sine*
 
