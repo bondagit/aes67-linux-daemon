@@ -31,7 +31,7 @@ require('./styles.css');
 
 class ConfigTabs extends Component {
   static propTypes = {
-    currentTab: PropTypes.func.isRequired
+    currentTab: PropTypes.string.isRequired
   };
 
   render() {
