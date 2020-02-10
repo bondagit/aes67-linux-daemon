@@ -168,14 +168,14 @@ class SinkEdit extends Component {
               <th align="left"> <textarea rows='15' cols='55' value={this.state.sdp} onChange={e => this.setState({sdp: e.target.value})} disabled={this.state.useSdp ? undefined : true} required/> </th>
             </tr>
             <tr>
-              <th align="left"> <label>Delay (samples)</label> </th>
+              <th align="left"> <label>Delay (samples) </label> </th>
               <th align="left"> 
 	        <select value={this.state.delay} onChange={e => this.setState({delay: e.target.value})}>
-                  <option value="192">192</option>
-                  <option value="384">384</option>
-                  <option value="576">576</option>
-                  <option value="768">768</option>
-                  <option value="960">960</option>
+                  <option value="192">192 - 4ms@48KHz</option>
+                  <option value="384">384 - 8ms@48KHz</option>
+                  <option value="576">576 - 12ms@48KHz</option>
+                  <option value="768">768 - 16ms@48KHz</option>
+                  <option value="960">960 - 20ms@48KHz</option>
                 </select>
               </th>
             </tr>

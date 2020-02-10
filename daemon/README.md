@@ -193,6 +193,7 @@ where:
 
 > **playout\_delay**
 > JSON number specifying the default safety playout delay at 1FS in samples.
+> **_NOTE:_** The specified delay cannot be less than the source max samples size announced by the SDP file.
 
 > **tic\_frame\_size\_at\_1fs**
 > JSON number specifying the RTP frame size at 1FS in samples.

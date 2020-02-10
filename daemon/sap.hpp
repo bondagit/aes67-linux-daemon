@@ -33,7 +33,7 @@ class SAP {
   constexpr static uint16_t bandwidth_limit = 4000;  // bits x xsec
   constexpr static uint16_t min_interval = 300;      // secs
   constexpr static uint16_t sap_header_len = 24;
-  constexpr static uint16_t max_length = 1024;
+  constexpr static uint16_t max_length = 4096;
 
   SAP() { socket_.open(boost::asio::ip::udp::v4()); };
 

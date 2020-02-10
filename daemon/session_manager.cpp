@@ -689,16 +689,18 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   info.sink_source = sink.source;
   info.sink_use_sdp = true; // save back and use with SDP file
 
-  info.stream.m_ui32FrameSize = info.stream.m_ui32MaxSamplesPerPacket * 
-    info.stream.m_byNbOfChannels * info.stream.m_byWordLength;
+  info.stream.m_ui32FrameSize = info.stream.m_ui32MaxSamplesPerPacket;
   if (!info.stream.m_ui32FrameSize) {
     // if not from SDP use config
     info.stream.m_ui32FrameSize = config_->get_max_tic_frame_size();
   }
+ 
   BOOST_LOG_TRIVIAL(info) << "session_manager:: sink samples per packet " << 
     info.stream.m_ui32MaxSamplesPerPacket;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: sink frame size " << 
     info.stream.m_ui32FrameSize;
+  BOOST_LOG_TRIVIAL(info) << "session_manager:: playout delay " << 
+    info.stream.m_ui32PlayOutDelay;
 
   // info.m_ui32SrcIP = addr;  // only for Source
   // info.m_usSrcPort = 5004;

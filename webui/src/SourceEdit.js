@@ -186,8 +186,8 @@ class SourceEdit extends Component {
               <th align="left"> <label>Max samples per packet </label> </th>
               <th align="left"> 
 	        <select value={this.state.maxSamplesPerPacket} onChange={this.onChangeMaxSamplesPerPacket}>
-                  <option value="12">12 - 250us@48Khz</option>
-                  <option value="16">16 - 333us@48Khz</option>
+                  <option value="12">12 - 250&mu;s@48Khz</option>
+                  <option value="16">16 - 333&mu;s@48Khz</option>
                   <option value="48">48 - 1ms@48Khz</option>
                   <option value="96">96 - 2ms@48Khz</option>
                   <option value="192">192 - 4ms@48Khz</option>
