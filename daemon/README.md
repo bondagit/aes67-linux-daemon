@@ -193,7 +193,6 @@ where:
 
 > **playout\_delay**
 > JSON number specifying the default safety playout delay at 1FS in samples.
-> **_NOTE:_** The specified delay cannot be less than the source max samples size announced by the SDP file.
 
 > **tic\_frame\_size\_at\_1fs**
 > JSON number specifying the RTP frame size at 1FS in samples.
@@ -328,8 +327,8 @@ where:
 > JSON string specifying the IO name.
 
 > **delay**
-> JSON number specifying the playout delay of the sink in samples.
-> This value *must* be larger than the source frame size.
+> JSON number specifying the playout delay of the sink in samples.    
+> **_NOTE:_** The specified delay cannot be less than the source max samples size announced by the SDP file.
 
 > **use\_sdp**
 > JSON boolean specifying whether the source SDP file is fetched from the HTTP URL specified in the **source** parameter or the SDP in the **sdp** parameter is used.
