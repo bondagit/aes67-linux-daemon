@@ -54,6 +54,13 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body Type** application/json    
 * **Body** [PTP Config params](#ptp-config)
 
+### Get PTP Status ###
+* **URL** /api/ptp/status    
+* **Method** GET    
+* **URL Params** none    
+* **Body Type** application/json    
+* **Body** [PTP Status params](#ptp-status)
+
 ### Add RTP Source ###
 * **Description** add or update the RTP source specified by the *id*    
 * **URL** /api/source/:id    
@@ -229,6 +236,27 @@ where:
 > **dscp**
 > JSON number specifying the IP DSCP used in IPv4 header for PTP traffic.   
 > Valid values are 48 (CS6) and 46 (EF).
+
+### JSON PTP Status<a name="ptp-status"></a> ###
+
+Example
+
+    {
+      "status": "unlocked",
+      "gmid": "00-00-00-FF-FE-00-00-00",
+      "jitter": 0
+    }
+
+where:
+
+> **status**
+> JSON string specifying the PTP slave status. This can be *unlocked*, *locking* or *locked*.
+
+> **gmid**
+> JSON string specifying GrandMaster clock ID we are currently synchronized to.
+
+> **jitter**
+> JSON number specifying the measured PTP packet delay jitter.
 
 ### JSON RTP source<a name="rtp-source"></a> ###
 
