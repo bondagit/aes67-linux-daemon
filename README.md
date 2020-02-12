@@ -55,13 +55,14 @@ See [ALSA RAVENNA/AES67 Driver README](https://bitbucket.org/MergingTechnologies
 This directory contains a the daemon configuration and status files used to run a short demo on the network loopback device. The [demo](#demo) is described below.
 
 ## Prerequisite ##
+<a name="prerequisite"></a>
 The daemon and the demo have been tested with **Ubuntu 18.04** distro on **x86/ARMv7** and with **Ubuntu 19.10** distro on **x86** using:
 
 * Linux kernel version >= 4.14.x
 * GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required, clang is required to compile on ARMv7)
 * cmake version >= 3.10.2
 * node version >= 8.10.0
-* mpm version >= 3.5.2
+* npm version >= 3.5.2
 * boost libraries version >= 1.65.1
 
 The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing on ARMv7.
@@ -70,7 +71,8 @@ See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) f
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo). See [PulseAudio and scripts notes](#notes).
  
 ## How to build ##
-To compile the AES67 daemon and the WebUI use the [build.sh](build.sh) script. See [script notes](#notes).    
+Make sure you have all the required packages installed, see [prerequisite](#prerequisite).    
+To compile the AES67 daemon and the WebUI you can use the [build.sh](build.sh) script, see [script notes](#notes).        
 The script performs the following operations:    
 
 * checkout, patch and build the Merging Technologies ALSA RAVENNA/AES67 module
