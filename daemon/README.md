@@ -291,8 +291,16 @@ where:
 > Valid values are L16 and L24.
 
 > **max\_sample\_per\_packet**
-> JSON number specifying the max number of samples contained in one RTP packet.
-> Valid values are 12, 16, 18, 96, 192.
+> JSON number specifying the max number of samples contained in one RTP packet.    
+> Valid values are 12, 16, 48, 96, 192.        
+> See the table below for correspondent max RTP packet duration: 
+> |     | 44.1Khz  | 48Khz   | 96Khz   |
+> |-----|----------|---------|---------|
+> | 12  | 272µs    | 250µs   | 125µs   |
+> | 16  | 363µs    | 333µs   | 166µs   |
+> | 48  | 1.088ms  | 1ms     | 500µs   |
+> | 96  | 2.177ms  | 2ms     | 1ms     |
+> | 192 | 4.353ms  | 4ms     | 2ms     |
 
 > **ttl**
 > JSON number specifying RTP packets Time To Live.
