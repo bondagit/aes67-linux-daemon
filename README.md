@@ -8,6 +8,7 @@ The daemon uses the following open source:
 
 * **Merging Technologies ALSA RAVENNA/AES67 Driver** licensed under [GNU GPL](https://www.gnu.org/licenses/gpl-3.0.en.html).
 * **cpp-httplib** licensed under the [MIT License](https://github.com/yhirose/cpp-httplib/blob/master/LICENSE)
+* **Boost libraries** licensed with [Boost Software License](https://www.boost.org/LICENSE_1_0.txt)
 
 ## Repository content ##
 
