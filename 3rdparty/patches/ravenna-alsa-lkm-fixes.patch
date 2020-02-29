@@ -33,3 +33,35 @@ index 48de263..dcdcce0 100644
  				{
  					memcpy(response_from_user_land->data, msg->data, msg->dataSize);
  				}
+diff --git a/driver/MTAL_stdint.h b/driver/MTAL_stdint.h
+index 3ccc109..2f11a58 100644
+--- a/driver/MTAL_stdint.h
++++ b/driver/MTAL_stdint.h
+@@ -64,9 +64,9 @@
+         }
+         #endif // __cplusplus
+     #include <linux/types.h>
+-    #define new NEW
++    //#define new NEW
+     #include <linux/string.h>
+-    #undef new
++    //#undef new
+     #else
+         #include <stdint.h>
+     #endif
+diff --git a/driver/RTP_stream_info.c b/driver/RTP_stream_info.c
+index ac65bbb..a65994f 100644
+--- a/driver/RTP_stream_info.c
++++ b/driver/RTP_stream_info.c
+@@ -32,9 +32,9 @@
+ #include "MTAL_TargetPlatform.h"
+ 
+ #if (defined(MTAL_LINUX) && defined(MTAL_KERNEL))
+-    #define new NEW
++    //#define new NEW
+     #include <linux/string.h>
+-    #undef new
++    //#undef new
+ #else
+     #include <string.h>
+ #endif
