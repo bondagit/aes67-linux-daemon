@@ -33,6 +33,7 @@
 #include "log.hpp"
 #include "session_manager.hpp"
 
+
 static uint8_t get_codec_word_lenght(const std::string& codec) {
   if (codec == "L16") {
     return 2;
@@ -902,16 +903,15 @@ size_t SessionManager::process_sap() {
   return sdp_len_sum;
 }
 
+
+using namespace std::chrono;
+using second_t  = duration<double, std::ratio<1> >;
+
 bool SessionManager::worker() {
-
-  using clock_ = std::chrono::high_resolution_clock;
-  using second_t  = std::chrono::duration<double, std::ratio<1> >;
-  using timepoint_t = std::chrono::time_point<clock_>;
-
   TPTPConfig ptp_config;
   TPTPStatus ptp_status;
-  timepoint_t sap_timepoint = clock_::now();
-  timepoint_t ptp_timepoint = clock_::now(); 
+  auto sap_timepoint = steady_clock::now();
+  auto ptp_timepoint = steady_clock::now();
   int sap_interval = 1;
   int ptp_interval = 0;
 
@@ -922,9 +922,9 @@ bool SessionManager::worker() {
 
   while (running_) {
     // check if it's time to update the PTP status
-    if (std::chrono::duration_cast<second_t> (clock_::now() - ptp_timepoint).count() > 
-          ptp_interval) {
-      ptp_timepoint = clock_::now();
+    if ((duration_cast<second_t>(steady_clock::now() - ptp_timepoint).count())
+          > ptp_interval) {
+      ptp_timepoint = steady_clock::now();
       if (driver_->get_ptp_config(ptp_config) ||
           driver_->get_ptp_status(ptp_status)) {
         BOOST_LOG_TRIVIAL(error)
@@ -972,10 +972,10 @@ bool SessionManager::worker() {
       ptp_interval = 10;
     }
 
-    // check if it's time to send SAP announcements
-    if (std::chrono::duration_cast<second_t> (clock_::now() - sap_timepoint).count() > 
-          sap_interval) {
-      sap_timepoint = clock_::now();
+    // check if it's time to send sap announcements
+    if ((duration_cast<second_t>(steady_clock::now() - sap_timepoint).count())
+          > sap_interval) {
+      sap_timepoint = steady_clock::now();
 
       auto sdp_len_sum = process_sap();
 
