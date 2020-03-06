@@ -20,7 +20,7 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * control and configuration of up to 64 sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
 * HTTP REST API for control and configuration
-* SAP discovery protocol implementation and SAP browser implementation
+* SAP discovery protocol and SAP browse
 * IGMP handling for SAP, RTP and PTP multicast traffic
 
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](daemon/tests) subdirectory and run *./daemon-test -l all*    

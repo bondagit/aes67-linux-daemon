@@ -7,7 +7,7 @@ The daemon is responsible for:
 * communication and configuration of the device driver
 * provide an HTTP REST API for the daemon control and configuration
 * session handling and SDP parsing and creation
-* SAP discovery protocol implementation and SAP browser
+* SAP discovery protocol and SAP browser
 * IGMP handling for SAP and RTP sessions
 
 ## Configuration file ##
@@ -543,6 +543,7 @@ Example:
         "source": "SAP",
         "id": "d00000a611d",
         "name": "ALSA Source 2",
+        "address": "10.0.0.13",
         "sdp": "v=0\no=- 2 0 IN IP4 10.0.0.13\ns=ALSA Source 2\nc=IN IP4 239.1.0.3/15\nt=0 0\na=clock-domain:PTPv2 0\nm=audio 5004 RTP/AVP 98\nc=IN IP4 239.1.0.3/15\na=rtpmap:98 L16/48000/2\na=sync-time:0\na=framecount:48\na=ptime:1\na=mediaclk:direct=0\na=ts-refclk:ptp=IEEE1588-2008:00-10-4B-FF-FE-7A-87-FC:0\na=recvonly\n",
         "last_seen": 2768,
         "announce_period": 30 
@@ -551,6 +552,7 @@ Example:
         "source": "SAP",
         "id": "d00000a8dd5",
         "name": "ALSA Source 1",
+        "address": "10.0.0.13",
         "sdp": "v=0\no=- 1 0 IN IP4 10.0.0.13\ns=ALSA Source 1\nc=IN IP4 239.1.0.2/15\nt=0 0\na=clock-domain:PTPv2 0\nm=audio 5004 RTP/AVP 98\nc=IN IP4 239.1.0.2/15\na=rtpmap:98 L16/48000/2\na=sync-time:0\na=framecount:48\na=ptime:1\na=mediaclk:direct=0\na=ts-refclk:ptp=IEEE1588-2008:00-10-4B-FF-FE-7A-87-FC:0\na=recvonly\n",
         "last_seen": 2768,
         "announce_period": 30 
