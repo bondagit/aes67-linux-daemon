@@ -94,11 +94,11 @@ bool Browser::worker() {
 	  sources_[id] = source;
         }
       } else {
-        // Source is already in the mamap
+        // Source is already in the map
         if (is_announce) {
           BOOST_LOG_TRIVIAL(debug)
                       << "browser:: refreshing SAP source " << (*it).second.id;
-          // annoucement, update last seen and announce periods
+          // annoucement, update last seen and announce period
           uint32_t last_seen = 
             duration_cast<second_t>(steady_clock::now() - startup).count();
           (*it).second.announce_period = last_seen - (*it).second.last_seen;
@@ -112,7 +112,7 @@ bool Browser::worker() {
       }
     }
 
-    // check if it's time to check the SAP remote sources
+    // check if it's time to update the SAP remote sources
     if ((duration_cast<second_t>(steady_clock::now() - sap_timepoint).count())
           > sap_interval) {
       sap_timepoint = steady_clock::now();

@@ -43,6 +43,7 @@ class Browser {
  public:
   static std::shared_ptr<Browser> create(
       std::shared_ptr<Config> config);
+  Browser() = delete;
   Browser(const Browser&) = delete;
   Browser& operator=(const Browser&) = delete;
   virtual ~Browser(){ stop(); };

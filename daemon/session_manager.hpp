@@ -97,6 +97,7 @@ class SessionManager {
   static std::shared_ptr<SessionManager> create(
       std::shared_ptr<DriverManager> driver,
       std::shared_ptr<Config> config);
+  SessionManager() = delete;
   SessionManager(const SessionManager&) = delete;
   SessionManager& operator=(const SessionManager&) = delete;
   virtual ~SessionManager(){ stop(); };
