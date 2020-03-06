@@ -24,19 +24,23 @@
 
 #include "config.hpp"
 #include "session_manager.hpp"
+#include "browser.hpp"
 
 class HttpServer {
  public:
   HttpServer() = delete;
   HttpServer(std::shared_ptr<SessionManager> session_manager,
+             std::shared_ptr<Browser> browser,
              std::shared_ptr<Config> config)
       : session_manager_(session_manager),
+        browser_(browser),
         config_(config) {};
   bool start();
   bool stop();
 
  private:
   std::shared_ptr<SessionManager> session_manager_;
+  std::shared_ptr<Browser> browser_;
   std::shared_ptr<Config> config_;
   httplib::Server svr_;
   std::future<bool> res_;

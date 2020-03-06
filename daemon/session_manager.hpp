@@ -190,7 +190,7 @@ class SessionManager {
   PTPStatus ptp_status_;
   mutable std::shared_mutex ptp_mutex_;
 
-  SAP sap_;
+  SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;
 };
 

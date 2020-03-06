@@ -16,9 +16,8 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//
-//
-//
+
+
 import React from 'react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { render } from "react-dom";
@@ -37,6 +36,7 @@ function App() {
         <Route exact path='/PTP' component={() => <ConfigTabs key='PTP' currentTab='PTP' />} />
         <Route exact path='/Sources' component={() => <ConfigTabs key='Sources' currentTab='Sources' />} />
         <Route exact path='/Sinks' component={() => <ConfigTabs key='Sinks' currentTab='Sinks' />} />
+        <Route exact path='/Browser' component={() => <ConfigTabs key='Browser' currentTab='Browser' />} />
         <Route component={() => <ConfigTabs key='Config' currentTab='Config' />} />
       </Switch>
     </div>

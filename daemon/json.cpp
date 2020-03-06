@@ -85,6 +85,7 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"rtp_port\": " << config.get_rtp_port()
      << ",\n  \"ptp_domain\": " << unsigned(config.get_ptp_domain())
      << ",\n  \"ptp_dscp\": " << unsigned(config.get_ptp_dscp())
+     << ",\n  \"sap_mcast_addr\": \"" << escape_json(config.get_sap_mcast_addr()) << "\""
      << ",\n  \"sap_interval\": " << config.get_sap_interval()
      << ",\n  \"syslog_proto\": \"" << escape_json(config.get_syslog_proto()) << "\""
      << ",\n  \"syslog_server\": \"" << escape_json(config.get_syslog_server()) << "\""
@@ -226,6 +227,34 @@ std::string streams_to_json(const std::list<StreamSource>& sources,
   return ss.str();
 }
 
+std::string remote_source_to_json(const RemoteSource& source) {
+  std::stringstream ss;
+  ss << "\n  {"
+     << "\n    \"source\": \"" << escape_json(source.source) << "\""
+     << ",\n    \"id\": \"" << escape_json(source.id) << "\""
+     << ",\n    \"name\": \"" << escape_json(source.name) << "\""
+     << ",\n    \"address\": \"" << escape_json(source.address) << "\""
+     << ",\n    \"sdp\": \"" << escape_json(source.sdp) << "\""
+     << ",\n    \"last_seen\": " << unsigned(source.last_seen)
+     << ",\n    \"announce_period\": " << unsigned(source.announce_period)
+     << " \n  }";
+  return ss.str();
+}
+
+std::string remote_sources_to_json(const std::list<RemoteSource>& sources) {
+  int count = 0;
+  std::stringstream ss;
+  ss << "{\n  \"remote_sources\": [";
+  for (auto const& source: sources) {
+    if (count++) {
+      ss << ", ";
+    }
+    ss << remote_source_to_json(source);
+  }
+  ss << "  ]\n}\n";
+  return ss.str();
+}
+
 Config json_to_config_(std::istream& js, Config& config) {
   try {
     boost::property_tree::ptree pt;
@@ -256,6 +285,8 @@ Config json_to_config_(std::istream& js, Config& config) {
         config.set_ptp_domain(val.get_value<uint8_t>());
       } else if (key == "ptp_dscp") {
         config.set_ptp_dscp(val.get_value<uint8_t>());
+      } else if (key == "sap_mcast_addr") {
+        config.set_sap_mcast_addr(remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "sap_interval") {
         config.set_sap_interval(val.get_value<uint16_t>());
       } else if (key == "status_file") {

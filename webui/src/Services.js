@@ -31,6 +31,7 @@ const source = '/source';
 const sdp = '/sdp';
 const sink = '/sink';
 const status = '/status';
+const browseSources = '/browse/sources';
 
 const defaultParams = {
   credentials: 'same-origin',
@@ -75,7 +76,7 @@ export default class RestAPI {
     });
   }
 
-  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_interval) {
+  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval) {
     return this.doFetch(config, {
       body: JSON.stringify({
         log_severity: parseInt(log_severity, 10),
@@ -87,6 +88,7 @@ export default class RestAPI {
         tic_frame_size_at_1fs: parseInt(tic_frame_size_at_1fs, 10),
         sample_rate: parseInt(sample_rate, 10),
         max_tic_frame_size: parseInt(max_tic_frame_size, 10),
+        sap_mcast_addr: sap_mcast_addr,
         sap_interval: parseInt(sap_interval, 10)
       }),
       method: 'POST'
@@ -216,6 +218,13 @@ export default class RestAPI {
   static getStreams() {
     return this.doFetch(streams).catch(err => {
       toast.error('Streams get failed: ' + err.message)
+      return Promise.reject(Error(err.message));
+    });
+  }
+
+  static getRemoteSources() {
+    return this.doFetch(browseSources).catch(err => {
+      toast.error('Browse sources get failed: ' + err.message)
       return Promise.reject(Error(err.message));
     });
   }

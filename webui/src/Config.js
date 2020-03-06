@@ -78,6 +78,7 @@ class Config extends Component {
             rtpPort: data.rtp_port,
             ptpDomain: data.ptp_domain,
             ptpDscp: data.ptp_dscp,
+            sapMcastAddr: data.sap_mcast_addr,
             sapInterval: data.sap_interval,
             syslogProto: data.syslog_proto,
             syslogServer: data.syslog_server,
@@ -95,6 +96,7 @@ class Config extends Component {
       !this.state.ticFrameSizeAt1fsErr &&
       !this.state.maxTicFrameSizeErr &&
       !this.state.rtpMcastBaseErr &&
+      !this.state.sapMcastAddrErr &&
       !this.state.rtpPortErr &&
       !this.state.sapIntervalErr &&
       !this.state.syslogServerErr &&
@@ -113,6 +115,7 @@ class Config extends Component {
       this.state.ticFrameSizeAt1fs, 
       this.state.sampleRate, 
       this.state.maxTicFrameSize, 
+      this.state.sapMcastAddr,
       this.state.sapInterval)
     .then(response => toast.success('Config updated, daemon restart ...'));
   }
@@ -154,11 +157,15 @@ class Config extends Component {
           </tr>
           <tr>
             <th align="left"> <label>RTP base address</label> </th>
-            <th align="left"> <input type="text" minLength="7" maxLength="15" size="15" pattern="^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$" value={this.state.rtpMcastBase} onChange={e => this.setState({rtpMcastBase: e.target.value, rtpMcastBaseErr: !e.currentTarget.checkValidity()})} required/> </th>
+            <th align="left"> <input type="text" minLength="7" maxLength="15" size="15" pattern="^2(?:2[4-9]|3\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d?|0)){3}$" value={this.state.rtpMcastBase} onChange={e => this.setState({rtpMcastBase: e.target.value, rtpMcastBaseErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>
             <th align="left"> <label>RTP port</label> </th>
             <th align="left"> <input type='number' min='1024' max='65536'  className='input-number' value={this.state.rtpPort} onChange={e => this.setState({rtpPort: e.target.value, rtpPortErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>SAP multicast address</label> </th>
+            <th align="left"> <input type="text" minLength="7" maxLength="15" size="15" pattern="^2(?:2[4-9]|3\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d?|0)){3}$" value={this.state.sapMcastAddr} onChange={e => this.setState({sapMcastAddr: e.target.value, sapMcastAddrErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>
             <th align="left"> <label>SAP interval (sec)</label> </th>

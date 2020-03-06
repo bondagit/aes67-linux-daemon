@@ -25,6 +25,7 @@ import RestAPI from './Services';
 import Loader from './Loader';
 import SourceEdit from './SourceEdit';
 import SourceRemove from './SourceRemove';
+import SourceInfo from './SourceInfo';
 
 require('./styles.css');
 
@@ -34,6 +35,7 @@ class SourceEntry extends Component {
     name: PropTypes.string.isRequired,
     channels: PropTypes.number.isRequired,
     onEditClick: PropTypes.func.isRequired,
+    onInfoClick: PropTypes.func.isRequired,
     onTrashClick: PropTypes.func.isRequired
   };
 
@@ -41,9 +43,14 @@ class SourceEntry extends Component {
     super(props);
     this.state = { 
       address: 'n/a',
-      port: 'n/a' 
+      port: 'n/a',
+      sdp: '' 
     };
   }
+
+  handleInfoClick = () => {
+    this.props.onInfoClick(this.props.id, this.state.sdp);
+  };
 
   handleEditClick = () => {
     this.props.onEditClick(this.props.id);
@@ -59,6 +66,7 @@ class SourceEntry extends Component {
       .then(function(sdp) {
         var address = sdp.match(/(c=IN IP4 )([0-9.]+)/g);
         var port = sdp.match(/(m=audio )([0-9]+)/g);
+        this.setState({ sdp: sdp });
         if (address && port) {
           this.setState({ address: address[0].substr(9), port: port[0].substr(8) });
         }
@@ -73,6 +81,7 @@ class SourceEntry extends Component {
         <td> <label>{this.state.address}</label> </td>
         <td> <label>{this.state.port}</label> </td>
         <td align='center'> <label>{this.props.channels}</label> </td>
+        <td> <span className='pointer-area' onClick={this.handleInfoClick}> <img width='20' height='20' src='/info.png' alt=''/> </span> </td>
         <td> <span className='pointer-area' onClick={this.handleEditClick}> <img width='20' height='20' src='/edit.png' alt=''/> </span> </td>
         <td> <span className='pointer-area' onClick={this.handleTrashClick}> <img width='20' height='20' src='/trash.png' alt=''/> </span> </td>
       </tr>
@@ -131,16 +140,21 @@ class Sources extends Component {
       source: {}, 
       isLoading: false, 
       isEdit: false, 
+      isInfo: false, 
       editIsOpen: false, 
+      infoIsOpen: false, 
       removeIsOpen: false, 
       editTitle: '' 
     };
+    this.onInfoClick = this.onInfoClick.bind(this);
     this.onEditClick = this.onEditClick.bind(this);
     this.onTrashClick = this.onTrashClick.bind(this);
     this.onAddClick = this.onAddClick.bind(this);
     this.onReloadClick = this.onReloadClick.bind(this);
+    this.openInfo = this.openInfo.bind(this);
     this.openEdit = this.openEdit.bind(this);
     this.closeEdit = this.closeEdit.bind(this);
+    this.closeInfo = this.closeInfo.bind(this);
     this.applyEdit = this.applyEdit.bind(this);
     this.fetchSources = this.fetchSources.bind(this);
   }
@@ -158,6 +172,10 @@ class Sources extends Component {
     this.fetchSources();
   }
 
+  openInfo(title, source, sdp, isInfo) {
+    this.setState({infoIsOpen: true, infoTitle: title, source: source, sdp: sdp, isInfo: isInfo});
+  }
+
   openEdit(title, source, isEdit) {
     this.setState({editIsOpen: true, editTitle: title, source: source, isEdit: isEdit});
   }
@@ -172,7 +190,16 @@ class Sources extends Component {
     this.setState({removeIsOpen: false});
     this.fetchSources();
   }
+
+  closeInfo() {
+    this.setState({infoIsOpen: false});
+  }
   
+  onInfoClick(id, sdp) {
+    const source = this.state.sources.find(s => s.id === id);
+    this.openInfo("Local Source Info", source, sdp, true);
+  }
+
   onEditClick(id) {
     const source = this.state.sources.find(s => s.id === id);
     this.openEdit("Edit Source " + id, source, true);
@@ -219,6 +246,7 @@ class Sources extends Component {
         id={source.id}
         name={source.name}
         channels={source.map.length}
+        onInfoClick={this.onInfoClick}
         onEditClick={this.onEditClick}
         onTrashClick={this.onTrashClick}
       />
@@ -229,6 +257,15 @@ class Sources extends Component {
 	   : <SourceList onAddClick={this.onAddClick} 
                onReloadClick={this.onReloadClick}
                sources={sources} /> }
+       { this.state.infoIsOpen ?
+        <SourceInfo infoIsOpen={this.state.infoIsOpen}
+          closeInfo={this.closeInfo}
+          infoTitle={this.state.infoTitle} 
+	  isInfo={this.state.isInfo}
+	  id={this.state.source.id.toString()}
+	  name={this.state.source.name}
+	  sdp={this.state.sdp} />
+           : undefined }
        { this.state.editIsOpen ?
         <SourceEdit editIsOpen={this.state.editIsOpen}
           closeEdit={this.closeEdit}

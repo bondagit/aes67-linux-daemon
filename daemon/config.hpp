@@ -40,6 +40,7 @@ class Config {
   uint32_t get_max_tic_frame_size() const { return max_tic_frame_size_; };
   uint32_t get_sample_rate() const { return sample_rate_; };
   const std::string& get_rtp_mcast_base() const { return rtp_mcast_base_; };
+  const std::string& get_sap_mcast_addr() const { return sap_mcast_addr_; };
   uint16_t get_rtp_port() const { return rtp_port_; };
   uint8_t get_ptp_domain() const { return ptp_domain_; };
   uint8_t get_ptp_dscp() const { return ptp_dscp_; };
@@ -72,6 +73,9 @@ class Config {
   void set_sample_rate(uint32_t sample_rate) { sample_rate_ = sample_rate; };
   void set_rtp_mcast_base(const std::string& rtp_mcast_base) {
     rtp_mcast_base_ = rtp_mcast_base;
+  };
+  void set_sap_mcast_addr(const std::string& sap_mcast_addr) {
+    sap_mcast_addr_ = sap_mcast_addr;
   };
   void set_rtp_port(uint16_t rtp_port) { rtp_port_ = rtp_port; };
   void set_ptp_domain(uint8_t ptp_domain) { ptp_domain_ = ptp_domain; };
@@ -108,6 +112,7 @@ class Config {
   uint32_t max_tic_frame_size_{1024};
   uint32_t sample_rate_{44100};
   std::string rtp_mcast_base_{"239.1.0.1"};
+  std::string sap_mcast_addr_{"224.2.127.254"};
   uint16_t rtp_port_{5004};
   uint8_t ptp_domain_{0};
   uint8_t ptp_dscp_{46};

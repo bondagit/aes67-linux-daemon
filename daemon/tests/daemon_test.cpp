@@ -50,7 +50,7 @@ struct DaemonInstance {
   DaemonInstance() {
     BOOST_TEST_MESSAGE("Starting up test daemon instance ...");
     int retry = 10;
-    while (--retry && daemon_.running()) {
+    while (retry-- && daemon_.running()) {
       BOOST_TEST_MESSAGE("Checking daemon instance ...");
       httplib::Client cli(g_daemon_address, g_daemon_port);
       auto res = cli.Get("/");
@@ -284,6 +284,12 @@ struct Client {
     return true;
   }
 
+  std::pair<bool, std::string> get_remote_sources() {
+    std::string url = std::string("/api/browse/sources");
+    auto res = cli_.Get(url.c_str());
+    return std::make_pair(res->status == 200, res->body);
+  }
+
  private:
   httplib::Client cli_{g_daemon_address, g_daemon_port};
   io_service io_service_;
@@ -432,7 +438,30 @@ BOOST_AUTO_TEST_CASE(source_check_sap) {
   cli.sap_wait_announcement(0, sdp.second);
   BOOST_REQUIRE_MESSAGE(cli.remove_source(0), "removed source 0");
   cli.sap_wait_deletion(0, sdp.second, 3);
-  std::this_thread::sleep_for(std::chrono::seconds(10));
+}
+
+BOOST_AUTO_TEST_CASE(source_check_browser) {
+  Client cli;
+  BOOST_REQUIRE_MESSAGE(cli.add_source(0), "added source 0");
+  auto sdp = cli.get_source_sdp(0);
+  BOOST_REQUIRE_MESSAGE(sdp.first, "got source sdp 0");
+  cli.sap_wait_announcement(0, sdp.second);
+  auto json = cli.get_remote_sources();
+  BOOST_REQUIRE_MESSAGE(json.first, "got remote sources");
+  boost::property_tree::ptree pt;
+  std::stringstream ss(json.second);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_FOREACH (auto const& v, pt.get_child("remote_sources")) {
+    BOOST_REQUIRE_MESSAGE(v.second.get<std::string>("sdp") == sdp.second,
+                          "returned source " + v.second.get<std::string>("id"));
+  }
+  BOOST_REQUIRE_MESSAGE(cli.remove_source(0), "removed source 0");
+  cli.sap_wait_deletion(0, sdp.second, 3);
+  json = cli.get_remote_sources();
+  BOOST_REQUIRE_MESSAGE(json.first, "got remote sources");
+  std::stringstream ss1(json.second);
+  boost::property_tree::read_json(ss1, pt);
+  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 0, "no remote sources");
 }
 
 BOOST_AUTO_TEST_CASE(sink_check_status) {
@@ -578,7 +607,7 @@ BOOST_AUTO_TEST_CASE(add_remove_update_check_all) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(add_remove_check_sap_all) {
+BOOST_AUTO_TEST_CASE(add_remove_check_sap_browser_all) {
   Client cli;
   for (int id = 0; id < 64; id++) {
     BOOST_REQUIRE_MESSAGE(cli.add_source(id),
@@ -589,15 +618,20 @@ BOOST_AUTO_TEST_CASE(add_remove_check_sap_all) {
     BOOST_REQUIRE_MESSAGE(sdp.first, std::string("got source sdp ") + std::to_string(id));
     cli.sap_wait_announcement(id, sdp.second);
   }
+  auto json = cli.get_remote_sources();
+  BOOST_REQUIRE_MESSAGE(json.first, "got remote sources");
+  boost::property_tree::ptree pt;
+  std::stringstream ss(json.second);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 64, "found 64 remote sources");
   for (int id = 0; id < 64; id++) {
     BOOST_REQUIRE_MESSAGE(cli.add_sink_sdp(id),
                           std::string("added sink ") + std::to_string(id));
   }
-  auto json = cli.get_streams();
+  json = cli.get_streams();
   BOOST_REQUIRE_MESSAGE(json.first, "got streams");
-  boost::property_tree::ptree pt;
-  std::stringstream ss(json.second);
-  boost::property_tree::read_json(ss, pt);
+  std::stringstream ss1(json.second);
+  boost::property_tree::read_json(ss1, pt);
   uint8_t id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sources")) {
     BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
@@ -615,6 +649,11 @@ BOOST_AUTO_TEST_CASE(add_remove_check_sap_all) {
                           std::string("removed source ") + std::to_string(id));
   }
   cli.sap_wait_all_deletions();
+  json = cli.get_remote_sources();
+  BOOST_REQUIRE_MESSAGE(json.first, "got remote sources");
+  std::stringstream ss2(json.second);
+  boost::property_tree::read_json(ss2, pt);
+  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 0, "no remote sources");
   for (int id = 0; id < 64; id++) {
     BOOST_REQUIRE_MESSAGE(cli.remove_sink(id),
                           std::string("removed sink ") + std::to_string(id));

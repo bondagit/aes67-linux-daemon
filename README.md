@@ -8,7 +8,7 @@ The daemon uses the following open source:
 
 * **Merging Technologies ALSA RAVENNA/AES67 Driver** licensed under [GNU GPL](https://www.gnu.org/licenses/gpl-3.0.en.html).
 * **cpp-httplib** licensed under the [MIT License](https://github.com/yhirose/cpp-httplib/blob/master/LICENSE)
-* **Boost libraries** licensed with [Boost Software License](https://www.boost.org/LICENSE_1_0.txt)
+* **Boost libraries** licensed under the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt)
 
 ## Repository content ##
 
@@ -20,7 +20,7 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * control and configuration of up to 64 sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
 * HTTP REST API for control and configuration
-* SAP discovery protocol implementation
+* SAP discovery protocol implementation and SAP browser implementation
 * IGMP handling for SAP, RTP and PTP multicast traffic
 
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](daemon/tests) subdirectory and run *./daemon-test -l all*    
@@ -101,9 +101,9 @@ The demo performs the following operations:
 ## Interoperability tests ##
 To run interoperability tests using the [Hasseb audio over Ethernet receiver](http://hasseb.fi/shop2/index.php?route=product/product&product_id=62) follow these steps:
 
-* open he daemon configuration file *daemon.conf* and change the following parameters:
-  * set the network interface name to your Ethernet card, e.g.: *"interface\_name": "eth0"*
-  * set the default sample rate to 48Khz: *"sample\_rate": 48000*
+* open the daemon configuration file *daemon.conf* and change the following parameters:
+  * set network interface name to your Ethernet card, e.g.: *"interface\_name": "eth0"*
+  * set default sample rate to 48Khz: *"sample\_rate": 48000*
 * verify that PulseAdio is not running. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module with:     
     *sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko*
@@ -112,8 +112,7 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
 * open the Daemon WebUi *http://[address:8080]* and do the following:
   * go to Config tab and verify that the sample rate is set to 48KHz
   * go to Sources tab and add a new Source using the plus button, set Codec to L24 and press the Submit button
-  * go to Sinks tab and add a new Sink using the plus button, use the specified Source URL and press the Submit button
-  * edit the newly created Sink and copy the SDP file reported in SDP
+  * go to Sources tab and click on the info icon on the right of the newly created source and copy the SDP file
 * open the Hasseb WebUI and do the following:
   * deselect the "PTP slave only" checkbox to enable PTP master on Hasseb device
   * select the "Add SDP file manually" checkbox and copy the previous Source SDP into the SDP field

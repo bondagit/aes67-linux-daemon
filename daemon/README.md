@@ -7,7 +7,7 @@ The daemon is responsible for:
 * communication and configuration of the device driver
 * provide an HTTP REST API for the daemon control and configuration
 * session handling and SDP parsing and creation
-* SAP discovery protocol implementation 
+* SAP discovery protocol implementation and SAP browser
 * IGMP handling for SAP and RTP sessions
 
 ## Configuration file ##
@@ -128,6 +128,14 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body type** application/json    
 * **Body** [RTP Streams params](#rtp-streams)
 
+### Get all remote RTP Sources ###
+* **Description** retrieve all the remote sources collected via SAP
+* **URL** /api/browse/sources    
+* **Method** GET    
+* **URL Params** none    
+* **Body type** application/json    
+* **Body** [RTP Remote Sources params](#rtp-remote-sources)
+
 ## HTTP REST API structures ##
 
 ### JSON Config<a name="config"></a> ###
@@ -149,6 +157,7 @@ Example
       "frame_size_at_1fs": 192,
       "sample_rate": 44100,
       "max_tic_frame_size": 1024,
+      "sap_mcast_addr": "239.255.255.255",
       "sap_interval": 30,
       "mac_addr": "01:00:5e:01:00:01",
       "ip_addr": "127.0.0.1"
@@ -207,6 +216,10 @@ where:
 > **max\_tic\_frame\_size**
 > JSON number specifying the max tick frame size.     
 > In case of a high value of *tic_frame_size_at_1fs*, this must be set to 8192.
+
+> **sap\_mcast\_addr**
+> JSON string specifying the SAP multicast address used for both announcing local sources and browsing remote sources.    
+> By default and according to SAP RFC this address is 224.2.127.254, but many devices use 239.255.255.255.
 
 > **sap\_interval**
 > JSON number specifying the SAP interval in seconds to use. Use 0 for automatic and RFC compliant interval. Default is 30secs.
@@ -519,4 +532,58 @@ where:
 > JSON array of the configured sinks. 
 > Every sink is identified by the JSON number **id** (in the range 0 - 63). 
 > See [RTP Sink params](#rtp-sink) for all the other parameters.
+
+### JSON Remote Sources<a name="rtp-remote-sources"></a> ###
+
+Example:
+
+    {
+      "remote_sources": [
+      {
+        "source": "SAP",
+        "id": "d00000a611d",
+        "name": "ALSA Source 2",
+        "sdp": "v=0\no=- 2 0 IN IP4 10.0.0.13\ns=ALSA Source 2\nc=IN IP4 239.1.0.3/15\nt=0 0\na=clock-domain:PTPv2 0\nm=audio 5004 RTP/AVP 98\nc=IN IP4 239.1.0.3/15\na=rtpmap:98 L16/48000/2\na=sync-time:0\na=framecount:48\na=ptime:1\na=mediaclk:direct=0\na=ts-refclk:ptp=IEEE1588-2008:00-10-4B-FF-FE-7A-87-FC:0\na=recvonly\n",
+        "last_seen": 2768,
+        "announce_period": 30 
+      }, 
+      {
+        "source": "SAP",
+        "id": "d00000a8dd5",
+        "name": "ALSA Source 1",
+        "sdp": "v=0\no=- 1 0 IN IP4 10.0.0.13\ns=ALSA Source 1\nc=IN IP4 239.1.0.2/15\nt=0 0\na=clock-domain:PTPv2 0\nm=audio 5004 RTP/AVP 98\nc=IN IP4 239.1.0.2/15\na=rtpmap:98 L16/48000/2\na=sync-time:0\na=framecount:48\na=ptime:1\na=mediaclk:direct=0\na=ts-refclk:ptp=IEEE1588-2008:00-10-4B-FF-FE-7A-87-FC:0\na=recvonly\n",
+        "last_seen": 2768,
+        "announce_period": 30 
+      }  ]
+    }
+
+
+where:
+
+> **remote\_sources**
+> JSON array of the remote sources collected so far.
+> Every source is identified by the unique JSON string **id**.
+
+> **source**
+> JSON string specifying the protocol used to collect the remote source.
+
+> **id**
+> JSON string specifying the remote source unique id.
+
+> **name**
+> JSON string specifying the remote source name announced in the SDP file.
+
+> **address**
+> JSON string specifying the remote source address announced.
+
+> **sdp**
+> JSON string specifying the remote source SDP.
+
+> **last\_seen**
+> JSON number specifying the last time the source was announced.
+> This time is expressed in seconds since the daemon startup.
+
+> **announce_period**
+> JSON number specifying the meausured period in seconds between the last source announcements.
+> A remote source is automatically removed if it doesn't get announced for **announce\_period** x 10 seconds.
 

@@ -27,6 +27,7 @@
 #include "log.hpp"
 #include "session_manager.hpp"
 #include "interface.hpp"
+#include "browser.hpp"
 
 namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
@@ -114,9 +115,16 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error(
           std::string("SessionManager:: start failed"));
       }
+
+     /* start browser */
+      auto browser = Browser::create(config);
+      if (browser == nullptr || !browser->start()) {
+        throw std::runtime_error(
+          std::string("Browser:: start failed"));
+      }
  
       /* start http server */
-      HttpServer http_server(session_manager, config);
+      HttpServer http_server(session_manager, browser, config);
       if (!http_server.start()) {
         throw std::runtime_error(std::string("HttpServer:: start failed"));
       }
@@ -151,6 +159,12 @@ int main(int argc, char* argv[]) {
             std::string("HttpServer:: stop failed"));
       }
 
+      /* stop browser */
+      if (!browser->stop()) {
+        throw std::runtime_error(
+            std::string("Browser:: stop failed"));
+      }
+
       /* stop session manager */
       if (!session_manager->stop()) {
         throw std::runtime_error(
@@ -161,7 +175,7 @@ int main(int argc, char* argv[]) {
       if (!driver->terminate()) {
         throw std::runtime_error(
             std::string("DriverManager:: terminate failed"));
-       }
+      }
 
     } catch (std::exception& e) {
       BOOST_LOG_TRIVIAL(fatal) << "main:: fatal exception error: " << e.what();

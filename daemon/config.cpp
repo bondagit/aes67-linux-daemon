@@ -68,6 +68,10 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
   if (ip::address_v4::from_string(config.rtp_mcast_base_.c_str()).to_ulong() ==
       INADDR_NONE)
     config.rtp_mcast_base_ = "239.1.0.1";
+  if (ip::address_v4::from_string(config.sap_mcast_addr_.c_str()).to_ulong() ==
+      INADDR_NONE)
+    config.sap_mcast_addr_ = "224.2.127.254";
+  if (config.ptp_domain_ > 127)
   if (config.ptp_domain_ > 127)
     config.ptp_domain_ = 0;
 

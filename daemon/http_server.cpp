@@ -85,7 +85,7 @@ bool HttpServer::start() {
 
   svr_.set_base_dir(config_->get_http_base_dir().c_str());
 
-  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks)", [&](const Request& req, Response& res) {
+  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser)", [&](const Request& req, Response& res) {
     std::ifstream file(config_->get_http_base_dir() + "/index.html");
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -278,6 +278,13 @@ bool HttpServer::start() {
     } else {
       set_headers(res);
     }
+  });
+
+  /* get remote sources */
+  svr_.Get("/api/browse/sources", [this](const Request& req, Response& res) {
+    auto const sources = browser_->get_remote_sources();
+    set_headers(res, "application/json");
+    res.body = remote_sources_to_json(sources);
   });
 
   svr_.set_logger([](const Request& req, const Response& res) {

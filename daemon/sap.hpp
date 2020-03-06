@@ -24,10 +24,10 @@
 #include "log.hpp"
 
 using namespace boost::asio;
+using boost::asio::deadline_timer;
 
 class SAP {
  public:
-  constexpr static const char addr[] = "224.2.127.254";
   constexpr static uint16_t port = 9875;
   constexpr static uint16_t max_deletions = 3;
   constexpr static uint16_t bandwidth_limit = 4000;  // bits x xsec
@@ -35,72 +35,39 @@ class SAP {
   constexpr static uint16_t sap_header_len = 24;
   constexpr static uint16_t max_length = 4096;
 
-  SAP() { socket_.open(boost::asio::ip::udp::v4()); };
+  SAP() = delete;
+  SAP(const std::string& sap_mcast_addr);
 
-  bool set_multicast_interface(const std::string& interface_ip) {
-    ip::address_v4 local_interface = ip::address_v4::from_string(interface_ip);
-    ip::multicast::outbound_interface oi_option(local_interface);
-    boost::system::error_code ec;
-    socket_.set_option(oi_option, ec);
-    if (ec) {
-      BOOST_LOG_TRIVIAL(error)
-          << "sap::outbound_interface option " << ec.message();
-      return false;
-    }
-    ip::multicast::enable_loopback el_option(true);
-    socket_.set_option(el_option, ec);
-    if (ec) {
-      BOOST_LOG_TRIVIAL(error)
-          << "sap::enable_loopback option " << ec.message();
-      return false;
-    }
-    return true;
-  }
-
+  bool set_multicast_interface(const std::string& interface_ip);
   bool announcement(uint16_t msg_id_hash,
                     uint32_t addr,
-                    const std::string& sdp) {
-    BOOST_LOG_TRIVIAL(info) << "sap::announcement " << std::hex << msg_id_hash;
-    return send(true, msg_id_hash, htonl(addr), sdp);
-  }
-
-  bool deletion(uint16_t msg_id_hash, uint32_t addr, const std::string& sdp) {
-    BOOST_LOG_TRIVIAL(info) << "sap::deletetion " << std::hex << msg_id_hash;
-    return send(false, msg_id_hash, htonl(addr), sdp);
-  }
+                    const std::string& sdp);
+  bool deletion(uint16_t msg_id_hash, uint32_t addr, const std::string& sdp);
+  bool receive(bool& is_announce,
+               uint16_t& msg_id_hash,
+               uint32_t& addr,
+               std::string& sdp,
+               int tout_secs = 1);
 
  private:
+  static void handle_receive(const boost::system::error_code& ec,
+                             std::size_t length,
+                             boost::system::error_code* out_ec,
+                             std::size_t* out_length);
+  void check_deadline();
   bool send(bool is_announce,
             uint16_t msg_id_hash,
             uint32_t addr,
-            const std::string& sdp) {
-    if (sdp.length() > max_length - sap_header_len) {
-      BOOST_LOG_TRIVIAL(error) << "sap:: SDP is too long";
-      return false;
-    }
-    uint8_t buffer[max_length];
+            const std::string& sdp);
 
-    buffer[0] = is_announce ? 0x20 : 0x24;
-    buffer[1] = 0;
-    memcpy(buffer + 2, &msg_id_hash, 2);
-    memcpy(buffer + 4, &addr, 4);
-    memcpy(buffer + 8, "application/sdp", 16); /* include trailing 0 */
-    memcpy(buffer + sap_header_len, sdp.c_str(), sdp.length());
-
-    try {
-      socket_.send_to(
-          boost::asio::buffer(buffer, sap_header_len + sdp.length()), remote_);
-    } catch (boost::system::error_code& ec) {
-      BOOST_LOG_TRIVIAL(error) << "sap::send_to " << ec.message();
-      return false;
-    }
-    return true;
-  }
-
+  std::string addr_;
   io_service io_service_;
   ip::udp::socket socket_{io_service_};
-  ip::udp::endpoint remote_{
-      ip::udp::endpoint(ip::address::from_string(addr), port)};
+  ip::udp::endpoint remote_endpoint_{
+      ip::udp::endpoint(ip::address::from_string(addr_), port)};
+  ip::udp::endpoint listen_endpoint_{
+      ip::udp::endpoint(ip::address::from_string("0.0.0.0"), port)};
+  deadline_timer deadline_{io_service_};
 };
 
 #endif

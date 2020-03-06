@@ -22,6 +22,7 @@
 
 #include <list>
 #include "session_manager.hpp"
+#include "browser.hpp"
 
 /* JSON serializers */
 std::string config_to_json(const Config& config);
@@ -34,6 +35,8 @@ std::string sources_to_json(const std::list<StreamSource>& sources);
 std::string sinks_to_json(const std::list<StreamSink>& sinks);
 std::string streams_to_json(const std::list<StreamSource>& sources,
                             const std::list<StreamSink>& sinks);
+std::string remote_source_to_json(const RemoteSource& source);
+std::string remote_sources_to_json(const std::list<RemoteSource>& sources);
 
 /* JSON deserializers */
 Config json_to_config(std::istream& jstream, const Config& curCconfig);
