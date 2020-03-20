@@ -342,7 +342,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(syslog_server == "255.255.255.254:1234", "config as excepcted");
   BOOST_CHECK_MESSAGE(status_file == "", "config as excepcted");
   BOOST_CHECK_MESSAGE(interface_name == "lo", "config as excepcted");
-  BOOST_CHECK_MESSAGE(mac_addr == "01:00:5e:01:00:01", "config as excepcted");
+  BOOST_CHECK_MESSAGE(mac_addr == "00:00:00:00:00:00", "config as excepcted");
   BOOST_CHECK_MESSAGE(ip_addr == "127.0.0.1", "config as excepcted");
 }
 

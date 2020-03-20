@@ -56,7 +56,7 @@ std::pair<uint32_t, std::string> get_interface_ip(
 
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
     const std::string& interface_name) {
-  std::array<uint8_t, 6> mac{0x01, 0x00, 0x5e, 0x01, 0x00, 0x01};
+  std::array<uint8_t, 6> mac{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   int fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd < 0) {
     BOOST_LOG_TRIVIAL(error)
@@ -75,14 +75,12 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
   }
   close(fd);
 
-  if (*ifr.ifr_hwaddr.sa_data != 0) {
-    uint8_t* sa = reinterpret_cast<uint8_t*>(ifr.ifr_hwaddr.sa_data);
-    std::copy(sa, sa + 8, std::begin(mac));
-  }
+  uint8_t* sa = reinterpret_cast<uint8_t*>(ifr.ifr_hwaddr.sa_data);
+  std::copy(sa, sa + 8, std::begin(mac));
 
   char str_mac[18];
-  sprintf(str_mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac[0], mac[1], mac[2],
-          mac[3], mac[4], mac[5]);
+  sprintf(str_mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x",
+          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name << " MAC address "
                           << str_mac;*/
 

@@ -24,6 +24,7 @@
 #include <map>
 #include <shared_mutex>
 #include <thread>
+#include <list>
 
 #include "config.hpp"
 #include "driver_manager.hpp"

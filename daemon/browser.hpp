@@ -24,6 +24,7 @@
 #include <shared_mutex>
 #include <thread>
 #include <chrono>
+#include <list>
 
 #include "config.hpp"
 #include "sap.hpp"
@@ -36,7 +37,7 @@ struct RemoteSource {
   std::string name;
   std::string sdp;
   uint32_t last_seen; /* seconds from daemon startup */
-  uint32_t announce_period; /* period between annoucementis */
+  uint32_t announce_period; /* period between annoucements */
 };
 
 class Browser {
@@ -48,7 +49,6 @@ class Browser {
   Browser& operator=(const Browser&) = delete;
   virtual ~Browser(){ stop(); };
 
-  // session manager interface
   bool start() {
     if (!running_) {
       running_ = true;

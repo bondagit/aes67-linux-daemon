@@ -440,6 +440,19 @@ bool SessionManager::save_status() {
   return true;
 }
 
+static std::array<uint8_t, 6> get_mcast_mac_addr(uint32_t mcast_ip) {
+  // As defined by IANA, the most significant 24 bits of an IPv4 multicast
+  // MAC address are 0x01005E.  // Bit 25 is 0, and the other 23 bits are the
+  // least significant 23 bits of an IPv4 multicast address.
+  uint64_t mac_addr = 0x01005E000000 | (mcast_ip & 0x7FFFFF);
+  return { static_cast<uint8_t>(mac_addr >> 40),
+           static_cast<uint8_t>(mac_addr >> 32),
+           static_cast<uint8_t>(mac_addr >> 24),
+           static_cast<uint8_t>(mac_addr >> 16),
+           static_cast<uint8_t>(mac_addr >> 8),
+           static_cast<uint8_t>(mac_addr) };
+}
+
 std::error_code SessionManager::add_source(const StreamSource& source) {
   if (source.id > stream_id_max) {
     BOOST_LOG_TRIVIAL(error) << "session_manager:: source id "
@@ -472,8 +485,10 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_usDestPort = config_->get_rtp_port();
   info.stream.m_ui32SSRC = rand() % 65536; // use random number
   std::copy(source.map.begin(), source.map.end(), info.stream.m_aui32Routing);
-  std::copy(std::begin(config_->get_mac_addr()), std::end(config_->get_mac_addr()),
+  auto mcast_mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
+  std::copy(std::begin(mcast_mac_addr), std::end(mcast_mac_addr),
             info.stream.m_ui8DestMAC);
+
   info.refclk_ptp_traceable = source.refclk_ptp_traceable;
   info.enabled = source.enabled;
   info.io = source.io;
@@ -709,7 +724,9 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   // info.m_ui32SSRC = 65544;
   // info.m_ucDSCP = source.dscp; 
   // info.m_byTTL = source.ttl;
-  // info.m_ui8DestMAC
+  auto mcast_mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
+  std::copy(std::begin(mcast_mac_addr), std::end(mcast_mac_addr),
+            info.stream.m_ui8DestMAC);
 
   std::unique_lock sinks_lock(sinks_mutex_);
   auto const it = sinks_.find(sink.id);

@@ -21,7 +21,7 @@
 #include "browser.hpp"
 
 using namespace std::chrono;
-using second_t  = std::chrono::duration<double, std::ratio<1> >;
+using second_t = std::chrono::duration<double, std::ratio<1> >;
 
 std::shared_ptr<Browser> Browser::create(
     std::shared_ptr<Config> config) {
@@ -40,7 +40,7 @@ std::list<RemoteSource> Browser::get_remote_sources() {
   std::list<RemoteSource> sources_list;
   std::shared_lock sources_lock(sources_mutex_);
   for (auto const& [id, source] : sources_) {
-    sources_list.emplace_back(source);
+    sources_list.push_back(source);
   }
   return sources_list;
 }
@@ -121,7 +121,8 @@ bool Browser::worker() {
 
       std::unique_lock sources_lock(sources_mutex_);
       std::experimental::erase_if(sources_, [offset](auto entry) {
-        if ((offset - entry.second.last_seen) > (entry.second.announce_period * 10)) {
+        if ((offset - entry.second.last_seen) >
+              (entry.second.announce_period * 10)) {
           // remove from remote SAP sources
           BOOST_LOG_TRIVIAL(info)
                       << "browser:: SAP source " << entry.second.id << " timeout";
