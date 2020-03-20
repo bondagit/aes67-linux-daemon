@@ -129,7 +129,7 @@ class Config {
   std::string ip_str_;
   std::string config_filename_;
 
-  /* recofing needs daemon need_restart */
+  /* reconfig needs daemon restart */
   bool need_restart_{false};
 };
 

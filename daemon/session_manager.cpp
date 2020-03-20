@@ -444,13 +444,10 @@ static std::array<uint8_t, 6> get_mcast_mac_addr(uint32_t mcast_ip) {
   // As defined by IANA, the most significant 24 bits of an IPv4 multicast
   // MAC address are 0x01005E.  // Bit 25 is 0, and the other 23 bits are the
   // least significant 23 bits of an IPv4 multicast address.
-  uint64_t mac_addr = 0x01005E000000 | (mcast_ip & 0x7FFFFF);
-  return { static_cast<uint8_t>(mac_addr >> 40),
-           static_cast<uint8_t>(mac_addr >> 32),
-           static_cast<uint8_t>(mac_addr >> 24),
-           static_cast<uint8_t>(mac_addr >> 16),
-           static_cast<uint8_t>(mac_addr >> 8),
-           static_cast<uint8_t>(mac_addr) };
+  return { 0x01, 0x00, 0x5e,
+           static_cast<uint8_t>((mcast_ip >> 16) & 0x7F),
+           static_cast<uint8_t>(mcast_ip >> 8),
+           static_cast<uint8_t>(mcast_ip) };
 }
 
 std::error_code SessionManager::add_source(const StreamSource& source) {
