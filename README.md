@@ -1,5 +1,8 @@
 # AES67 Linux Daemon 
 
+AES67 Linux Daemon is a Linux implementation of AES67 standard used to distribute and synchronize real time audio over Ethernet.
+See https://en.wikipedia.org/wiki/AES67 for additional info.
+
 ## License ##
 
 AES67 daemon and the WebUI are licensed under [GNU GPL](https://www.gnu.org/licenses/gpl-3.0.en.html).
