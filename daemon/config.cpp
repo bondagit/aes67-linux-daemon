@@ -65,12 +65,15 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
     config.max_tic_frame_size_ = 1024;
   if (config.sample_rate_ == 0)
     config.sample_rate_ = 44100;
-  if (ip::address_v4::from_string(config.rtp_mcast_base_.c_str()).to_ulong() ==
-      INADDR_NONE)
+  boost::system::error_code ec;
+  ip::address_v4::from_string(config.rtp_mcast_base_.c_str(), ec);
+  if (!ec) {
     config.rtp_mcast_base_ = "239.1.0.1";
-  if (ip::address_v4::from_string(config.sap_mcast_addr_.c_str()).to_ulong() ==
-      INADDR_NONE)
+  }
+  ip::address_v4::from_string(config.sap_mcast_addr_.c_str(), ec);
+  if (!ec) {
     config.sap_mcast_addr_ = "224.2.127.254";
+  }
   if (config.ptp_domain_ > 127)
   if (config.ptp_domain_ > 127)
     config.ptp_domain_ = 0;

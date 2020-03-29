@@ -8,6 +8,7 @@ The daemon is responsible for:
 * provide an HTTP REST API for the daemon control and configuration
 * session handling and SDP parsing and creation
 * SAP discovery protocol and SAP browser
+* mDNS sources discovery (using Avahi) and SDP transfer via RTSP
 * IGMP handling for SAP and RTP sessions
 
 ## Configuration file ##
@@ -232,6 +233,9 @@ where:
 > JSON string specifying the IP address of the specified network device.
 > **_NOTE:_** This parameter is read-only and cannot be set. The server will determine the IP address of the network device at startup time and will monitor it periodically.
 
+> **mdns\_enabled**
+> JSON boolean specifying whether the mDNS discovery is enabled or disabled.
+
 ### JSON PTP Config<a name="ptp-config"></a> ###
 
 Example
@@ -383,7 +387,8 @@ where:
 > JSON boolean specifying whether the source SDP file is fetched from the HTTP URL specified in the **source** parameter or the SDP in the **sdp** parameter is used.
 
 > **source**
-> JSON string specifying the HTTP URL of the source SDP file. This parameter is mandatory if **use\_sdp** is false.
+> JSON string specifying the URL of the source SDP file. At present HTTP and RTSP protocols are supported.
+> This parameter is mandatory if **use\_sdp** is false.
 
 > **sdp**
 > JSON string specifying the SDP of the source. This parameter is mandatory if **use\_sdp** is true.

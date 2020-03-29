@@ -68,7 +68,7 @@ class RemoteSourceEntry extends Component {
         <td> <label>{this.state.rtp_address}</label> </td>
         <td align='center'> <label>{this.state.port}</label> </td>
         <td align='center'> <label>{this.props.last_seen}</label> </td>
-        <td align='center'> <label>{this.props.period}</label> </td>
+        <td align='center'> <label>{this.props.source=='SAP' ? this.props.period : 'N/A'}</label> </td>
         <td> <span className='pointer-area' onClick={this.handleInfoClick}> <img width='20' height='20' src='/info.png' alt=''/> </span> </td>
       </tr>
     );
@@ -96,7 +96,7 @@ class RemoteSourceList extends Component {
               <th>Name</th>
               <th>RTP Address</th>
               <th>Port</th>
-              <th>Last seen</th>
+              <th>Seen</th>
               <th>Period</th>
             </tr>
           : <tr>
@@ -184,7 +184,7 @@ class RemoteSources extends Component {
           closeInfo={this.closeInfo}
           infoTitle={this.state.infoTitle} 
 	  id={this.state.source.id}
-          address={this.state.source.address}
+	  source={this.state.source.source}
 	  name={this.state.source.name}
 	  sdp={this.state.source.sdp} />
            : undefined }

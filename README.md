@@ -8,6 +8,7 @@ The daemon uses the following open source:
 
 * **Merging Technologies ALSA RAVENNA/AES67 Driver** licensed under [GNU GPL](https://www.gnu.org/licenses/gpl-3.0.en.html).
 * **cpp-httplib** licensed under the [MIT License](https://github.com/yhirose/cpp-httplib/blob/master/LICENSE)
+* **Avahi common & client libraries** licensed under the [LGPL License](https://github.com/lathiat/avahi/blob/master/LICENSE)
 * **Boost libraries** licensed under the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt)
 
 ## Repository content ##
@@ -21,6 +22,7 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * session handling and SDP parsing and creation
 * HTTP REST API for control and configuration
 * SAP discovery protocol and SAP browser
+* mDNS sources discovery (using Avahi) and SDP transfer via RTSP
 * IGMP handling for SAP, RTP and PTP multicast traffic
 
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](daemon/tests) subdirectory and run *./daemon-test -l all*    
@@ -65,6 +67,7 @@ The daemon and the demo have been tested with **Ubuntu 18.04** distro on **x86/A
 * node version >= 8.10.0
 * npm version >= 3.5.2
 * boost libraries version >= 1.65.1
+* Avahi service discovery (if enabled) >= 0.7
 
 The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing on ARMv7.
 See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.

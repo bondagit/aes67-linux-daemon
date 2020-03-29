@@ -1,5 +1,5 @@
 //
-//  http_server.hpp
+//  rtsp_include.hpp
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -17,33 +17,28 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef _HTTP_SERVER_HPP_
-#define _HTTP_SERVER_HPP_
+#ifndef _RTSP_HPP_
+#define _RTSP_HPP_
 
-#include <httplib.h>
+struct RTSPSSource {
+  std::string id;
+  std::string source;
+  std::string address;
+  std::string sdp;
+};
 
-#include "config.hpp"
-#include "session_manager.hpp"
-#include "browser.hpp"
-
-class HttpServer {
+class RTSPClient {
  public:
-  HttpServer() = delete;
-  HttpServer(std::shared_ptr<SessionManager> session_manager,
-             std::shared_ptr<Browser> browser,
-             std::shared_ptr<Config> config)
-      : session_manager_(session_manager),
-        browser_(browser),
-        config_(config) {};
-  bool init();
-  bool terminate();
+  constexpr static uint16_t max_body_length = 4096;  // byte
+  constexpr static uint16_t client_timeout = 10;     // sec
+  constexpr static const char dft_port[] = "554";
 
- private:
-  std::shared_ptr<SessionManager> session_manager_;
-  std::shared_ptr<Browser> browser_;
-  std::shared_ptr<Config> config_;
-  httplib::Server svr_;
-  std::future<bool> res_;
+  static std::pair<bool, RTSPSSource> describe(
+      const std::string& path,
+      const std::string& address,
+      const std::string& port = dft_port);
+
+  inline static std::atomic<uint16_t> seq_number;
 };
 
 #endif

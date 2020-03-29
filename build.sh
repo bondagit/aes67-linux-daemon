@@ -40,7 +40,7 @@ cd ..
 
 cd daemon
 echo "Building aes67-daemon ..."
-cmake .
+cmake -DWITH_AVAHI=ON .
 make
 cd ..
 

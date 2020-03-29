@@ -23,6 +23,7 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/algorithm/string.hpp>
 #include <experimental/map>
 #include <iostream>
 #include <chrono>
@@ -32,6 +33,8 @@
 #include "json.hpp"
 #include "log.hpp"
 #include "session_manager.hpp"
+#include "utils.hpp"
+#include "rtsp_client.hpp"
 
 
 static uint8_t get_codec_word_lenght(const std::string& codec) {
@@ -122,6 +125,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
     std::stringstream ssstrem(sdp);
     std::string line;
     while (getline(ssstrem, line, '\n')) {
+      boost::trim(line);
       ++num;
       if (line[1] != '=') {
         BOOST_LOG_TRIVIAL(error)
@@ -289,7 +293,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
     }
   } catch (...) {
     BOOST_LOG_TRIVIAL(fatal) << "session_manager:: invalid SDP at line " << num
-                             << ", cannot perform number convesrion";
+                             << ", cannot perform number conversion";
     return false;
   }
 
@@ -659,45 +663,55 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
       return DaemonErrc::invalid_url;
     }
 
-    if (!boost::iequals(protocol, "http")) {
-      BOOST_LOG_TRIVIAL(error)
-          << "session_manager:: unsupported protocol in URL " << sink.source;
-      return DaemonErrc::invalid_url;
-    }
-
-    httplib::Client cli(host.c_str(),
-                        !atoi(port.c_str()) ? 80 : atoi(port.c_str()));
-    cli.set_timeout_sec(10);
-    auto res = cli.Get(path.c_str());
-    if (!res) {
-      BOOST_LOG_TRIVIAL(error)
-          << "session_manager:: cannot retrieve SDP from URL " << sink.source;
-      return DaemonErrc::cannot_retrieve_sdp;
-    }
-
-    if (res->status != 200) {
-      BOOST_LOG_TRIVIAL(error)
-          << "session_manager:: cannot retrieve SDP from URL " << sink.source
-          << " server reply " << res->status;
-      return DaemonErrc::cannot_retrieve_sdp;
+    std::string sdp;
+    if (boost::iequals(protocol, "http")) {
+      httplib::Client cli(host.c_str(),
+                          !atoi(port.c_str()) ? 80 : atoi(port.c_str()));
+      cli.set_timeout_sec(10);
+      auto res = cli.Get(path.c_str());
+      if (!res) {
+        BOOST_LOG_TRIVIAL(error)
+            << "session_manager:: annot retrieve SDP from URL " << sink.source;
+        return DaemonErrc::cannot_retrieve_sdp;
+      }
+      if (res->status != 200) {
+        BOOST_LOG_TRIVIAL(error)
+            << "session_manager:: cannot retrieve SDP from URL " << sink.source
+            << " server reply " << res->status;
+        return DaemonErrc::cannot_retrieve_sdp;
+      }
+      sdp = std::move(res->body);
+    } else if (boost::iequals(protocol, "rtsp")) {
+      auto res = RTSPClient::describe(path, host, port);
+      if (!res.first) {
+        BOOST_LOG_TRIVIAL(error)
+            << "session_manager:: cannot retrieve SDP from URL " << sink.source;
+        return DaemonErrc::cannot_retrieve_sdp;
+      }
+      sdp = std::move(res.second.sdp);
+    } else {
+        BOOST_LOG_TRIVIAL(error)
+            << "session_manager:: unsupported protocol in URL " << sink.source;
+        return DaemonErrc::invalid_url;
     }
 
     BOOST_LOG_TRIVIAL(info)
         << "session_manager:: SDP from URL " << sink.source << " :\n"
-        << res->body;
+        << sdp;
 
-    if (!parse_sdp(res->body, info)) {
+    if (!parse_sdp(sdp, info)) {
       return DaemonErrc::cannot_parse_sdp;
     }
 
-    info.sink_sdp = res->body;
+    info.sink_sdp = std::move(sdp);
   } else {
-    BOOST_LOG_TRIVIAL(info) << "session_manager:: using SDP " << sink.sdp;
+    BOOST_LOG_TRIVIAL(info) << "session_manager:: using SDP "
+                            << std::endl << sink.sdp;
     if (!parse_sdp(sink.sdp, info)) {
       return DaemonErrc::cannot_parse_sdp;
     }
 
-    info.sink_sdp = sink.sdp;
+    info.sink_sdp = std::move(sink.sdp);
   }
   info.sink_source = sink.source;
   info.sink_use_sdp = true; // save back and use with SDP file
@@ -839,21 +853,6 @@ void SessionManager::get_ptp_config(PTPConfig& config) const {
 void SessionManager::get_ptp_status(PTPStatus& status) const {
   std::shared_lock ptp_lock(ptp_mutex_);
   status = ptp_status_;
-}
-
-static uint16_t crc16(const uint8_t* p, size_t len) {
-  uint8_t x;
-  uint16_t crc = 0xFFFF;
-
-  while (len--) {
-    x = crc >> 8 ^ *p++;
-    x ^= x >> 4;
-    crc = (crc << 8) ^
-          (static_cast<uint16_t>(x << 12)) ^
-          (static_cast<uint16_t>(x << 5)) ^ 
-          (static_cast<uint16_t>(x));
-  }
-  return crc;
 }
 
 size_t SessionManager::process_sap() {

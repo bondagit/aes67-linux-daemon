@@ -44,6 +44,8 @@ class DriverHandler {
 
   virtual bool init(const Config& config);
   virtual bool terminate();
+
+ protected:
   virtual void send_command(enum MT_ALSA_msg_id id,
                             size_t size = 0,
                             const uint8_t* data = nullptr);

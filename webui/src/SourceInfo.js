@@ -38,6 +38,7 @@ const infoCustomStyles = {
 class SourceInfo extends Component {
   static propTypes = {
     id: PropTypes.string.isRequired,
+    source: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     sdp: PropTypes.string.isRequired,
     closeInfo: PropTypes.func.isRequired,
@@ -71,6 +72,10 @@ class SourceInfo extends Component {
             <tr>
               <th align="left"> <label>ID</label> </th>
               <th align="left"> <input value={this.props.id} readOnly/> </th>
+            </tr>
+            <tr>
+              <th align="left"> <label>Source</label> </th>
+              <th align="left"> <input value={this.props.source} readOnly/> </th>
             </tr>
             <tr>
               <th align="left"> <label>Name</label> </th>

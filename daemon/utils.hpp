@@ -1,5 +1,5 @@
 //
-//  http_server.hpp
+//  utils.hpp
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -17,33 +17,13 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef _HTTP_SERVER_HPP_
-#define _HTTP_SERVER_HPP_
+#ifndef _UTILS_HPP_
+#define _UTILS_HPP_
 
-#include <httplib.h>
+#include <stdint.h>
 
-#include "config.hpp"
-#include "session_manager.hpp"
-#include "browser.hpp"
+#include <cstddef>
 
-class HttpServer {
- public:
-  HttpServer() = delete;
-  HttpServer(std::shared_ptr<SessionManager> session_manager,
-             std::shared_ptr<Browser> browser,
-             std::shared_ptr<Config> config)
-      : session_manager_(session_manager),
-        browser_(browser),
-        config_(config) {};
-  bool init();
-  bool terminate();
-
- private:
-  std::shared_ptr<SessionManager> session_manager_;
-  std::shared_ptr<Browser> browser_;
-  std::shared_ptr<Config> config_;
-  httplib::Server svr_;
-  std::future<bool> res_;
-};
+uint16_t crc16(const uint8_t* p, size_t len);
 
 #endif

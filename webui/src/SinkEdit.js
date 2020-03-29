@@ -51,6 +51,7 @@ class SinkEdit extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      sources: [],
       id: this.props.sink.id,
       name: this.props.sink.name,
       nameErr: false,
@@ -75,10 +76,20 @@ class SinkEdit extends Component {
     this.onChangeChannels = this.onChangeChannels.bind(this);
     this.onChangeChannelsMap = this.onChangeChannelsMap.bind(this);
     this.inputIsValid = this.inputIsValid.bind(this);
+    this.fetchRemoteSources = this.fetchRemoteSources.bind(this);
+    this.onChangeRemoteSourceSDP = this.onChangeRemoteSourceSDP.bind(this);
+  }
+
+  fetchRemoteSources() {
+    RestAPI.getRemoteSources()
+      .then(response => response.json())
+      .then(
+        data => this.setState( { sources: data.remote_sources }))
   }
 
   componentDidMount() {
     Modal.setAppElement('body');
+    this.fetchRemoteSources();
   }
 
   addSink(message) {
@@ -130,6 +141,12 @@ class SinkEdit extends Component {
     this.setState({ map: map });
   }
 
+  onChangeRemoteSourceSDP(e) {
+    if (e.target.value) {
+      this.setState({ sdp: e.target.value });
+    }
+  }
+
   inputIsValid() {
     return !this.state.nameErr && 
       !this.state.sourceErr && 
@@ -160,11 +177,22 @@ class SinkEdit extends Component {
               <th align="left"> <input type="checkbox" defaultChecked={this.state.useSdp} onChange={e => this.setState({useSdp: e.target.checked})} /> </th>
             </tr>
             <tr>
-              <th align="left"> <label>Source URL</label> </th>
+              <th align="left"> <font color={this.state.useSdp ? 'grey' : 'black'}>Source URL</font> </th>
               <th align="left"> <input type='url' size="30" value={this.state.source} onChange={e => this.setState({source: e.target.value, sourceErr: !e.currentTarget.checkValidity()})} disabled={this.state.useSdp ? true : undefined} required/> </th>
             </tr>
             <tr>
-              <th align="left"> <font color={this.state.source ? 'grey' : 'black'}>SDP</font> </th>
+              <th align="left"> <font color={!this.state.useSdp ? 'grey' : 'black'}>Remote Source SDP</font> </th>
+              <th align="left">
+                <select value={this.state.sdp} onChange={this.onChangeRemoteSourceSDP} disabled={this.state.useSdp ? undefined : true}>
+                  <option key='' value=''> -- select a remote source SDP -- </option>
+                  { 
+                    this.state.sources.map((v) => <option key={v.id} value={v.sdp}>{v.source + ', ' + v.name}</option>)
+		  }
+                </select>
+              </th>
+            </tr>
+            <tr>
+              <th align="left"> <font color={!this.state.useSdp ? 'grey' : 'black'}>SDP</font> </th>
               <th align="left"> <textarea rows='15' cols='55' value={this.state.sdp} onChange={e => this.setState({sdp: e.target.value})} disabled={this.state.useSdp ? undefined : true} required/> </th>
             </tr>
             <tr>

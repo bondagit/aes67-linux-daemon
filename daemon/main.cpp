@@ -111,22 +111,22 @@ int main(int argc, char* argv[]) {
 
       /* start session manager */
       auto session_manager = SessionManager::create(driver, config);
-      if (session_manager == nullptr || !session_manager->start()) {
+      if (session_manager == nullptr || !session_manager->init()) {
         throw std::runtime_error(
-          std::string("SessionManager:: start failed"));
+          std::string("SessionManager:: init failed"));
       }
 
-     /* start browser */
+      /* start browser */
       auto browser = Browser::create(config);
-      if (browser == nullptr || !browser->start()) {
+      if (browser == nullptr || !browser->init()) {
         throw std::runtime_error(
-          std::string("Browser:: start failed"));
+          std::string("Browser:: init failed"));
       }
  
       /* start http server */
       HttpServer http_server(session_manager, browser, config);
-      if (!http_server.start()) {
-        throw std::runtime_error(std::string("HttpServer:: start failed"));
+      if (!http_server.init()) {
+        throw std::runtime_error(std::string("HttpServer:: init failed"));
       }
 
       /* load session status from file */
@@ -154,21 +154,21 @@ int main(int argc, char* argv[]) {
       session_manager->save_status();
 
       /* stop http server */
-      if (!http_server.stop()) {
+      if (!http_server.terminate()) {
         throw std::runtime_error(
-            std::string("HttpServer:: stop failed"));
+            std::string("HttpServer:: terminate failed"));
       }
 
       /* stop browser */
-      if (!browser->stop()) {
+      if (!browser->terminate()) {
         throw std::runtime_error(
-            std::string("Browser:: stop failed"));
+            std::string("Browser:: terminate failed"));
       }
 
       /* stop session manager */
-      if (!session_manager->stop()) {
+      if (!session_manager->terminate()) {
         throw std::runtime_error(
-            std::string("SessionManager:: stop failed"));
+            std::string("SessionManager:: terminate failed"));
       }
 
       /* stop driver manager */

@@ -264,6 +264,7 @@ class Sources extends Component {
 	  isInfo={this.state.isInfo}
 	  id={this.state.source.id.toString()}
 	  name={this.state.source.name}
+	  source='local'
 	  sdp={this.state.sdp} />
            : undefined }
        { this.state.editIsOpen ?

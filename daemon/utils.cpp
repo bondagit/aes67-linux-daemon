@@ -1,5 +1,5 @@
 //
-//  http_server.hpp
+//  utils.cpp
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -16,34 +16,19 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+//
 
-#ifndef _HTTP_SERVER_HPP_
-#define _HTTP_SERVER_HPP_
+#include "utils.hpp"
 
-#include <httplib.h>
+uint16_t crc16(const uint8_t* p, size_t len) {
+  uint8_t x;
+  uint16_t crc = 0xFFFF;
 
-#include "config.hpp"
-#include "session_manager.hpp"
-#include "browser.hpp"
-
-class HttpServer {
- public:
-  HttpServer() = delete;
-  HttpServer(std::shared_ptr<SessionManager> session_manager,
-             std::shared_ptr<Browser> browser,
-             std::shared_ptr<Config> config)
-      : session_manager_(session_manager),
-        browser_(browser),
-        config_(config) {};
-  bool init();
-  bool terminate();
-
- private:
-  std::shared_ptr<SessionManager> session_manager_;
-  std::shared_ptr<Browser> browser_;
-  std::shared_ptr<Config> config_;
-  httplib::Server svr_;
-  std::future<bool> res_;
-};
-
-#endif
+  while (len--) {
+    x = crc >> 8 ^ *p++;
+    x ^= x >> 4;
+    crc = (crc << 8) ^ (static_cast<uint16_t>(x << 12)) ^
+          (static_cast<uint16_t>(x << 5)) ^ (static_cast<uint16_t>(x));
+  }
+  return crc;
+}

@@ -14,5 +14,6 @@ sudo apt-get install -y libboost-all-dev
 sudo apt-get install -y valgrind
 sudo apt-get install -y linux-sound-base alsa-base alsa-utils
 sudo apt-get install -y linuxptp
+sudo apt-get install -y libavahi-client-dev
 sudo apt install -y linux-headers-$(uname -r)
 

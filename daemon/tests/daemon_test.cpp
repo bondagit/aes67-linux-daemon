@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(tic_frame_size_at_1fs == 192, "config as excepcted");
   BOOST_CHECK_MESSAGE(max_tic_frame_size == 1024, "config as excepcted");
   BOOST_CHECK_MESSAGE(sample_rate == 44100, "config as excepcted");
-  BOOST_CHECK_MESSAGE(rtp_mcast_base == "239.2.0.1", "config as excepcted");
+  BOOST_CHECK_MESSAGE(rtp_mcast_base == "239.1.0.1", "config as excepcted");
   BOOST_CHECK_MESSAGE(rtp_port == 6004, "config as excepcted");
   BOOST_CHECK_MESSAGE(ptp_domain == 0, "config as excepcted");
   BOOST_CHECK_MESSAGE(ptp_dscp == 46, "config as excepcted");

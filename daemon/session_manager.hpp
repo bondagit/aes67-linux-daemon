@@ -101,10 +101,10 @@ class SessionManager {
   SessionManager() = delete;
   SessionManager(const SessionManager&) = delete;
   SessionManager& operator=(const SessionManager&) = delete;
-  virtual ~SessionManager(){ stop(); };
+  virtual ~SessionManager(){ terminate(); };
 
   // session manager interface
-  bool start() {
+  bool init() {
     if (!running_) {
       running_ = true;
       res_ = std::async(std::launch::async, &SessionManager::worker, this);
@@ -112,7 +112,7 @@ class SessionManager {
     return true;
   }
 
-  bool stop() {
+  bool terminate() {
     if (running_) {
       running_ = false;
       auto ret = res_.get();
