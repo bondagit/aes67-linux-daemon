@@ -41,6 +41,7 @@ With the WebUI a user can do the following operations:
 * edit PTP clock slave configuration and monitor PTP slave status
 * add and edit RTP Sources
 * add, edit and monitor RTP Sinks
+* browser remote SAP and mDNS RTP sources
 
 ### [3rdparty](3rdparty) directory ###
 
