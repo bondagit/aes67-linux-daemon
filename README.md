@@ -1,6 +1,6 @@
 # AES67 Linux Daemon 
 
-AES67 Linux Daemon is a Linux implementation of AES67 standard used to distribute and synchronize real time audio over Ethernet.
+AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.
 See https://en.wikipedia.org/wiki/AES67 for additional info.
 
 ## License ##
@@ -41,6 +41,7 @@ With the WebUI a user can do the following operations:
 * edit PTP clock slave configuration and monitor PTP slave status
 * add and edit RTP Sources
 * add, edit and monitor RTP Sinks
+* browser remote SAP and mDNS RTP sources
 
 ### [3rdparty](3rdparty) directory ###
 
