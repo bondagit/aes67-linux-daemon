@@ -67,11 +67,11 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
     config.sample_rate_ = 44100;
   boost::system::error_code ec;
   ip::address_v4::from_string(config.rtp_mcast_base_.c_str(), ec);
-  if (!ec) {
+  if (ec) {
     config.rtp_mcast_base_ = "239.1.0.1";
   }
   ip::address_v4::from_string(config.sap_mcast_addr_.c_str(), ec);
-  if (!ec) {
+  if (ec) {
     config.sap_mcast_addr_ = "224.2.127.254";
   }
   if (config.ptp_domain_ > 127)
