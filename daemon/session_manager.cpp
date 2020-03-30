@@ -499,11 +499,12 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   auto const it = sources_.find(source.id);
   if (it != sources_.end()) {
     BOOST_LOG_TRIVIAL(info) << "session_manager:: source id "
-                             << std::to_string(source.id) << " is in use, updating";
-    const auto& info = (*it).second;
+                        << std::to_string(source.id) << " is in use, updating";
     // remove previous stream if enabled
-    if (info.enabled) {
-      (void)driver_->remove_rtp_stream(info.handle);
+    if ((*it).second.enabled) {
+      (void)driver_->remove_rtp_stream((*it).second.handle);
+      igmp_.leave(config_->get_ip_addr_str(),
+           ip::address_v4((*it).second.stream.m_ui32DestIP).to_string());
     }
   }
 
@@ -514,17 +515,11 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
       if (it != sources_.end()) {
         /* update operation failed */
         sources_.erase(source.id);
-        igmp_.leave(config_->get_ip_addr_str(),
-                    ip::address_v4(info.stream.m_ui32DestIP).to_string());
       }
       return ret;
     }
-
-    if (it == sources_.end()) {
-      /* if add join multicast */
-      igmp_.join(config_->get_ip_addr_str(),
-                 ip::address_v4(info.stream.m_ui32DestIP).to_string());
-    }
+    igmp_.join(config_->get_ip_addr_str(),
+               ip::address_v4(info.stream.m_ui32DestIP).to_string());
   }
  
   // update source map 
@@ -743,10 +738,11 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   auto const it = sinks_.find(sink.id);
   if (it != sinks_.end()) {
     BOOST_LOG_TRIVIAL(info) << "session_manager:: sink id "
-                             << std::to_string(sink.id) << " is in use, updating";
+                          << std::to_string(sink.id) << " is in use, updating";
     // remove previous stream
-    const auto& info = (*it).second;
-    (void)driver_->remove_rtp_stream(info.handle);
+    (void)driver_->remove_rtp_stream((*it).second.handle);
+    igmp_.leave(config_->get_ip_addr_str(),
+           ip::address_v4((*it).second.stream.m_ui32DestIP).to_string());
   }
 
   auto ret = driver_->add_rtp_stream(info.stream, info.handle);
@@ -754,17 +750,12 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     if (it != sinks_.end()) {
       /* update operation failed */
       sinks_.erase(sink.id);
-      igmp_.leave(config_->get_ip_addr_str(),
-                  ip::address_v4(info.stream.m_ui32DestIP).to_string());
     }
     return ret;
   }
 
-  if (it == sinks_.end()) {
-    /* if add join multicast */
-    igmp_.join(config_->get_ip_addr_str(),
-               ip::address_v4(info.stream.m_ui32DestIP).to_string());
-  }
+  igmp_.join(config_->get_ip_addr_str(),
+             ip::address_v4(info.stream.m_ui32DestIP).to_string());
 
   // update sinks map
   sinks_[sink.id] = info;
