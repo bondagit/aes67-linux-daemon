@@ -186,7 +186,7 @@ class SinkEdit extends Component {
                 <select value={this.state.sdp} onChange={this.onChangeRemoteSourceSDP} disabled={this.state.useSdp ? undefined : true}>
                   <option key='' value=''> -- select a remote source SDP -- </option>
                   { 
-                    this.state.sources.map((v) => <option key={v.id} value={v.sdp}>{v.source + ', ' + v.name}</option>)
+                    this.state.sources.map((v) => <option key={v.id} value={v.sdp}>{v.source + ' from ' + v.address + ' - ' + v.name}</option>)
 		  }
                 </select>
               </th>
