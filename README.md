@@ -1,7 +1,24 @@
 # AES67 Linux Daemon 
 
-AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.
-See https://en.wikipedia.org/wiki/AES67 for additional info.
+AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.    
+See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) for additional info.    
+
+The daemon uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handles PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.     
+
+The **ALSA AES67 Driver** implements a virtual ALSA audio device that can be configured using _Sources_ and _Sinks_ and it's clocked using the PTP clock.    
+A _Source_ reads audio samples from the ALSA playback device and sends RTP packets to a configured multicast address.    
+A _Sink_ receives RTP packets from a specific multicast address and writes them in the ALSA capture device.    
+
+A user can use the ALSA capture device to receive synchronized incoming audio samples from an RTP stream and the ALSA playback device to send synchronized audio samples to an RTP stream.    
+The binding between a _Source_ and the ALSA playback device is determined by the channels used during the playback and the configured _Source_ channels map. The binding between a _Sink_ and the ALSA capture device is determined by the channels used while recoding and the configured _Sink_ channels map.    
+
+The driver handles the PTP and RTP packets processing and acts as a PTP clock slave to synchronize with a master clock on the specified PTP domain.  All the configured _Sources_ and _Sinks_ are synchronized using the same PTP clock.    
+
+The daemon communicates with the driver for control, configuration and status monitoring only by using _netlink_ sockets.    
+The daemon implements a REST interface to configure and monitor the _Sources_, the _Sinks_ and PTP slave. See [README](daemon/README.md) for additional info.    
+The daemon also implements SAP for sources annoncements and discovery and mDNS sources discovery and SDP transfer via RTSP.    
+
+A WebUI is provided to allow daemon and driver configuration and monitoring. The WebUI uses the daemon REST API and exposes all the supported configuration paramaters for the daemon, the PTP slave clock, the _Sources_ and the _Sinks_. The WebUI can also be used to monitor the PTP slave status and the _Sinks_ status and to browse the remote SAP and mDNS sources.
 
 ## License ##
 
