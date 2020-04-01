@@ -1,7 +1,26 @@
 # AES67 Linux Daemon 
 
-AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.
-See https://en.wikipedia.org/wiki/AES67 for additional info.
+AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.    
+See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) for additional info.    
+
+# Introduction
+
+The daemon is a Linux process that uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handles PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.     
+
+The **ALSA AES67 Driver** implements a virtual ALSA audio device that can be configured using _Sources_ and _Sinks_ and it's clocked using the PTP clock.    
+A _Source_ reads audio samples from the ALSA playback device and sends RTP packets to a configured multicast address.    
+A _Sink_ receives RTP packets from a specific multicast address and writes them in the ALSA capture device.    
+
+A user can use the ALSA capture device to receive synchronized incoming audio samples from an RTP stream and the ALSA playback device to send synchronized audio samples to an RTP stream.    
+The binding between a _Source_ and the ALSA playback device is determined by the channels used during the playback and the configured _Source_ channels map. The binding between a _Sink_ and the ALSA capture device is determined by the channels used while recoding and the configured _Sink_ channels map.    
+
+The driver handles the PTP and RTP packets processing and acts as a PTP clock slave to synchronize with a master clock on the specified PTP domain.  All the configured _Sources_ and _Sinks_ are synchronized using the same PTP clock.    
+
+The daemon communicates with the driver for control, configuration and status monitoring only by using _netlink_ sockets.    
+The daemon implements a REST interface to configure and monitor the _Sources_, the _Sinks_ and PTP slave. See [README](daemon/README.md) for additional info.    
+The daemon also implements SAP for sources annoncements and discovery and mDNS sources discovery and SDP transfer via RTSP.    
+
+A WebUI is provided to allow daemon and driver configuration and monitoring. The WebUI uses the daemon REST API and exposes all the supported configuration paramaters for the daemon, the PTP slave clock, the _Sources_ and the _Sinks_. The WebUI can also be used to monitor the PTP slave status and the _Sinks_ status and to browse the remote SAP and mDNS sources.
 
 ## License ##
 
@@ -113,9 +132,13 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
   * set default sample rate to 48Khz: *"sample\_rate": 48000*
 * verify that PulseAdio is not running. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module with:     
-    *sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko*
+
+      sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko*
+
 * run the daemon using the new configuration file:     
-    *aes67-daemon -c daemon.conf*
+         
+      aes67-daemon -c daemon.conf
+
 * open the Daemon WebUi *http://[address:8080]* and do the following:
   * go to Config tab and verify that the sample rate is set to 48KHz
   * go to Sources tab and add a new Source using the plus button, set Codec to L24 and press the Submit button
@@ -125,14 +148,31 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
   * select the "Add SDP file manually" checkbox and copy the previous Source SDP into the SDP field
   * press the Submit button
 * return to the daemon WebUI, click on the PTP tab and wait for the "PTP Status" to report "locked"
-* open a shell on the Linux host and start the playback on the ravenna ALSA device. For example to playback a test sound use: *speaker-test -D plughw:RAVENNA -r 48000 -c 2 -t sine*
+* open a shell on the Linux host and start the playback on the ravenna ALSA device. For example to playback a test sound use:
+
+          speaker-test -D plughw:RAVENNA -r 48000 -c 2 -t sine
 
 ## Notes ##
 <a name="notes"></a>
 
 * All the scripts in this repository are provided as a reference to help setting up the system and run a simple demo.    
   They have been tested on **Ubuntu 18.04** and **19.10** distros only.    
-* PulseAudio can create instability problems.    
-Before running the daemon verify that PulseAudio is not running with  *ps ax | grep pulseaudio*     
-In case it's running try to execute the script *daemon/scripts/disable_pulseaudio.sh* to stop it. If after this the process is still alive consider renaming the executable with *sudo mv /usr/bin/pulseaudio /usr/bin/_pulseaudio* and reboot the system.
+* **PulseAudio** can create instability problems.    
+Before running the daemon verify that PulseAudio is not running with:  
 
+      ps ax | grep pulseaudio
+
+  In case it's running try to execute the following script to stop it:
+
+      daemon/scripts/disable_pulseaudio.sh
+
+  If after this the process is still alive considering one of these two solutions and reboot the system afterwards:    
+  * Uninstall it completely with:    
+
+        sudo apt-get remove pulseaudio
+
+  * Disable it by renaming the executable with:    
+    
+         sudo mv /usr/bin/pulseaudio /usr/bin/_pulseaudio
+
+  Other methods to disable PulseAudio may fail and just killing it is not enough since it gets immediately re-spawned.
