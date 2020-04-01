@@ -18,6 +18,7 @@
 //
 
 #define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096 //max for SDP file 
+#define CPPHTTPLIB_READ_TIMEOUT_SECOND 30
 #include <httplib.h>
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
@@ -100,15 +101,19 @@ struct Client {
     socket_.set_option(
         multicast::join_group(address::from_string(g_sap_address).to_v4(),
                               address::from_string(g_daemon_address).to_v4()));
+
+    cli_.set_timeout_sec(30);
   }
 
   bool is_alive() {
     auto res = cli_.Get("/");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return (res->status == 200);
   }
 
   std::pair<bool, std::string> get_config() {
     auto res = cli_.Get("/api/config");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
@@ -116,16 +121,19 @@ struct Client {
     std::ostringstream os;
     os << "{ \"domain\": " << domain << ", \"dscp\": " << dscp << " }";
     auto res = cli_.Post("/api/ptp/config", os.str(), "application/json");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return (res->status == 200);
   }
 
   std::pair<bool, std::string> get_ptp_status() {
     auto res = cli_.Get("/api/ptp/status");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
   std::pair<bool, std::string> get_ptp_config() {
     auto res = cli_.Get("/api/ptp/config");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
@@ -146,42 +154,49 @@ struct Client {
     )";
     std::string url = std::string("/api/source/") + std::to_string(id);
     auto res = cli_.Put(url.c_str(), json, "application/json");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return (res->status == 200);
   }
 
   std::pair<bool, std::string> get_source_sdp(int id) {
     std::string url = std::string("/api/source/sdp/") + std::to_string(id);
     auto res = cli_.Get(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
   std::pair<bool, std::string> get_sink_status(int id) {
     std::string url = std::string("/api/sink/status/") + std::to_string(id);
     auto res = cli_.Get(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
   std::pair<bool, std::string> get_streams() {
     std::string url = std::string("/api/streams");
     auto res = cli_.Get(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
   std::pair<bool, std::string> get_sources() {
     std::string url = std::string("/api/sources");
     auto res = cli_.Get(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
   std::pair<bool, std::string> get_sinks() {
     std::string url = std::string("/api/sinks");
     auto res = cli_.Get(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
   bool remove_source(int id) {
     std::string url = std::string("/api/source/") + std::to_string(id);
     auto res = cli_.Delete(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return (res->status == 200);
   }
 
@@ -201,6 +216,7 @@ struct Client {
 
     std::string url = std::string("/api/sink/") + std::to_string(id);
     auto res = cli_.Put(url.c_str(), json, "application/json");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return (res->status == 200);
   }
 
@@ -222,12 +238,14 @@ struct Client {
         std::string("/api/source/sdp/") + std::to_string(id) + "\"\n}";
     std::string url = std::string("/api/sink/") + std::to_string(id);
     auto res = cli_.Put(url.c_str(), json, "application/json");
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return (res->status == 200);
   }
 
   bool remove_sink(int id) {
     std::string url = std::string("/api/sink/") + std::to_string(id);
     auto res = cli_.Delete(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return (res->status == 200);
   }
 
@@ -287,6 +305,7 @@ struct Client {
   std::pair<bool, std::string> get_remote_sources() {
     std::string url = std::string("/api/browse/sources");
     auto res = cli_.Get(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
     return std::make_pair(res->status == 200, res->body);
   }
 
