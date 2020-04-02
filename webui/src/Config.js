@@ -47,6 +47,7 @@ class Config extends Component {
       ptpDscp: '',
       sapInterval: '',
       sapIntervalErr: false,
+      mdnsEnabled: false,
       syslogProto: '',
       syslogServer: '',
       syslogServerErr: false,
@@ -80,6 +81,7 @@ class Config extends Component {
             ptpDscp: data.ptp_dscp,
             sapMcastAddr: data.sap_mcast_addr,
             sapInterval: data.sap_interval,
+            mdnsEnabled: data.mdns_enabled,
             syslogProto: data.syslog_proto,
             syslogServer: data.syslog_server,
             statusFile: data.status_file,
@@ -116,7 +118,8 @@ class Config extends Component {
       this.state.sampleRate, 
       this.state.maxTicFrameSize, 
       this.state.sapMcastAddr,
-      this.state.sapInterval)
+      this.state.sapInterval,
+      this.state.mdnsEnabled)
     .then(response => toast.success('Config updated, daemon restart ...'));
   }
   
@@ -170,6 +173,10 @@ class Config extends Component {
           <tr>
             <th align="left"> <label>SAP interval (sec)</label> </th>
             <th align="left"> <input type='number' min='0' max='255'  className='input-number' value={this.state.sapInterval} onChange={e => this.setState({sapInterval: e.target.value, sapIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr height="35">
+            <th align="left"> <label>mDNS enabled</label> </th>
+            <th align="left"> <input type="checkbox" onChange={e => this.setState({mdnsEnabled: e.target.checked})} checked={this.state.mdnsEnabled ? true : undefined}/> </th>
           </tr>
           <tr>
             <th align="left"> <label>Network Interface</label> </th>
