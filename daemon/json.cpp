@@ -91,7 +91,7 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"syslog_server\": \"" << escape_json(config.get_syslog_server()) << "\""
      << ",\n  \"status_file\": \"" << escape_json(config.get_status_file()) << "\""
      << ",\n  \"interface_name\": \"" << escape_json(config.get_interface_name()) << "\""
-     << ",\n  \"mdns_enabled\": \"" << std::boolalpha << config.get_mdns_enabled() << "\""
+     << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
      << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str()) << "\""
      << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
      << "\n}\n";
@@ -290,14 +290,14 @@ Config json_to_config_(std::istream& js, Config& config) {
         config.set_sap_mcast_addr(remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "sap_interval") {
         config.set_sap_interval(val.get_value<uint16_t>());
+      } else if (key == "mdns_enabled") {
+        config.set_mdns_enabled(val.get_value<bool>());
       } else if (key == "status_file") {
         config.set_status_file(remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "syslog_proto") {
         config.set_syslog_proto(remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "syslog_server") {
         config.set_syslog_server(remove_undesired_chars(val.get_value<std::string>()));
-      } else if (key == "mdns_enabled") {
-        config.set_mdns_enabled(val.get_value<bool>());
       } else if (key == "mac_addr" || key == "ip_addr") {
         /* ignored */
       } else {
