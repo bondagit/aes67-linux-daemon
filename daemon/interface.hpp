@@ -24,5 +24,6 @@ std::pair<uint32_t, std::string> get_interface_ip(
     const std::string& interface_name);
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
     const std::string& interface_name);
+int get_interface_index(const std::string& interface_name);
 
 #endif

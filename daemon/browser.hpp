@@ -61,12 +61,12 @@ class Browser : public MDNSClient {
   bool init() override;
   bool terminate() override;
 
-  std::list<RemoteSource> get_remote_sources();
+  std::list<RemoteSource> get_remote_sources() const;
 
  protected:
   // singleton, use create() to build
   Browser(std::shared_ptr<Config> config):
-      config_(config),
+      MDNSClient(config),
       startup_(std::chrono::steady_clock::now()){};
 
   bool worker();
@@ -79,7 +79,6 @@ class Browser : public MDNSClient {
                    const std::string& name,
                    const std::string& domain) override;
 
-  std::shared_ptr<Config> config_;
   std::future<bool> res_;
   std::atomic_bool running_{false};
 

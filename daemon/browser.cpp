@@ -35,11 +35,11 @@ std::shared_ptr<Browser> Browser::create(
   return ptr;
 }
 
-std::list<RemoteSource> Browser::get_remote_sources() {
+std::list<RemoteSource> Browser::get_remote_sources() const {
   std::list<RemoteSource> sources_list;
   std::shared_lock sources_lock(sources_mutex_);
   // return list of remote sources ordered by name
-  for (auto& source: sources_.get<name_tag>()) {
+  for (const auto& source: sources_.get<name_tag>()) {
     sources_list.push_back(source);
   }
   return sources_list;

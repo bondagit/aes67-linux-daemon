@@ -22,6 +22,7 @@
 #include <boost/asio.hpp>
 
 #include "config.hpp"
+#include "interface.hpp"
 #include "log.hpp"
 #include "rtsp_client.hpp"
 
@@ -156,16 +157,40 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
   }
 }
 
-void MDNSClient::client_callback(AvahiClient* c,
+void MDNSClient::client_callback(AvahiClient* client,
                                  AvahiClientState state,
                                  void* userdata) {
   MDNSClient& mdns = *(reinterpret_cast<MDNSClient*>(userdata));
   /* Called whenever the client or server state changes */
-  if (state == AVAHI_CLIENT_FAILURE) {
+
+  switch (state) {
+  case AVAHI_CLIENT_FAILURE:
     BOOST_LOG_TRIVIAL(fatal) << "avahi_client:: server connection failure: "
-                             << avahi_strerror(avahi_client_errno(c));
+                             << avahi_strerror(avahi_client_errno(client));
+    /* TODO reconnect if disconnected */
     avahi_threaded_poll_quit(mdns.poll_.get());
+    break;
+
+   case AVAHI_CLIENT_S_REGISTERING:
+   case AVAHI_CLIENT_S_RUNNING:
+   case AVAHI_CLIENT_S_COLLISION:
+    /* Create the service browser */
+    mdns.sb_.reset(avahi_service_browser_new(client,
+                                        mdns.config_->get_interface_idx(),
+                                        AVAHI_PROTO_INET, "_rtsp._tcp", nullptr,
+                                        {}, browse_callback, &mdns));
+    if (mdns.sb_ == nullptr) {
+      BOOST_LOG_TRIVIAL(fatal)
+          << "avahi_client:: failed to create service browser: "
+          << avahi_strerror(avahi_client_errno(mdns.client_.get()));
+      avahi_threaded_poll_quit(mdns.poll_.get());
+    }
+    break;
+
+  case AVAHI_CLIENT_CONNECTING:
+    break;
   }
+
 }
 #endif
 
@@ -191,17 +216,6 @@ bool MDNSClient::init() {
   if (client_ == nullptr) {
     BOOST_LOG_TRIVIAL(fatal)
         << "avahi_client:: failed to create client: " << avahi_strerror(error);
-    return false;
-  }
-
-  /* Create the service browser */
-  sb_.reset(avahi_service_browser_new(client_.get(), AVAHI_IF_UNSPEC,
-                                      AVAHI_PROTO_UNSPEC, "_rtsp._tcp", nullptr,
-                                      {}, browse_callback, this));
-  if (sb_ == nullptr) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "avahi_client:: failed to create service browser: "
-        << avahi_strerror(avahi_client_errno(client_.get()));
     return false;
   }
 

@@ -95,6 +95,13 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
   }
   config.ip_addr_ = ip_addr;
   config.ip_str_ = ip_str;
+  auto interface_idx = get_interface_index(config.interface_name_);
+  if (interface_idx < 0) {
+    std::cerr << "Cannot retrieve index for interface "
+              << config.interface_name_ << std::endl;
+    return nullptr;
+  }
+  config.interface_idx_ = interface_idx;
   config.config_filename_ = filename;
   config.need_restart_ = false;
 

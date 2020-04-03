@@ -38,7 +38,8 @@
 
 class MDNSClient {
  public:
-  MDNSClient(){};
+  MDNSClient(std::shared_ptr<Config> config): config_(config){};
+  MDNSClient() = delete;
   MDNSClient(const MDNSClient&) = delete;
   MDNSClient& operator=(const MDNSClient&) = delete;
   virtual ~MDNSClient() { terminate(); };
@@ -93,6 +94,8 @@ class MDNSClient {
   static void client_callback(AvahiClient* c,
                               AvahiClientState state,
                               void* userdata);
+
+  std::shared_ptr<Config> config_;
 #endif
 };
 

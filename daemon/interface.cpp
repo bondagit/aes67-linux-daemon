@@ -48,8 +48,8 @@ std::pair<uint32_t, std::string> get_interface_ip(
       reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr);
   uint32_t addr = ntohl(sockaddr->sin_addr.s_addr);
   std::string str_addr(ip::address_v4(addr).to_string());
-  /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name << " IP address "
-                          << str_addr;*/
+  /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name
+                             << " IP address " << str_addr;*/
 
   return std::make_pair(addr, str_addr);
 }
@@ -81,8 +81,31 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
   char str_mac[18];
   sprintf(str_mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x",
           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name << " MAC address "
-                          << str_mac;*/
+  /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name
+                             << " MAC address " << str_mac;*/
 
   return std::make_pair(mac, str_mac);
+}
+
+int get_interface_index(const std::string& interface_name) {
+  int fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (fd < 0) {
+    BOOST_LOG_TRIVIAL(error)
+        << "Cannot retrieve index for interface " << interface_name;
+    return -1;
+  }
+  struct ifreq ifr;
+  ifr.ifr_addr.sa_family = AF_INET;
+  strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ - 1);
+  if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
+    close(fd);
+    BOOST_LOG_TRIVIAL(error)
+        << "Cannot retrieve index for interface " << interface_name;
+    return -1;
+  }
+  close(fd);
+  /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name
+                             << " index " << ifr.ifr_ifindex;*/
+
+  return ifr.ifr_ifindex;
 }

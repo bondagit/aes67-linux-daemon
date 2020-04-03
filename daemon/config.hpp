@@ -57,7 +57,8 @@ class Config {
   uint32_t get_ip_addr() const { return ip_addr_; };
   const std::string& get_ip_addr_str() const { return ip_str_; };
   bool get_need_restart() const { return need_restart_; };
-  bool get_mdns_enabled() const { return mdns_enabled; };
+  bool get_mdns_enabled() const { return mdns_enabled_; };
+  int get_interface_idx() { return interface_idx_; };
 
   void set_http_port(uint16_t http_port) { http_port_ = http_port; };
   void set_http_base_dir(const std::string& http_base_dir) { http_base_dir_ = http_base_dir; };
@@ -103,8 +104,9 @@ class Config {
     mac_addr_ = mac_addr;
   };
   void set_mdns_enabled(bool enabled) {
-    mdns_enabled = enabled;
+    mdns_enabled_ = enabled;
   };
+  void set_interface_idx(int index) { interface_idx_ = index; };
 
  private:
   /* from json */
@@ -125,13 +127,14 @@ class Config {
   std::string syslog_server_{""};
   std::string status_file_{"./status.json"};
   std::string interface_name_{"eth0"};
-  bool mdns_enabled{true};
+  bool mdns_enabled_{true};
 
   /* set during init */
   std::array<uint8_t, 6> mac_addr_{0, 0, 0, 0, 0, 0};
   std::string mac_str_;
   uint32_t ip_addr_{0};
   std::string ip_str_;
+  int interface_idx_;
   std::string config_filename_;
 
   /* reconfig needs daemon restart */
