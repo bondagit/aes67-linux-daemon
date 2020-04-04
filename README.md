@@ -82,7 +82,7 @@ This directory contains a the daemon configuration and status files used to run 
 
 ## Prerequisite ##
 <a name="prerequisite"></a>
-The daemon and the demo have been tested with **Ubuntu 18.04** distro on **x86/ARMv7** and with **Ubuntu 19.10** distro on **x86** using:
+The daemon and the demo have been tested with **Ubuntu 18.04** distro on **ARMv7** and with **Ubuntu 18.04, 19.10 and 20.04** distros on **x86** using:
 
 * Linux kernel version >= 4.14.x
 * GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required, clang is required to compile on ARMv7)
@@ -95,7 +95,8 @@ The daemon and the demo have been tested with **Ubuntu 18.04** distro on **x86/A
 The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing on ARMv7.
 See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
 
-The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo). See [PulseAudio and scripts notes](#notes).
+The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo).    
+**_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
  
 ## How to build ##
 Make sure you have all the required packages installed, see [prerequisite](#prerequisite).    
@@ -156,7 +157,7 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
 <a name="notes"></a>
 
 * All the scripts in this repository are provided as a reference to help setting up the system and run a simple demo.    
-  They have been tested on **Ubuntu 18.04** and **19.10** distros only.    
+  They have been tested on **Ubuntu 18.04 19.10 20.04** distros.    
 * **PulseAudio** can create instability problems.    
 Before running the daemon verify that PulseAudio is not running with:  
 
