@@ -40,6 +40,7 @@ class SourceInfo extends Component {
     id: PropTypes.string.isRequired,
     source: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
+    domain: PropTypes.string.isRequired,
     sdp: PropTypes.string.isRequired,
     closeInfo: PropTypes.func.isRequired,
     infoIsOpen: PropTypes.bool.isRequired,
@@ -81,6 +82,12 @@ class SourceInfo extends Component {
               <th align="left"> <label>Name</label> </th>
               <th align="left"> <input value={this.props.name} readOnly/> </th>
             </tr>
+	    {this.props.source == "mDNS" ?
+              <tr>
+                <th align="left"> <label>Domain</label> </th>
+                <th align="left"> <input value={this.props.domain} readOnly/> </th>
+              </tr>
+	     : undefined}
             <tr>
               <th align="left"> <label>SDP</label> </th>
               <th align="left"> <textarea rows='15' cols='55' value={this.props.sdp} readOnly/> </th>

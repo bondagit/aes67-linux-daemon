@@ -32,6 +32,7 @@ class RemoteSourceEntry extends Component {
     source: PropTypes.string.isRequired,
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
+    domain: PropTypes.string.isRequired,
     address: PropTypes.string.isRequired,
     sdp: PropTypes.string.isRequired,
     last_seen: PropTypes.number.isRequired,
@@ -65,6 +66,7 @@ class RemoteSourceEntry extends Component {
         <td> <label>{this.props.source}</label> </td>
         <td> <label>{this.props.address}</label> </td>
         <td> <label>{this.props.name}</label> </td>
+        <td> <label>{this.props.source=='mDNS' ? this.props.domain : 'N/A'}</label> </td>
         <td> <label>{this.state.rtp_address}</label> </td>
         <td align='center'> <label>{this.state.port}</label> </td>
         <td align='center'> <label>{this.props.last_seen}</label> </td>
@@ -94,6 +96,7 @@ class RemoteSourceList extends Component {
               <th>Source</th>
               <th>Address</th>
               <th>Name</th>
+              <th>Domain</th>
               <th>RTP Address</th>
               <th>Port</th>
               <th>Seen</th>
@@ -160,13 +163,14 @@ class RemoteSources extends Component {
   }
 
   render() {
-    this.state.sources.sort((a, b) => (a.id > b.id) ? 1 : -1);
+    //this.state.sources.sort((a, b) => (a.id > b.id) ? 1 : -1);
     const sources = this.state.sources.map((source) => (
       <RemoteSourceEntry key={source.id}
         source={source.source}
         id={source.id}
         address={source.address}
         name={source.name}
+        domain={source.domain}
         sdp={source.sdp}
         last_seen={source.last_seen}
         period={source.announce_period}
@@ -186,6 +190,7 @@ class RemoteSources extends Component {
 	  id={this.state.source.id}
 	  source={this.state.source.source}
 	  name={this.state.source.name}
+	  domain={this.state.source.domain}
 	  sdp={this.state.source.sdp} />
            : undefined }
       </div>
