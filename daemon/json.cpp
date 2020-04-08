@@ -234,6 +234,7 @@ std::string remote_source_to_json(const RemoteSource& source) {
      << "\n    \"source\": \"" << escape_json(source.source) << "\""
      << ",\n    \"id\": \"" << escape_json(source.id) << "\""
      << ",\n    \"name\": \"" << escape_json(source.name) << "\""
+     << ",\n    \"domain\": \"" << escape_json(source.domain) << "\""
      << ",\n    \"address\": \"" << escape_json(source.address) << "\""
      << ",\n    \"sdp\": \"" << escape_json(source.sdp) << "\""
      << ",\n    \"last_seen\": " << unsigned(source.last_seen)

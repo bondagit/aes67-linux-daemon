@@ -44,9 +44,10 @@ struct RemoteSource {
   std::string source;
   std::string address;
   std::string name;
+  std::string domain; /* mDNS only */
   std::string sdp;
-  uint32_t last_seen; /* seconds from daemon startup */
-  uint32_t announce_period; /* period between annoucements */
+  uint32_t last_seen{0}; /* seconds from daemon startup */
+  uint32_t announce_period{0}; /* period between annoucements */
 };
 
 class Browser : public MDNSClient {

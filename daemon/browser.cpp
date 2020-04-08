@@ -17,8 +17,10 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/algorithm/string.hpp>
 #include "browser.hpp"
 
+using namespace boost::algorithm;
 using namespace std::chrono;
 using second_t = duration<double, std::ratio<1> >;
 
@@ -83,7 +85,6 @@ bool Browser::worker() {
       if (it == sources_.end()) {
         // Source is not in the map
         if (is_announce) {
-          BOOST_LOG_TRIVIAL(info) << "browser:: adding SAP source " << id;
           // annoucement, add new source
           RemoteSource source;
 	  source.id = id;
@@ -91,9 +92,12 @@ bool Browser::worker() {
 	  source.source = "SAP";
 	  source.address = ip::address_v4(ntohl(addr)).to_string();
 	  source.name = sdp_get_subject(sdp);
+	  trim(source.name);
           source.last_seen = 
             duration_cast<second_t>(steady_clock::now() - startup_).count();
           source.announce_period = 360; //default period 
+          BOOST_LOG_TRIVIAL(info) << "browser:: adding SAP source " << source.id
+                                  << " name " << source.name;
 	  sources_.insert(source);
         }
       } else {
@@ -110,7 +114,8 @@ bool Browser::worker() {
 	  sources_.replace(it, upd_source);
 	} else {
           BOOST_LOG_TRIVIAL(info)
-                      << "browser:: removing SAP source " << it->id;
+                      << "browser:: removing SAP source " << it->id
+                      << " name " << it->name;
           // deletion, remove entry
 	  sources_.erase(it);
         }
@@ -152,24 +157,45 @@ bool Browser::worker() {
 void Browser::on_new_rtsp_source(const std::string& name,
                                  const std::string& domain,
                                  const RTSPSSource& s) {
-  uint32_t last_seen = duration_cast<second_t>(steady_clock::now() - startup_).count();
+  uint32_t last_seen = duration_cast<second_t>(steady_clock::now() - 
+                                               startup_).count();
   std::unique_lock sources_lock(sources_mutex_);
-  if (sources_.get<id_tag>().find(s.id) == sources_.end()) {
-    BOOST_LOG_TRIVIAL(info) << "browser:: adding RTSP source " << s.id;
-    sources_.insert({ s.id, s.source, s.address, name, s.sdp, last_seen, 0 });
+  auto rng = sources_.get<name_tag>().equal_range(name);
+  while(rng.first != rng.second){
+    const auto& it = rng.first;
+    if (it->source == "mDNS" && it->domain == domain) {
+      /* conflict ? */
+      BOOST_LOG_TRIVIAL(warning) << "browser:: mDNS source conflict on"
+                                 << " name " << it->name
+                                 << " domain " << it->domain
+                                 << ", skipping ... ";
+      return;
+    }
+    ++rng.first;
   }
+
+  BOOST_LOG_TRIVIAL(info) << "browser:: adding RTSP source " << s.id
+                          << " name " << name
+                          << " domain " << domain;
+  sources_.insert(
+      {s.id, s.source, s.address, name, domain, s.sdp, last_seen, 0});
 }
 
 void Browser::on_remove_rtsp_source(const std::string& name,
                                     const std::string& domain) {
   std::unique_lock sources_lock(sources_mutex_);
   auto& name_idx = sources_.get<name_tag>();
-  for (auto it = name_idx.find(name); it != name_idx.end(); it++) {
-    if (it->source == "mDNS") {
-      BOOST_LOG_TRIVIAL(info) << "browser:: removing RTSP source " << it->id;
+  auto rng = name_idx.equal_range(name);
+  while(rng.first != rng.second){
+    const auto& it = rng.first;
+    if (it->source == "mDNS" && it->domain == domain && it->name == name) {
+      BOOST_LOG_TRIVIAL(info) << "browser:: removing RTSP source " << it->id
+                              << " name " << it->name
+                              << " domain " << it->domain;
       name_idx.erase(it);
       break;
     }
+    ++rng.first;
   }
 }
 
