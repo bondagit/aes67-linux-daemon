@@ -201,6 +201,7 @@ class SourceEdit extends Component {
 	        <select value={this.state.codec} onChange={this.onChangeCodec}>
                   <option value="L16">L16</option>
                   <option value="L24">L24</option>
+                  <option value="AM824">AM824</option>
                 </select>
               </th>
             </tr>

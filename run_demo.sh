@@ -76,12 +76,12 @@ sleep 30
 
 #starting recording on sink
 echo "Starting to record 60 secs from sink ..."
-arecord -D plughw:RAVENNA -f cd -d 60 -r 44100 -c 2 -t wav /tmp/sink_test.wav > /dev/null 2>&1 &
+arecord -D plughw:RAVENNA -f S32_LE -d 60 -r 48000 -c 8 -t wav /tmp/sink_test.wav > /dev/null 2>&1 &
 sleep 10
 
 #starting playback on source
 echo "Starting to playback test on source ..."
-speaker-test -D plughw:RAVENNA -r 44100 -c 2 -t sine > /dev/null 2>&1 &
+speaker-test -F S32_LE -D plughw:RAVENNA -r 48000 -c 8 -t sine > /dev/null 2>&1 &
 
 while killall -0 arecord 2>/dev/null ; do
   sleep 1

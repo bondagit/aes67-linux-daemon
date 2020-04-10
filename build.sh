@@ -18,6 +18,7 @@ if [ ! -d ravenna-alsa-lkm.git ]; then
   git apply ../../patches/ravenna-alsa-lkm-enable-loopback.patch  
   git apply ../../patches/ravenna-alsa-lkm-fixes.patch
   git apply ../../patches/ravenna-alsa-lkm-arm-32bit.patch
+  git apply ../../patches/ravenna-alsa-lkm-added-codec-am824.patch
   echo "Building ravenna-alsa-lkm kernel module ..."
   make
   cd ../..
