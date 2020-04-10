@@ -188,7 +188,7 @@ void Browser::on_remove_rtsp_source(const std::string& name,
   auto rng = name_idx.equal_range(name);
   while(rng.first != rng.second){
     const auto& it = rng.first;
-    if (it->source == "mDNS" && it->domain == domain && it->name == name) {
+    if (it->source == "mDNS" && it->domain == domain) {
       BOOST_LOG_TRIVIAL(info) << "browser:: removing RTSP source " << it->id
                               << " name " << it->name
                               << " domain " << it->domain;

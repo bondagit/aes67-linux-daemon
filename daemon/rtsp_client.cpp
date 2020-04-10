@@ -168,7 +168,7 @@ std::pair<bool, RTSPSSource> RTSPClient::describe(const std::string& path,
 
     success = true;
   } catch (std::exception& e) {
-    BOOST_LOG_TRIVIAL(error)
+    BOOST_LOG_TRIVIAL(warning)
         << "rtsp_client:: error with "
         << "rtsp://" << address << ":" << port << path << ": " << e.what();
   }
