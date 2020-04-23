@@ -73,22 +73,8 @@ parse_url(const std::string& _url) {
   return std::make_tuple(host.length() > 0, protocol, host, port, path);
 }
 
-std::string get_host_id() {
-  char hostname[64];
-  gethostname(hostname, sizeof hostname);
-  std::stringstream ss;
-  ss << std::hex << (uint32_t)gethostid();
-  return ss.str();
-}
-
-std::string get_host_name() {
-  char hostname[64];
-  gethostname(hostname, sizeof hostname);
-  return hostname;
-}
-
 std::string get_node_id() {
   std::stringstream ss;
-  ss << "AES67 daemon " << get_host_id();
+  ss << "AES67 daemon " << std::hex << (uint32_t)gethostid();
   return ss.str();
 }

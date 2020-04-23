@@ -34,8 +34,6 @@ std::tuple<bool /* res */,
            std::string /* path */>
 parse_url(const std::string& _url);
 
-std::string get_host_id();
-std::string get_host_name();
 std::string get_node_id();
 
 #endif
