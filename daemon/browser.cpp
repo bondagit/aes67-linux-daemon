@@ -18,6 +18,8 @@
 //
 
 #include <boost/algorithm/string.hpp>
+
+#include "utils.hpp"
 #include "browser.hpp"
 
 using namespace boost::algorithm;
@@ -37,12 +39,16 @@ std::shared_ptr<Browser> Browser::create(
   return ptr;
 }
 
-std::list<RemoteSource> Browser::get_remote_sources() const {
+std::list<RemoteSource> Browser::get_remote_sources(
+                   const std::string& _source) const {
   std::list<RemoteSource> sources_list;
   std::shared_lock sources_lock(sources_mutex_);
   // return list of remote sources ordered by name
   for (const auto& source: sources_.get<name_tag>()) {
-    sources_list.push_back(source);
+    if (boost::iequals(source.source, _source) || 
+          boost::iequals("all", _source)) {
+      sources_list.push_back(source);
+    }
   }
   return sources_list;
 }
@@ -52,7 +58,9 @@ static std::string sdp_get_subject(const std::string& sdp) {
   std::string line;
   while (getline(ssstrem, line, '\n')) {
     if (line.substr(0, 2) == "s=") {
-      return line.substr(2);
+      auto subject = line.substr(2);
+      trim(subject);
+      return subject;
     }
   }
   return "";
@@ -75,7 +83,7 @@ bool Browser::worker() {
 
     if (sap_.receive(is_announce, msg_id_hash, addr, sdp)) {
       std::stringstream ss;
-      ss << "sap:" << std::hex << addr << msg_id_hash;
+      ss << "sap:" << msg_id_hash;
       std::string id(ss.str());
       BOOST_LOG_TRIVIAL(debug) << "browser:: received SAP message for " << id;
 
@@ -86,19 +94,12 @@ bool Browser::worker() {
         // Source is not in the map
         if (is_announce) {
           // annoucement, add new source
-          RemoteSource source;
-	  source.id = id;
-	  source.sdp = sdp;
-	  source.source = "SAP";
-	  source.address = ip::address_v4(ntohl(addr)).to_string();
-	  source.name = sdp_get_subject(sdp);
-	  trim(source.name);
-          source.last_seen = 
-            duration_cast<second_t>(steady_clock::now() - startup_).count();
-          source.announce_period = 360; //default period 
-          BOOST_LOG_TRIVIAL(info) << "browser:: adding SAP source " << source.id
-                                  << " name " << source.name;
-	  sources_.insert(source);
+	  sources_.insert({
+            id, "SAP", ip::address_v4(ntohl(addr)).to_string(), 
+            sdp_get_subject(sdp), {}, sdp, 
+	    static_cast<uint32_t>(duration_cast<second_t>(steady_clock::now() 
+                                                          - startup_).count()),
+	    360 });
         }
       } else {
         // Source is already in the map
@@ -156,7 +157,7 @@ bool Browser::worker() {
 
 void Browser::on_new_rtsp_source(const std::string& name,
                                  const std::string& domain,
-                                 const RTSPSSource& s) {
+                                 const RtspSource& s) {
   uint32_t last_seen = duration_cast<second_t>(steady_clock::now() - 
                                                startup_).count();
   std::unique_lock sources_lock(sources_mutex_);

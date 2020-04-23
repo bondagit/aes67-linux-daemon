@@ -40,7 +40,7 @@ fi
 trap cleanup EXIT
 
 #configure system parms
-sudo sysctl -w net/ipv4/igmp_max_memberships=64
+sudo sysctl -w net/ipv4/igmp_max_memberships=66
 
 if [ -x /usr/bin/pulseaudio ]; then
   #stop pulseaudio, this seems to open/close ALSA continuosly

@@ -60,46 +60,6 @@ static uint8_t get_codec_word_lenght(const std::string& codec) {
   return 0;
 }
 
-static std::tuple<bool /* res */,
-                  std::string /* protocol */,
-                  std::string /* host */,
-                  std::string /* port */,
-                  std::string /* path */>
-parse_url(const std::string& _url) {
-  std::string url = httplib::detail::decode_url(_url);
-  size_t protocol_sep_pos = url.find_first_of("://");
-  if (protocol_sep_pos == std::string::npos) {
-    /* no protocol, invalid URL */
-    return std::make_tuple(false, "", "", "", "");
-  }
-
-  std::string port, host, path("/");
-  std::string protocol = url.substr(0, protocol_sep_pos);
-  std::string url_new = url.substr(protocol_sep_pos + 3);
-  size_t path_sep_pos = url_new.find_first_of("/");
-  size_t port_sep_pos = url_new.find_first_of(":");
-  if (port_sep_pos != std::string::npos) {
-    /* port specified */
-    if (path_sep_pos != std::string::npos) {
-      /* path specified */
-      port = url_new.substr(port_sep_pos + 1, path_sep_pos - port_sep_pos - 1);
-      path = url_new.substr(path_sep_pos);
-    } else {
-      /* path not specified */
-      port = url_new.substr(port_sep_pos + 1);
-    }
-    host = url_new.substr(0, port_sep_pos);
-  } else if (path_sep_pos != std::string::npos) {
-    /* port not specified, path specified */
-    host = url_new.substr(0, path_sep_pos);
-    path = url_new.substr(path_sep_pos);
-  } else {
-    /* port and path not specified */
-    host = url_new;
-  }
-  return std::make_tuple(host.length() > 0, protocol, host, port, path);
-}
-
 bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
   /*
   v=0
@@ -362,37 +322,35 @@ std::list<StreamSource> SessionManager::get_sources() const {
 
 StreamSource SessionManager::get_source_(uint8_t id,
                                          const StreamInfo& info) const {
-  StreamSource source;
-  source.id = id;
-  source.enabled = info.enabled;
-  source.name = info.stream.m_cName;
-  source.io = info.io;
-  source.max_samples_per_packet = info.stream.m_ui32MaxSamplesPerPacket;
-  source.codec = info.stream.m_cCodec;
-  source.ttl = info.stream.m_byTTL;
-  source.payload_type = info.stream.m_byPayloadType;
-  source.dscp = info.stream.m_ucDSCP;
-  source.refclk_ptp_traceable = info.refclk_ptp_traceable;
-  for (auto i = 0; i < info.stream.m_byNbOfChannels; i++) {
-    source.map.push_back(info.stream.m_aui32Routing[i]);
-  }
-  return source;
+  return {
+    id,
+    info.enabled,
+    info.stream.m_cName,
+    info.io,
+    info.stream.m_ui32MaxSamplesPerPacket,
+    info.stream.m_cCodec,
+    info.stream.m_byTTL,
+    info.stream.m_byPayloadType,
+    info.stream.m_ucDSCP,
+    info.refclk_ptp_traceable,
+    { info.stream.m_aui32Routing, info.stream.m_aui32Routing + 
+                                    info.stream.m_byNbOfChannels }
+  };
 }
 
 StreamSink SessionManager::get_sink_(uint8_t id, const StreamInfo& info) const {
-  StreamSink sink;
-  sink.id = id;
-  sink.name = info.stream.m_cName;
-  sink.io = info.io;
-  sink.use_sdp = info.sink_use_sdp;
-  sink.sdp = info.sink_sdp;
-  sink.source = info.sink_source;
-  sink.delay = info.stream.m_ui32PlayOutDelay;
-  sink.ignore_refclk_gmid = info.ignore_refclk_gmid;
-  for (auto i = 0; i < info.stream.m_byNbOfChannels; i++) {
-    sink.map.push_back(info.stream.m_aui32Routing[i]);
-  }
-  return sink;
+  return {
+    id,
+    info.stream.m_cName,
+    info.io,
+    info.sink_use_sdp,
+    info.sink_source,
+    info.sink_sdp,
+    info.stream.m_ui32PlayOutDelay,
+    info.ignore_refclk_gmid,
+    { info.stream.m_aui32Routing, info.stream.m_aui32Routing + 
+                                    info.stream.m_byNbOfChannels }
+  };
 }
 
 bool SessionManager::load_status() {
@@ -455,6 +413,26 @@ static std::array<uint8_t, 6> get_mcast_mac_addr(uint32_t mcast_ip) {
            static_cast<uint8_t>(mcast_ip) };
 }
 
+uint8_t SessionManager::get_source_id(const std::string& name) const {
+  const auto it = source_names_.find(name);
+  return it != source_names_.end() ? it->second : stream_id_max;
+}
+
+void SessionManager::on_add_source(const StreamSource& source, 
+    const StreamInfo& info) {
+  igmp_.join(config_->get_ip_addr_str(),
+             ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  mdns_.add_service(source.name, get_source_sdp_(source.id, info));
+  source_names_[source.name] = source.id;
+}
+
+void SessionManager::on_remove_source(const StreamInfo& info) {
+  igmp_.leave(config_->get_ip_addr_str(),
+       ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  mdns_.remove_service(info.stream.m_cName);
+  source_names_.erase(info.stream.m_cName);
+}
+
 std::error_code SessionManager::add_source(const StreamSource& source) {
   if (source.id > stream_id_max) {
     BOOST_LOG_TRIVIAL(error) << "session_manager:: source id "
@@ -504,9 +482,12 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
     // remove previous stream if enabled
     if ((*it).second.enabled) {
       (void)driver_->remove_rtp_stream((*it).second.handle);
-      igmp_.leave(config_->get_ip_addr_str(),
-           ip::address_v4((*it).second.stream.m_ui32DestIP).to_string());
+      on_remove_source((*it).second);
     }
+  } else if (source_names_.find(source.name) != source_names_.end()) {
+    BOOST_LOG_TRIVIAL(error) << "session_manager:: source name "
+                             << source.name << " is in use";
+    return DaemonErrc::stream_name_in_use;
   }
 
   std::error_code ret;
@@ -519,8 +500,7 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
       }
       return ret;
     }
-    igmp_.join(config_->get_ip_addr_str(),
-               ip::address_v4(info.stream.m_ui32DestIP).to_string());
+    on_add_source(source, info);
   }
  
   // update source map 
@@ -557,7 +537,7 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   ss << "v=0\n"
      << "o=- " << static_cast<unsigned>(id) << " 0 IN IP4 "
      << ip::address_v4(info.stream.m_ui32SrcIP).to_string() << "\n"
-     << "s=" << info.stream.m_cName << "\n"
+     << "s=" << get_node_id() << " " << info.stream.m_cName << "\n"
      << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string()
      << "/" << static_cast<unsigned>(info.stream.m_byTTL) << "\n"
      << "t=0 0\n"
@@ -619,8 +599,7 @@ std::error_code SessionManager::remove_source(uint32_t id) {
   if (info.enabled) {
     ret = driver_->remove_rtp_stream(info.handle);
     if (!ret) {
-      igmp_.leave(config_->get_ip_addr_str(),
-                  ip::address_v4(info.stream.m_ui32DestIP).to_string());
+      on_remove_source(info);
     }
   }
   if (!ret) {
@@ -628,6 +607,24 @@ std::error_code SessionManager::remove_source(uint32_t id) {
   }
 
   return ret;
+}
+
+uint8_t SessionManager::get_sink_id(const std::string& name) const {
+  const auto it = sink_names_.find(name);
+  return it != sink_names_.end() ? it->second : (stream_id_max + 1);
+}
+
+void SessionManager::on_add_sink(const StreamSink& sink, 
+    const StreamInfo& info) {
+  igmp_.join(config_->get_ip_addr_str(),
+             ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  sink_names_[sink.name] = sink.id;
+}
+
+void SessionManager::on_remove_sink(const StreamInfo& info) {
+  igmp_.leave(config_->get_ip_addr_str(),
+       ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  sink_names_.erase(info.stream.m_cName);
 }
 
 std::error_code SessionManager::add_sink(const StreamSink& sink) {
@@ -678,7 +675,7 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
       }
       sdp = std::move(res->body);
     } else if (boost::iequals(protocol, "rtsp")) {
-      auto res = RTSPClient::describe(path, host, port);
+      auto res = RtspClient::describe(path, host, port);
       if (!res.first) {
         BOOST_LOG_TRIVIAL(error)
             << "session_manager:: cannot retrieve SDP from URL " << sink.source;
@@ -742,8 +739,11 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
                           << std::to_string(sink.id) << " is in use, updating";
     // remove previous stream
     (void)driver_->remove_rtp_stream((*it).second.handle);
-    igmp_.leave(config_->get_ip_addr_str(),
-           ip::address_v4((*it).second.stream.m_ui32DestIP).to_string());
+    on_remove_sink((*it).second);
+  } else if (sink_names_.find(sink.name) != sink_names_.end()) {
+    BOOST_LOG_TRIVIAL(error) << "session_manager:: sink name "
+                             << sink.name << " is in use";
+    return DaemonErrc::stream_name_in_use;
   }
 
   auto ret = driver_->add_rtp_stream(info.stream, info.handle);
@@ -755,9 +755,7 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     return ret;
   }
 
-  igmp_.join(config_->get_ip_addr_str(),
-             ip::address_v4(info.stream.m_ui32DestIP).to_string());
-
+  on_add_sink(sink, info);
   // update sinks map
   sinks_[sink.id] = info;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: added sink "
@@ -785,6 +783,7 @@ std::error_code SessionManager::remove_sink(uint32_t id) {
   if (!ret) {
     igmp_.leave(config_->get_ip_addr_str(),
                 ip::address_v4(info.stream.m_ui32DestIP).to_string());
+    on_remove_sink(info);
     sinks_.erase(id);
   }
 
@@ -937,16 +936,11 @@ bool SessionManager::worker() {
         // return false;
       } else {
         char ptp_clock_id[24];
+	uint8_t* pui64GMID = reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID);
         snprintf(ptp_clock_id, sizeof(ptp_clock_id),
                  "%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[0]),
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[1]),
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[2]),
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[3]),
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[4]),
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[5]),
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[6]),
-                 (reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID)[7]));
+                 pui64GMID[0], pui64GMID[1], pui64GMID[2], pui64GMID[3],
+                 pui64GMID[4], pui64GMID[5], pui64GMID[6], pui64GMID[7]);
         // update PTP clock status
         std::unique_lock ptp_lock(ptp_mutex_);
 	// update status

@@ -17,8 +17,8 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef _AVAHI_CLIENT_HPP_
-#define _AVAHI_CLIENT_HPP_
+#ifndef _MDNS_CLIENT_HPP_
+#define _MDNS_CLIENT_HPP_
 
 #ifdef _USE_AVAHI_
 #include <avahi-client/client.h>
@@ -50,7 +50,7 @@ class MDNSClient {
  protected:
   virtual void on_new_rtsp_source(const std::string& name,
                                   const std::string& domain, 
-                                  const RTSPSSource& source) = 0;
+                                  const RtspSource& source) = 0;
   virtual void on_remove_rtsp_source(const std::string& name,
                                      const std::string& domain) = 0;
 
@@ -59,13 +59,14 @@ class MDNSClient {
   std::mutex sources_res_mutex_;
 
   std::atomic_bool running_{false};
+  std::shared_ptr<Config> config_;
 
 #ifdef _USE_AVAHI_
   /* order is important here */
-  std::unique_ptr<AvahiThreadedPoll, decltype(&avahi_threaded_poll_free)> poll_{
-      nullptr, &avahi_threaded_poll_free};
-  std::unique_ptr< ::AvahiClient, decltype(&avahi_client_free)> client_{
-      nullptr, &avahi_client_free};
+  std::unique_ptr<AvahiThreadedPoll, decltype(&avahi_threaded_poll_free)> 
+      poll_{nullptr, &avahi_threaded_poll_free};
+  std::unique_ptr<AvahiClient, decltype(&avahi_client_free)>
+      client_{nullptr, &avahi_client_free};
   std::unique_ptr<AvahiServiceBrowser, decltype(&avahi_service_browser_free)>
       sb_{nullptr, &avahi_service_browser_free};
 
@@ -95,7 +96,6 @@ class MDNSClient {
                               AvahiClientState state,
                               void* userdata);
 
-  std::shared_ptr<Config> config_;
 #endif
 };
 

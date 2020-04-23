@@ -4,12 +4,15 @@ AES67 daemon uses the Merging Technologies device driver (MergingRavennaALSA.ko)
 
 The daemon is responsible for:
 
-* communication and configuration of the device driver
-* provide an HTTP REST API for the daemon control and configuration
+* communication and configuration of the ALSA RAVENNA/AES67 device driver
+* control and configuration of up to 64 sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
-* SAP discovery protocol and SAP browser
-* mDNS sources discovery (using Avahi) and SDP transfer via RTSP
+* HTTP REST API for the daemon control and configuration
+* SAP sources discovery and advertisement compatible with AES67 standard
+* mDNS sources discovery and advertisement (using Linux Avahi) compatible with Ravenna standard
+* RTSP client and server to retrieve or return SDP files via DESCRIBE method
 * IGMP handling for SAP and RTP sessions
+
 
 ## Configuration file ##
 
@@ -130,10 +133,10 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body** [RTP Streams params](#rtp-streams)
 
 ### Get all remote RTP Sources ###
-* **Description** retrieve all the remote sources collected via SAP
-* **URL** /api/browse/sources    
+* **Description** retrieve all the remote sources collected via SAP and mDNS
+* **URL** /api/browse/sources/[all|mdns|sap]
 * **Method** GET    
-* **URL Params** none    
+* **URL Params** all=[all sources], mdns=[mDNS sources only], sap=[sap sources only]    
 * **Body type** application/json    
 * **Body** [RTP Remote Sources params](#rtp-remote-sources)
 
@@ -146,6 +149,7 @@ Example
     {
       "interface_name": "lo",
       "http_port": 8080,
+      "rtsp_port": 8854,
       "log_severity": 2,
       "syslog_proto": "none",
       "syslog_server": "255.255.255.254:1234",
@@ -161,7 +165,8 @@ Example
       "sap_mcast_addr": "239.255.255.255",
       "sap_interval": 30,
       "mac_addr": "01:00:5e:01:00:01",
-      "ip_addr": "127.0.0.1"
+      "ip_addr": "127.0.0.1",
+      "node_id": "AES67 daemon ubuntu-d9aca383"
     }
 
 where:
@@ -170,7 +175,10 @@ where:
 > JSON string specifying the network interface used by the daemon and the driver for both the RTP, PTP, SAP and HTTP traffic.
 
 > **http\_port**
-> JSON number specifying the HTTP port number used by the embedded web server in the daemon implementing the REST interface.
+> JSON number specifying the HTTP port number used by the web server in the daemon implementing the REST interface.
+
+> **rtsp\_port**
+> JSON number specifying the RTSP port number used by the RTSP server in the daemon.
 
 > **log\_severity**
 > JSON integer specifying the process log severity level (0 to 5).    
@@ -235,6 +243,10 @@ where:
 
 > **mdns\_enabled**
 > JSON boolean specifying whether the mDNS discovery is enabled or disabled.
+
+> **node\_id**
+> JSON string specifying the unique node identifier used to identify mDNS, SAP and SDP services announced by the daemon.
+> **_NOTE:_** This parameter is read-only and cannot be set. The server will determine the node id at startup time.
 
 ### JSON PTP Config<a name="ptp-config"></a> ###
 

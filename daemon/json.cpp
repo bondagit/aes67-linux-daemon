@@ -26,6 +26,7 @@
 
 #include "json.hpp"
 #include "log.hpp"
+#include "utils.hpp"
 
 
 static inline std::string remove_undesired_chars(const std::string& s) {
@@ -75,6 +76,7 @@ std::string config_to_json(const Config& config) {
   std::stringstream ss;
   ss << "{"
      << "\n  \"http_port\": " << config.get_http_port()
+     << ",\n  \"rtsp_port\": " << config.get_rtsp_port()
      << ",\n  \"http_base_dir\": \"" << config.get_http_base_dir() << "\""
      << ",\n  \"log_severity\": " << config.get_log_severity()
      << ",\n  \"playout_delay\": " << config.get_playout_delay()
@@ -94,6 +96,7 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
      << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str()) << "\""
      << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
+     << ",\n  \"node_id\": \"" << escape_json(get_node_id()) << "\""
      << "\n}\n";
   return ss.str();
 }
@@ -265,6 +268,8 @@ Config json_to_config_(std::istream& js, Config& config) {
     for (auto const& [key, val] : pt) {
       if (key == "http_port") {
         config.set_http_port(val.get_value<int>());
+      } else if (key == "rtsp_port") {
+        config.set_rtsp_port(val.get_value<int>());
       } else if (key == "http_base_dir") {
         config.set_http_base_dir(remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "log_severity") {
@@ -299,7 +304,7 @@ Config json_to_config_(std::istream& js, Config& config) {
         config.set_syslog_proto(remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "syslog_server") {
         config.set_syslog_server(remove_undesired_chars(val.get_value<std::string>()));
-      } else if (key == "mac_addr" || key == "ip_addr") {
+      } else if (key == "mac_addr" || key == "ip_addr" || key == "node_id" ) {
         /* ignored */
       } else {
         std::cerr << "Warning: unkown configuration option " << key

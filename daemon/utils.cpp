@@ -32,3 +32,63 @@ uint16_t crc16(const uint8_t* p, size_t len) {
   }
   return crc;
 }
+
+std::tuple<bool /* res */,
+           std::string /* protocol */,
+           std::string /* host */,
+           std::string /* port */,
+           std::string /* path */>
+parse_url(const std::string& _url) {
+  std::string url = httplib::detail::decode_url(_url);
+  size_t protocol_sep_pos = url.find_first_of("://");
+  if (protocol_sep_pos == std::string::npos) {
+    /* no protocol, invalid URL */
+    return std::make_tuple(false, "", "", "", "");
+  }
+
+  std::string port, host, path("/");
+  std::string protocol = url.substr(0, protocol_sep_pos);
+  std::string url_new = url.substr(protocol_sep_pos + 3);
+  size_t path_sep_pos = url_new.find_first_of("/");
+  size_t port_sep_pos = url_new.find_first_of(":");
+  if (port_sep_pos != std::string::npos) {
+    /* port specified */
+    if (path_sep_pos != std::string::npos) {
+      /* path specified */
+      port = url_new.substr(port_sep_pos + 1, path_sep_pos - port_sep_pos - 1);
+      path = url_new.substr(path_sep_pos);
+    } else {
+      /* path not specified */
+      port = url_new.substr(port_sep_pos + 1);
+    }
+    host = url_new.substr(0, port_sep_pos);
+  } else if (path_sep_pos != std::string::npos) {
+    /* port not specified, path specified */
+    host = url_new.substr(0, path_sep_pos);
+    path = url_new.substr(path_sep_pos);
+  } else {
+    /* port and path not specified */
+    host = url_new;
+  }
+  return std::make_tuple(host.length() > 0, protocol, host, port, path);
+}
+
+std::string get_host_id() {
+  char hostname[64];
+  gethostname(hostname, sizeof hostname);
+  std::stringstream ss;
+  ss << std::hex << (uint32_t)gethostid();
+  return ss.str();
+}
+
+std::string get_host_name() {
+  char hostname[64];
+  gethostname(hostname, sizeof hostname);
+  return hostname;
+}
+
+std::string get_node_id() {
+  std::stringstream ss;
+  ss << "AES67 daemon " << get_host_id();
+  return ss.str();
+}
