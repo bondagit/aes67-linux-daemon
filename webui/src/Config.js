@@ -31,6 +31,8 @@ class Config extends Component {
     super(props);
     this.state = {
       httpPort: '',
+      rtspPort: '',
+      rtspPortErr: false,
       logSeverity: '',
       playoutDelay: '',
       playoutDelayErr: false,
@@ -70,6 +72,7 @@ class Config extends Component {
         data => this.setState(
           {
             httpPort: data.http_port,
+            rtspPort: data.rtsp_port,
             logSeverity: data.log_severity,
             playoutDelay: data.playout_delay,
             ticFrameSizeAt1fs: data.tic_frame_size_at_1fs,
@@ -88,6 +91,7 @@ class Config extends Component {
             interfaceName: data.interface_name,
             macAddr: data.mac_addr,
             ipAddr: data.ip_addr,
+            nodeId: data.node_id,
             isConfigLoading: false
 	  }))
       .catch(err => this.setState({isConfigLoading: false}));
@@ -100,6 +104,7 @@ class Config extends Component {
       !this.state.rtpMcastBaseErr &&
       !this.state.sapMcastAddrErr &&
       !this.state.rtpPortErr &&
+      !this.state.rtspPortErr &&
       !this.state.sapIntervalErr &&
       !this.state.syslogServerErr &&
       !this.state.isConfigLoading;
@@ -113,6 +118,7 @@ class Config extends Component {
       this.state.syslogServer, 
       this.state.rtpMcastBase, 
       this.state.rtpPort, 
+      this.state.rtspPort, 
       this.state.playoutDelay, 
       this.state.ticFrameSizeAt1fs, 
       this.state.sampleRate, 
@@ -155,8 +161,16 @@ class Config extends Component {
 	{this.state.isConfigLoading ? <Loader/> : <h3>Network Config</h3>}
         <table><tbody>
           <tr>
+            <th align="left"> <label>Node ID</label> </th>
+            <th align="left"> <input value={this.state.nodeId} disabled/> </th>
+          </tr>
+          <tr>
             <th align="left"> <label>HTTP port</label> </th>
             <th align="left"> <input type='number' min='1024' max='65536' className='input-number' value={this.state.httpPort} disabled/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>RTSP port</label> </th>
+            <th align="left"> <input type='number' min='1024' max='65536'  className='input-number' value={this.state.rtspPort} onChange={e => this.setState({rtspPort: e.target.value, rtspPortErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>
             <th align="left"> <label>RTP base address</label> </th>

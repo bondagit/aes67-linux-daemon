@@ -44,7 +44,7 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
   /* Called whenever a service has been resolved successfully or timed out */
   switch (event) {
     case AVAHI_RESOLVER_FAILURE:
-      BOOST_LOG_TRIVIAL(error) << "avahi_client:: (Resolver) failed to resolve "
+      BOOST_LOG_TRIVIAL(error) << "mdns_client:: (Resolver) failed to resolve "
                                << "service " << name << " of type " << type
                                << " in domain " << domain << " : "
                                << avahi_strerror(avahi_client_errno(
@@ -52,12 +52,18 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
       break;
 
     case AVAHI_RESOLVER_FOUND:
-      BOOST_LOG_TRIVIAL(debug) << "avahi_client:: (Resolver) "
+      BOOST_LOG_TRIVIAL(debug) << "mdns_client:: (Resolver) "
                                << "service " << name << " of type " << type
                                << " in domain " << domain;
 
       char addr[AVAHI_ADDRESS_STR_MAX];
-      avahi_address_snprint(addr, sizeof(addr), address);
+      if ((flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
+           (mdns.config_->get_interface_name() == "lo")) {
+        ::strncpy(addr, mdns.config_->get_ip_addr_str().c_str(), sizeof addr - 1);
+	addr[sizeof addr - 1] = 0;
+      } else {
+        avahi_address_snprint(addr, sizeof(addr), address);
+      }
 
       char info[256];
       snprintf(info, sizeof(info),
@@ -67,27 +73,30 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
                "wide_area: %i, "
                "multicast: %i, "
                "cached: %i",
-               host_name, port, addr, !!(flags & AVAHI_LOOKUP_RESULT_LOCAL),
+               host_name, port, addr, 
+               !!(flags & AVAHI_LOOKUP_RESULT_LOCAL),
                !!(flags & AVAHI_LOOKUP_RESULT_OUR_OWN),
                !!(flags & AVAHI_LOOKUP_RESULT_WIDE_AREA),
                !!(flags & AVAHI_LOOKUP_RESULT_MULTICAST),
                !!(flags & AVAHI_LOOKUP_RESULT_CACHED));
-      BOOST_LOG_TRIVIAL(debug) << "avahi_client:: (Resolver) " << info;
+      BOOST_LOG_TRIVIAL(debug) << "mdns_client:: (Resolver) " << info;
 
-      boost::system::error_code ec;
-      boost::asio::ip::address_v4::from_string(addr, ec);
-      if (!ec) {
-        /* if valid IPv4 address retrieve source data via RTSP */
+      /* if not on loopback interface we don't want to receive self announced sessions 
+       * or if on loopback interface we want only local announced sessions */
+      if ((!(flags & AVAHI_LOOKUP_RESULT_LOCAL) && 
+            (mdns.config_->get_interface_name() != "lo")) || 
+           ((flags & AVAHI_LOOKUP_RESULT_LOCAL) && 
+	    (mdns.config_->get_interface_name() == "lo"))) {
         std::lock_guard<std::mutex> lock(mdns.sources_res_mutex_);
 
-        /* have fun ;-) */
         mdns.sources_res_.emplace_back(std::async(
             std::launch::async,
-            [&mdns, name_ = std::forward<std::string>(name),
+            [&mdns,
+             name_ = std::forward<std::string>(name),
              domain_ = std::forward<std::string>(domain),
              addr_ = std::forward<std::string>(addr),
              port_ = std::forward<std::string>(std::to_string(port))] {
-              auto res = RTSPClient::describe(std::string("/by-name/") + name_,
+              auto res = RtspClient::describe(std::string("/by-name/") + name_,
                                               addr_, port_);
               if (res.first) {
                 mdns.on_new_rtsp_source(name_, domain_, res.second);
@@ -115,14 +124,14 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
    * from the LAN */
   switch (event) {
     case AVAHI_BROWSER_FAILURE:
-      BOOST_LOG_TRIVIAL(fatal) << "avahi_client:: (Browser) "
+      BOOST_LOG_TRIVIAL(fatal) << "mdns_client:: (Browser) "
                                << avahi_strerror(avahi_client_errno(
                                       avahi_service_browser_get_client(b)));
       avahi_threaded_poll_quit(mdns.poll_.get());
       return;
 
     case AVAHI_BROWSER_NEW:
-      BOOST_LOG_TRIVIAL(info) << "avahi_client:: (Browser) NEW: "
+      BOOST_LOG_TRIVIAL(info) << "mdns_client:: (Browser) NEW: "
                               << "service " << name << " of type " << type
                               << " in domain " << domain;
       /* We ignore the returned resolver object. In the callback
@@ -134,25 +143,25 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
                                        AVAHI_LOOKUP_NO_TXT, resolve_callback,
                                        &mdns))) {
         BOOST_LOG_TRIVIAL(error)
-            << "avahi_client:: "
+            << "mdns_client:: "
             << "Failed to resolve service " << name << " : "
             << avahi_strerror(avahi_client_errno(mdns.client_.get()));
       }
       break;
 
     case AVAHI_BROWSER_REMOVE:
-      BOOST_LOG_TRIVIAL(info) << "avahi_client:: (Browser) REMOVE: "
+      BOOST_LOG_TRIVIAL(info) << "mdns_client:: (Browser) REMOVE: "
                               << "service " << name << " of type " << type
                               << " in domain " << domain;
       mdns.on_remove_rtsp_source(name, domain);
       break;
 
     case AVAHI_BROWSER_ALL_FOR_NOW:
-      BOOST_LOG_TRIVIAL(debug) << "avahi_client:: (Browser) ALL_FOR_NOW";
+      BOOST_LOG_TRIVIAL(debug) << "mdns_client:: (Browser) ALL_FOR_NOW";
       break;
 
     case AVAHI_BROWSER_CACHE_EXHAUSTED:
-      BOOST_LOG_TRIVIAL(debug) << "avahi_client:: (Browser) CACHE_EXHAUSTED";
+      BOOST_LOG_TRIVIAL(debug) << "mdns_client:: (Browser) CACHE_EXHAUSTED";
       break;
   }
 }
@@ -165,7 +174,7 @@ void MDNSClient::client_callback(AvahiClient* client,
 
   switch (state) {
   case AVAHI_CLIENT_FAILURE:
-    BOOST_LOG_TRIVIAL(fatal) << "avahi_client:: server connection failure: "
+    BOOST_LOG_TRIVIAL(fatal) << "mdns_client:: server connection failure: "
                              << avahi_strerror(avahi_client_errno(client));
     /* TODO reconnect if disconnected */
     avahi_threaded_poll_quit(mdns.poll_.get());
@@ -177,11 +186,12 @@ void MDNSClient::client_callback(AvahiClient* client,
     /* Create the service browser */
     mdns.sb_.reset(avahi_service_browser_new(client,
                                         mdns.config_->get_interface_idx(),
-                                        AVAHI_PROTO_INET, "_rtsp._tcp", nullptr,
-                                        {}, browse_callback, &mdns));
+                                        AVAHI_PROTO_INET, 
+                                        "_ravenna_session._sub._rtsp._tcp", 
+					nullptr, {}, browse_callback, &mdns));
     if (mdns.sb_ == nullptr) {
       BOOST_LOG_TRIVIAL(fatal)
-          << "avahi_client:: failed to create service browser: "
+          << "mdns_client:: failed to create service browser: "
           << avahi_strerror(avahi_client_errno(mdns.client_.get()));
       avahi_threaded_poll_quit(mdns.poll_.get());
     }
@@ -204,7 +214,7 @@ bool MDNSClient::init() {
   poll_.reset(avahi_threaded_poll_new());
   if (poll_ == nullptr) {
     BOOST_LOG_TRIVIAL(fatal)
-        << "avahi_client:: failed to create threaded poll object";
+        << "mdns_client:: failed to create threaded poll object";
     return false;
   }
 
@@ -215,7 +225,7 @@ bool MDNSClient::init() {
                                  &error));
   if (client_ == nullptr) {
     BOOST_LOG_TRIVIAL(fatal)
-        << "avahi_client:: failed to create client: " << avahi_strerror(error);
+        << "mdns_client:: failed to create client: " << avahi_strerror(error);
     return false;
   }
 
@@ -250,11 +260,10 @@ bool MDNSClient::terminate() {
   if (running_) {
     running_ = false;
 #ifdef _USE_AVAHI_
-    /* remove all completed results and populate remote sources list */
     /* wait for all pending results and remove from list */
     std::lock_guard<std::mutex> lock(sources_res_mutex_);
-    BOOST_LOG_TRIVIAL(fatal) << "avahi_client:: waiting for "
-                             << sources_res_.size() << " RTSP clients";
+    BOOST_LOG_TRIVIAL(info) << "mdns_client:: waiting for "
+                            << sources_res_.size() << " RTSP clients";
     sources_res_.remove_if([](auto& result) {
       if (result.valid()) {
         result.wait();

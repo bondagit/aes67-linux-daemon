@@ -17,23 +17,23 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef _RTSP_HPP_
-#define _RTSP_HPP_
+#ifndef _RTSP_CLIENT_HPP_
+#define _RTSP_CLIENT_HPP_
 
-struct RTSPSSource {
+struct RtspSource {
   std::string id;
   std::string source;
   std::string address;
   std::string sdp;
 };
 
-class RTSPClient {
+class RtspClient {
  public:
   constexpr static uint16_t max_body_length = 4096;  // byte
   constexpr static uint16_t client_timeout = 10;     // sec
   constexpr static const char dft_port[] = "554";
 
-  static std::pair<bool, RTSPSSource> describe(
+  static std::pair<bool, RtspSource> describe(
       const std::string& path,
       const std::string& address,
       const std::string& port = dft_port);

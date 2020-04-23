@@ -93,6 +93,8 @@ std::string DaemonErrCategory::message(int ev) const {
       return "invalid stream id";
     case DaemonErrc::stream_id_in_use:
       return "stream id is in use";
+    case DaemonErrc::stream_name_in_use:
+      return "stream name is in use";
     case DaemonErrc::stream_id_not_in_use:
       return "stream not in use";
     case DaemonErrc::invalid_url:

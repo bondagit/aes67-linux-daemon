@@ -30,19 +30,20 @@
 #include "driver_manager.hpp"
 #include "igmp.hpp"
 #include "sap.hpp"
+#include "mdns_server.hpp"
 
 struct StreamSource {
   uint8_t id{0};
   bool enabled{false};
   std::string name;
   std::string io;
-  std::vector<uint8_t> map;
   uint32_t max_samples_per_packet{0};
   std::string codec;
   uint8_t ttl{0};
   uint8_t payload_type{0};
   uint8_t dscp{0};
   bool refclk_ptp_traceable{false};
+  std::vector<uint8_t> map;
 };
 
 struct StreamSink {
@@ -106,6 +107,10 @@ class SessionManager {
   // session manager interface
   bool init() {
     if (!running_) {
+      /* init mDNS server */
+      if (config_->get_mdns_enabled() && !mdns_.init()) {
+        return false;
+      }
       running_ = true;
       res_ = std::async(std::launch::async, &SessionManager::worker, this);
     }
@@ -122,6 +127,9 @@ class SessionManager {
       for (auto sink : get_sinks()) {
         remove_sink(sink.id);
       }
+      if (config_->get_mdns_enabled()) {
+        mdns_.terminate();
+      }
       return ret;
     }
     return true;
@@ -132,12 +140,14 @@ class SessionManager {
   std::list<StreamSource> get_sources() const;
   std::error_code get_source_sdp(uint32_t id, std::string& sdp) const;
   std::error_code remove_source(uint32_t id);
+  uint8_t get_source_id(const std::string& name) const;
 
   std::error_code add_sink(const StreamSink& sink);
   std::error_code get_sink(uint8_t id, StreamSink& sink) const;
   std::list<StreamSink> get_sinks() const;
   std::error_code get_sink_status(uint32_t id, SinkStreamStatus& status) const;
   std::error_code remove_sink(uint32_t id);
+  uint8_t get_sink_id(const std::string& name) const;
 
   std::error_code set_ptp_config(const PTPConfig& config);
   void get_ptp_config(PTPConfig& config) const;
@@ -151,6 +161,12 @@ class SessionManager {
  protected:
   constexpr static const char ptp_primary_mcast_addr[] = "224.0.1.129";
   constexpr static const char ptp_pdelay_mcast_addr[] = "224.0.1.107";
+
+  void on_add_source(const StreamSource& source, const StreamInfo& info);
+  void on_remove_source(const StreamInfo& info);
+
+  void on_add_sink(const StreamSink& sink, const StreamInfo& info);
+  void on_remove_sink(const StreamInfo& info);
 
   std::string get_removed_source_sdp_(uint32_t id, uint32_t src_addr) const;
   std::string get_source_sdp_(uint32_t id, const StreamInfo& info) const;
@@ -174,10 +190,12 @@ class SessionManager {
 
   /* current sources */
   std::map<uint8_t /* id */, StreamInfo> sources_;
+  std::map<std::string, uint8_t /* id */> source_names_;
   mutable std::shared_mutex sources_mutex_;
 
   /* current sinks */
   std::map<uint8_t /* id */, StreamInfo> sinks_;
+  std::map<std::string, uint8_t /* id */> sink_names_;
   mutable std::shared_mutex sinks_mutex_;
 
   /* current announced sources */
@@ -192,6 +210,7 @@ class SessionManager {
   PTPStatus ptp_status_;
   mutable std::shared_mutex ptp_mutex_;
 
+  MDNSServer mdns_{config_};
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;
 };

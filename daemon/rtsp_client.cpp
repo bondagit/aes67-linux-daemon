@@ -83,10 +83,10 @@ RtspResponse read_response(tcp::iostream& s, uint16_t max_length) {
   return res;
 }
 
-std::pair<bool, RTSPSSource> RTSPClient::describe(const std::string& path,
+std::pair<bool, RtspSource> RtspClient::describe(const std::string& path,
                                                   const std::string& address,
                                                   const std::string& port) {
-  RTSPSSource rs;
+  RtspSource rs;
   bool success{false};
   try {
     tcp::iostream s;
@@ -155,8 +155,8 @@ std::pair<bool, RTSPSSource> RTSPClient::describe(const std::string& path,
     std::stringstream ss;
     ss << "rtsp:" << std::hex
        << crc16(reinterpret_cast<const uint8_t*>(res.body.c_str()),
-                res.body.length())
-       << std::hex << ip::address_v4::from_string(address.c_str()).to_ulong();
+                res.body.length());
+       /*<< std::hex << ip::address_v4::from_string(address.c_str()).to_ulong();*/
 
     rs.id = ss.str();
     rs.source = "mDNS";

@@ -31,7 +31,7 @@ const source = '/source';
 const sdp = '/sdp';
 const sink = '/sink';
 const status = '/status';
-const browseSources = '/browse/sources';
+const browseSources = '/browse/sources/all';
 
 const defaultParams = {
   credentials: 'same-origin',
@@ -76,7 +76,7 @@ export default class RestAPI {
     });
   }
 
-  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled) {
+  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled) {
     return this.doFetch(config, {
       body: JSON.stringify({
         log_severity: parseInt(log_severity, 10),
@@ -84,6 +84,7 @@ export default class RestAPI {
         syslog_server: syslog_server,
         rtp_mcast_base: rtp_mcast_base,
         rtp_port: parseInt(rtp_port, 10),
+        rtsp_port: parseInt(rtsp_port, 10),
         playout_delay: parseInt(playout_delay, 10),
         tic_frame_size_at_1fs: parseInt(tic_frame_size_at_1fs, 10),
         sample_rate: parseInt(sample_rate, 10),

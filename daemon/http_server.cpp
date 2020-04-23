@@ -281,8 +281,9 @@ bool HttpServer::init() {
   });
 
   /* get remote sources */
-  svr_.Get("/api/browse/sources", [this](const Request& req, Response& res) {
-    auto const sources = browser_->get_remote_sources();
+  svr_.Get("/api/browse/sources/(all|mdns|sap)", 
+            [this](const Request& req, Response& res) {
+    auto const sources = browser_->get_remote_sources(req.matches[1]);
     set_headers(res, "application/json");
     res.body = remote_sources_to_json(sources);
   });

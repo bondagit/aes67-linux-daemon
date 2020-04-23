@@ -24,6 +24,7 @@
 #include "config.hpp"
 #include "driver_manager.hpp"
 #include "http_server.hpp"
+#include "rtsp_server.hpp"
 #include "log.hpp"
 #include "session_manager.hpp"
 #include "interface.hpp"
@@ -116,6 +117,12 @@ int main(int argc, char* argv[]) {
           std::string("SessionManager:: init failed"));
       }
 
+      /* start rtsp server */
+      RtspServer rtsp_server(session_manager, config);
+      if (!rtsp_server.init()) {
+        throw std::runtime_error(std::string("RtspServer:: init failed"));
+      }
+
       /* start browser */
       auto browser = Browser::create(config);
       if (browser == nullptr || !browser->init()) {
@@ -147,6 +154,8 @@ int main(int argc, char* argv[]) {
           break;
         }
 
+	rtsp_server.process();
+
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
 
@@ -163,6 +172,12 @@ int main(int argc, char* argv[]) {
       if (!browser->terminate()) {
         throw std::runtime_error(
             std::string("Browser:: terminate failed"));
+      }
+
+      /* stop rtsp server */
+      if (!rtsp_server.terminate()) {
+        throw std::runtime_error(
+            std::string("RtspServer:: terminate failed"));
       }
 
       /* stop session manager */

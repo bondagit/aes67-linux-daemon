@@ -62,7 +62,8 @@ class Browser : public MDNSClient {
   bool init() override;
   bool terminate() override;
 
-  std::list<RemoteSource> get_remote_sources() const;
+  std::list<RemoteSource> get_remote_sources(
+                   const std::string& source = "all") const;
 
  protected:
   // singleton, use create() to build
@@ -75,7 +76,7 @@ class Browser : public MDNSClient {
   virtual void on_new_rtsp_source(
                    const std::string& name,
                    const std::string& domain,
-                   const RTSPSSource& source) override;
+                   const RtspSource& source) override;
   virtual void on_remove_rtsp_source(
                    const std::string& name,
                    const std::string& domain) override;

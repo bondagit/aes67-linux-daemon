@@ -33,6 +33,7 @@ class Config {
 
   /* attributes retrieved from config json */
   uint16_t get_http_port() const { return http_port_; };
+  uint16_t get_rtsp_port() const { return rtsp_port_; };
   const std::string get_http_base_dir() const { return http_base_dir_; };
   int get_log_severity() const { return log_severity_; };
   uint32_t get_playout_delay() const { return playout_delay_; };
@@ -61,6 +62,7 @@ class Config {
   int get_interface_idx() { return interface_idx_; };
 
   void set_http_port(uint16_t http_port) { http_port_ = http_port; };
+  void set_rtsp_port(uint16_t rtsp_port) { rtsp_port_ = rtsp_port; };
   void set_http_base_dir(const std::string& http_base_dir) { http_base_dir_ = http_base_dir; };
   void set_log_severity(int log_severity) { log_severity_ = log_severity; };
   void set_playout_delay(uint32_t playout_delay) {
@@ -111,6 +113,7 @@ class Config {
  private:
   /* from json */
   uint16_t http_port_{8080};
+  uint16_t rtsp_port_{8854};
   std::string http_base_dir_{"../webui/build"};
   int log_severity_{2};
   uint32_t playout_delay_{0};

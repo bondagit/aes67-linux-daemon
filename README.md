@@ -5,7 +5,7 @@ See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) f
 
 # Introduction
 
-The daemon is a Linux process that uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handles PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.     
+The daemon is a Linux process that uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handle PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.     
 
 The **ALSA AES67 Driver** implements a virtual ALSA audio device that can be configured using _Sources_ and _Sinks_ and it's clocked using the PTP clock.    
 A _Source_ reads audio samples from the ALSA playback device and sends RTP packets to a configured multicast address.    
@@ -40,15 +40,16 @@ The daemon uses the following open source:
 This directory contains the AES67 daemon source code.     
 The daemon can be cross-compiled for multiple platforms and implements the following functionalities:
 
+* communication and configuration of the ALSA RAVENNA/AES67 device driver
 * control and configuration of up to 64 sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
-* HTTP REST API for control and configuration
-* SAP discovery protocol and SAP browser
-* mDNS sources discovery (using Avahi) and SDP transfer via RTSP
-* IGMP handling for SAP, RTP and PTP multicast traffic
+* HTTP REST API for the daemon control and configuration
+* SAP sources discovery and advertisement compatible with AES67 standard
+* mDNS sources discovery and advertisement (using Linux Avahi) compatible with Ravenna standard
+* RTSP client and server to retrieve or return SDP files via DESCRIBE method
+* IGMP handling for SAP and RTP sessions
 
-The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  To run daemon tests install the ALSA RAVENNA/AES67 kernel module enter the [tests](daemon/tests) subdirectory and run *./daemon-test -l all*    
-
+The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  
 See the [README](daemon/README.md) file in this directory for additional information about the AES67 daemon configuration and the HTTP REST API.
 
 ### [webui](webui) directory ###
@@ -85,7 +86,7 @@ This directory contains a the daemon configuration and status files used to run 
 The daemon and the demo have been tested with **Ubuntu 18.04** distro on **ARMv7** and with **Ubuntu 18.04, 19.10 and 20.04** distros on **x86** using:
 
 * Linux kernel version >= 4.14.x
-* GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required, clang is required to compile on ARMv7)
+* GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required)
 * cmake version >= 3.10.2
 * node version >= 8.10.0
 * npm version >= 3.5.2
@@ -108,7 +109,20 @@ The script performs the following operations:
 * build and deploy the WebUI
 * build the AES67 daemon
 
-## Run the Demo ##
+## Run the regression tests ##
+To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:    
+
+      sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
+
+setup the kernel parameters with:
+
+      sudo sysctl -w net/ipv4/igmp_max_memberships=66
+
+make sure that no instances of the aes67-daemon are running, enter the [tests](daemon/tests) subdirectory and run:
+
+      ./daemon-test
+
+## Run the demo ##
 <a name="demo"></a>
 To run a simple demo use the [run\_demo.sh](run_demo.sh) script. See [script notes](#notes).
 
@@ -147,6 +161,7 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
 * open the Hasseb WebUI and do the following:
   * deselect the "PTP slave only" checkbox to enable PTP master on Hasseb device
   * select the "Add SDP file manually" checkbox and copy the previous Source SDP into the SDP field
+  * alternatively to the step above, select in the "Stream name" drop down the daemon Source just added
   * press the Submit button
 * return to the daemon WebUI, click on the PTP tab and wait for the "PTP Status" to report "locked"
 * open a shell on the Linux host and start the playback on the ravenna ALSA device. For example to playback a test sound use:

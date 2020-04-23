@@ -20,10 +20,22 @@
 #ifndef _UTILS_HPP_
 #define _UTILS_HPP_
 
-#include <stdint.h>
-
+#include <iostream>
 #include <cstddef>
 
+#include <httplib.h>
+
 uint16_t crc16(const uint8_t* p, size_t len);
+
+std::tuple<bool /* res */,
+           std::string /* protocol */,
+           std::string /* host */,
+           std::string /* port */,
+           std::string /* path */>
+parse_url(const std::string& _url);
+
+std::string get_host_id();
+std::string get_host_name();
+std::string get_node_id();
 
 #endif

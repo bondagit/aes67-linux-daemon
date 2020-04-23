@@ -45,7 +45,8 @@ bool SAP::set_multicast_interface(const std::string& interface_ip) {
         << "sap::outbound_interface option " << ec.message();
     return false;
   }
-  ip::multicast::enable_loopback el_option(true);
+  /* we don't want receive self announced sessions */
+  ip::multicast::enable_loopback el_option(false);
   socket_.set_option(el_option, ec);
   if (ec) {
     BOOST_LOG_TRIVIAL(error) << "sap::enable_loopback option " << ec.message();
