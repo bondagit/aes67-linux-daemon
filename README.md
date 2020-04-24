@@ -18,7 +18,7 @@ The driver handles the PTP and RTP packets processing and acts as a PTP clock sl
 
 The daemon communicates with the driver for control, configuration and status monitoring only by using _netlink_ sockets.    
 The daemon implements a REST interface to configure and monitor the _Sources_, the _Sinks_ and PTP slave. See [README](daemon/README.md) for additional info.
-It also implements SAP sources discovery and advertisement compatible with AES67 standard and mDNS sources discovery and advertisement  compatible with Ravenna standard.    
+It also implements SAP sources discovery and advertisement compatible with AES67 standard and mDNS sources discovery and advertisement compatible with Ravenna standard.    
 
 A WebUI is provided to allow daemon and driver configuration and monitoring. The WebUI uses the daemon REST API and exposes all the supported configuration paramaters for the daemon, the PTP slave clock, the _Sources_ and the _Sinks_. The WebUI can also be used to monitor the PTP slave status and the _Sinks_ status and to browse the remote SAP and mDNS sources.
 
@@ -125,7 +125,7 @@ make sure that no instances of the aes67-daemon are running, enter the [tests](d
 ## Run the demo ##
 <a name="demo"></a>
 To run a simple demo use the [run\_demo.sh](run_demo.sh) script. See [script notes](#notes).
-The demo configures and uses a loopback of 8 channels with AM824 codec (S32 format) codec at 48Khz and saves the output to a wav file.
+The demo configures and uses a loopback of 8 channels with AM824 codec (S32 format) at 48Khz and saves the output to a wav file.
 
 The demo performs the following operations:
 

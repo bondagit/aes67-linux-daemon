@@ -17,10 +17,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "mdns_server.hpp"
-
 #include <boost/asio.hpp>
 
+#include "mdns_server.hpp"
 #include "config.hpp"
 #include "interface.hpp"
 #include "log.hpp"

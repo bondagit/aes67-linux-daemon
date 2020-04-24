@@ -16,7 +16,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "rtsp_server.hpp"
-
 #include "utils.hpp"
 
 using boost::asio::ip::tcp;
@@ -178,7 +177,7 @@ void RtspSession::build_response(const std::string& url) {
 void RtspSession::read_request() {
   auto self(shared_from_this());
   if (length_ == max_length) {
-    /* request cannot be consumed and we execeeded max length */
+    /* request cannot be consumed and we exceeded max length */
     stop();
   } else {
     socket_.async_read_some(

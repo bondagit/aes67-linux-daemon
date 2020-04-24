@@ -132,8 +132,8 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body type** application/json    
 * **Body** [RTP Streams params](#rtp-streams)
 
-### Get all remote RTP Sources ###
-* **Description** retrieve all the remote sources collected via SAP and mDNS
+### Get remote RTP Sources ###
+* **Description** retrieve the remote sources collected via SAP, via mDNS or both
 * **URL** /api/browse/sources/[all|mdns|sap]
 * **Method** GET    
 * **URL Params** all=[all sources], mdns=[mDNS sources only], sap=[sap sources only]    
