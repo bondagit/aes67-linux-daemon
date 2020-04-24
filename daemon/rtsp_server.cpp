@@ -178,7 +178,7 @@ void RtspSession::build_response(const std::string& url) {
 void RtspSession::read_request() {
   auto self(shared_from_this());
   if (length_ == max_length) {
-    /* request cannot be consumed and we execeed max length */
+    /* request cannot be consumed and we execeeded max length */
     stop();
   } else {
     socket_.async_read_some(

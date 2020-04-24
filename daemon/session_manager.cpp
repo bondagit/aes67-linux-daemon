@@ -415,7 +415,7 @@ static std::array<uint8_t, 6> get_mcast_mac_addr(uint32_t mcast_ip) {
 
 uint8_t SessionManager::get_source_id(const std::string& name) const {
   const auto it = source_names_.find(name);
-  return it != source_names_.end() ? it->second : stream_id_max;
+  return it != source_names_.end() ? it->second : (stream_id_max + 1);
 }
 
 void SessionManager::on_add_source(const StreamSource& source, 
