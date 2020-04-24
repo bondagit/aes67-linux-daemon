@@ -45,7 +45,7 @@ static uint8_t get_codec_word_lenght(const std::string& codec) {
   if (codec == "L24") {
     return 3;
   }
-  if (codec == "L2432") {
+  if (codec == "L2432" || codec == "AM824") {
     return 4;
   }
   if (codec == "DSD64") {
