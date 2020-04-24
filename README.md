@@ -125,6 +125,7 @@ make sure that no instances of the aes67-daemon are running, enter the [tests](d
 ## Run the demo ##
 <a name="demo"></a>
 To run a simple demo use the [run\_demo.sh](run_demo.sh) script. See [script notes](#notes).
+The demo configures and uses a loopback of 8 channels with AM824 codec (S32 format) codec at 48Khz and saves the output to a wav file.
 
 The demo performs the following operations:
 
@@ -148,7 +149,7 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
 * verify that PulseAdio is not running. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module with:     
 
-      sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko*
+      sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
 
 * run the daemon using the new configuration file:     
          

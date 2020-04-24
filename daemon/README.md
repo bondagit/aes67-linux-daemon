@@ -317,7 +317,7 @@ where:
 
 > **codec**
 > JSON string specifying codec in use.
-> Valid values are L16 and L24.
+> Valid values are L16, L24 and AM824 (L32).
 
 > **max\_sample\_per\_packet**
 > JSON number specifying the max number of samples contained in one RTP packet.    
