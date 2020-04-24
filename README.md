@@ -18,7 +18,7 @@ The driver handles the PTP and RTP packets processing and acts as a PTP clock sl
 
 The daemon communicates with the driver for control, configuration and status monitoring only by using _netlink_ sockets.    
 The daemon implements a REST interface to configure and monitor the _Sources_, the _Sinks_ and PTP slave. See [README](daemon/README.md) for additional info.
-It also implements SAP for sources announcements and discovery, and mDNS sources discovery and SDP transfer via RTSP.    
+It also implements SAP sources discovery and advertisement compatible with AES67 standard and mDNS sources discovery and advertisement  compatible with Ravenna standard.    
 
 A WebUI is provided to allow daemon and driver configuration and monitoring. The WebUI uses the daemon REST API and exposes all the supported configuration paramaters for the daemon, the PTP slave clock, the _Sources_ and the _Sinks_. The WebUI can also be used to monitor the PTP slave status and the _Sinks_ status and to browse the remote SAP and mDNS sources.
 
