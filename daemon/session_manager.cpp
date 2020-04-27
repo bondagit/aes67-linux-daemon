@@ -151,7 +151,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
                   strncpy(info.stream.m_cCodec, fields[1].c_str(),
                           sizeof(info.stream.m_cCodec) - 1);
                   info.stream.m_byWordLength = get_codec_word_lenght(fields[1]);
-                  info.stream.m_ui32SamplingRate = std::stoi(fields[2]);
+                  info.stream.m_ui32SamplingRate = std::stoul(fields[2]);
                   if (info.stream.m_byNbOfChannels != std::stoi(fields[3])) {
                     BOOST_LOG_TRIVIAL(warning)
                         << "session_manager:: invalid audio channel "
@@ -163,7 +163,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
                 }
               } else if (name == "sync-time") {
                 /* a=sync-time:0 */
-                info.stream.m_ui32RTPTimestampOffset = std::stoi(value);
+                info.stream.m_ui32RTPTimestampOffset = std::stoul(value);
               } else if (name == "framecount") {
                 /* a=framecount:64-192 */
               } else if (name == "ptime") {
@@ -176,9 +176,9 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
                 /* a=mediaclk:direct=0 */
                 std::vector<std::string> fields;
                 boost::split(fields, value,
-                             [line](char c) { return c == ':'; });
+                             [line](char c) { return c == '='; });
                 if (fields.size() == 2 && fields[0] == "direct") {
-                  info.stream.m_ui32RTPTimestampOffset = std::stoi(fields[1]);
+                  info.stream.m_ui32RTPTimestampOffset = std::stoul(fields[1]);
                 }
               } else if (name == "ts-refclk" && !info.ignore_refclk_gmid) {
                 /* a=ts-refclk:ptp=IEEE1588-2008:00-0C-29-FF-FE-0E-90-C8:0 */
@@ -221,7 +221,9 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
         case 'c':
           /* c=IN IP4 239.1.0.12/15 */
           /* connection info of audio media */
-          if (status == sdp_parser_status::media) {
+          if (status == sdp_parser_status::media ||
+                /* generic connection info */
+                status == sdp_parser_status::init) {
             std::vector<std::string> fields;
             boost::split(fields, val,
                          [line](char c) { return c == ' ' || c == '/'; });
