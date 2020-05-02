@@ -86,7 +86,7 @@ class RtspServer {
   bool init() {
     accept();
     /* start rtsp server on a separate thread */
-    res_ = std::async(std::launch::async, &RtspServer::worker, this);
+    res_ = std::async([this](){ io_service_.run(); });
     return true;
   }
 
@@ -100,7 +100,6 @@ class RtspServer {
   void process();
 
  private:
-  void worker();
   void accept();
 
   std::mutex mutex_;

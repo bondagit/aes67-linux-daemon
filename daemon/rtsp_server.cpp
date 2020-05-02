@@ -20,10 +20,6 @@
 
 using boost::asio::ip::tcp;
 
-void RtspServer::worker() {
-  io_service_.run();
-}
-
 void RtspServer::process() {
   /* cleanup of expired sessions */
   std::lock_guard<std::mutex> lock(mutex_);

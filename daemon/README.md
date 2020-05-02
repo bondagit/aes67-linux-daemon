@@ -10,8 +10,8 @@ The daemon is responsible for:
 * HTTP REST API for the daemon control and configuration
 * SAP sources discovery and advertisement compatible with AES67 standard
 * mDNS sources discovery and advertisement (using Linux Avahi) compatible with Ravenna standard
-* RTSP client and server to retrieve or return SDP files via DESCRIBE method
-* IGMP handling for SAP and RTP sessions
+* RTSP client and server to retrieve or return SDP files via DESCRIBE method compatible with Ravenna standard
+* IGMP handling for SAP, PTP and RTP sessions
 
 
 ## Configuration file ##
