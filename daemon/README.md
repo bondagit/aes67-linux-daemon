@@ -220,9 +220,9 @@ where:
 > JSON number specifying the default safety playout delay at 1FS in samples.
 
 > **tic\_frame\_size\_at\_1fs**
-> JSON number specifying the TIC frame size at 1FS in samples, valid range is between 6 and 192 samples.
-> This global setting is used to determine the driver base timer period. For example with a value of 192 samples this period is set to 4ms and the outgoing RTP packets are scheduled for being sent to the network interface every 4ms causing an average latency grater than 4ms.     
-> A user is able to configure Source whose max number of samples range from 125μs (6 samples) to the value of this parameter. For example with a value of 48 samples a user is able to configure sources with a max number of samples ranging from 125μs (6 samples) to 1ms (48 samples) and these will be affected by a 1ms latency.
+> JSON number specifying the TIC frame size at 1FS in samples, valid range is from 6 to 192 samples.
+> This global setting is used to determine the driver base timer period. For example with a value of 192 samples this period is set to 4ms and the outgoing RTP packets are scheduled for being sent every 4ms causing an average latency greater than 4ms.     
+> A user is able to configure Sources whose max number of samples range from 125μs (6 samples) to the value of this parameter. For example with a value of 48 samples a user is able to configure Sources with a max number of samples ranging from 125μs (6 samples) to 1ms (48 samples) and packets will be affected by a 1ms latency.
 
 > **max\_tic\_frame\_size**
 > JSON number specifying the max tick frame size. This is currently set to 1024.
