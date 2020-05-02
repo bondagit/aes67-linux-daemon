@@ -43,6 +43,7 @@ const max_packet_size = 1440; //bytes
 class SourceEdit extends Component {
   static propTypes = {
     source: PropTypes.object.isRequired,
+    ticFrameSizeAt1fs: PropTypes.number.isRequired,
     applyEdit: PropTypes.func.isRequired,
     closeEdit: PropTypes.func.isRequired,
     editIsOpen: PropTypes.bool.isRequired,
@@ -58,7 +59,8 @@ class SourceEdit extends Component {
       name: this.props.source.name,
       nameErr: false,
       io: this.props.source.io,
-      maxSamplesPerPacket: this.props.source.max_samples_per_packet,
+      maxSamplesPerPacket: (this.props.source.max_samples_per_packet > this.props.ticFrameSizeAt1fs) ? 
+                              this.props.ticFrameSizeAt1fs : this.props.source.max_samples_per_packet,
       codec: this.props.source.codec,
       ttl: this.props.source.ttl,
       ttlErr: false,
@@ -84,6 +86,7 @@ class SourceEdit extends Component {
     this.onChangeMaxSamplesPerPacket = this.onChangeMaxSamplesPerPacket.bind(this);
     this.onChangeCodec = this.onChangeCodec.bind(this);
     this.inputIsValid = this.inputIsValid.bind(this);
+    this.checkMaxSamplesPerPacket = this.checkMaxSamplesPerPacket.bind(this);
   }
 
   componentDidMount() {
@@ -153,6 +156,10 @@ class SourceEdit extends Component {
     this.setState({ map: map });
   }
 
+  checkMaxSamplesPerPacket(value) {
+    return this.props.ticFrameSizeAt1fs >= value;
+  }
+
   inputIsValid() {
     return !this.state.nameErr &&
       !this.state.ttlErr &&
@@ -186,12 +193,12 @@ class SourceEdit extends Component {
               <th align="left"> <label>Max samples per packet </label> </th>
               <th align="left"> 
 	        <select value={this.state.maxSamplesPerPacket} onChange={this.onChangeMaxSamplesPerPacket}>
-                  <option value="6">6 - 125&mu;s@48Khz</option>
-                  <option value="12">12 - 250&mu;s@48Khz</option>
-                  <option value="16">16 - 333&mu;s@48Khz</option>
-                  <option value="48">48 - 1ms@48Khz</option>
-                  <option value="96">96 - 2ms@48Khz</option>
-                  <option value="192">192 - 4ms@48Khz</option>
+                  <option value="6" disabled={this.checkMaxSamplesPerPacket(6) ? undefined : true}>6 - 125&mu;s@48Khz</option>
+                  <option value="12" disabled={this.checkMaxSamplesPerPacket(12) ? undefined : true}>12 - 250&mu;s@48Khz</option>
+                  <option value="16" disabled={this.checkMaxSamplesPerPacket(16) ? undefined : true}>16 - 333&mu;s@48Khz</option>
+                  <option value="48" disabled={this.checkMaxSamplesPerPacket(48) ? undefined : true}>48 - 1ms@48Khz</option>
+                  <option value="96" disabled={this.checkMaxSamplesPerPacket(96) ? undefined : true}>96 - 2ms@48Khz</option>
+                  <option value="192" disabled={this.checkMaxSamplesPerPacket(192) ? undefined : true}>192 - 4ms@48Khz</option>
                 </select>
               </th>
             </tr>

@@ -117,7 +117,7 @@ class Config {
   std::string http_base_dir_{"../webui/build"};
   int log_severity_{2};
   uint32_t playout_delay_{0};
-  uint32_t tic_frame_size_at_1fs_{512};
+  uint32_t tic_frame_size_at_1fs_{48};
   uint32_t max_tic_frame_size_{1024};
   uint32_t sample_rate_{44100};
   std::string rtp_mcast_base_{"239.1.0.1"};

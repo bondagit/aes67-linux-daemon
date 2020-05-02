@@ -139,11 +139,13 @@ class Sources extends Component {
       sources: [], 
       source: {}, 
       isLoading: false, 
+      isConfigLoading: false, 
       isEdit: false, 
       isInfo: false, 
       editIsOpen: false, 
       infoIsOpen: false, 
-      removeIsOpen: false, 
+      removeIsOpen: false,
+      ticFrameSizeAt1fs: '',
       editTitle: '' 
     };
     this.onInfoClick = this.onInfoClick.bind(this);
@@ -160,12 +162,17 @@ class Sources extends Component {
   }
 
   fetchSources() {
-    this.setState({isLoading: true});
+    this.setState({isLoading: true, isConfigLoading: true});
     RestAPI.getSources()
       .then(response => response.json())
       .then(
         data => this.setState( { sources: data.sources, isLoading: false }))
       .catch(err => this.setState( { isLoading: false } ));
+    RestAPI.getConfig()
+      .then(response => response.json())
+      .then(
+        data => this.setState( { isConfigLoading: false, ticFrameSizeAt1fs: data.tic_frame_size_at_1fs }))
+      .catch(err => this.setState({ isConfigLoading: false }));
   }
 
   componentDidMount() {
@@ -253,7 +260,7 @@ class Sources extends Component {
     ));
     return (
       <div id='sources'>
-       { this.state.isLoading ? <Loader/> 
+       { this.state.isLoading || this.state.isConfigLoading ? <Loader/> 
 	   : <SourceList onAddClick={this.onAddClick} 
                onReloadClick={this.onReloadClick}
                sources={sources} /> }
@@ -273,6 +280,7 @@ class Sources extends Component {
           applyEdit={this.applyEdit}
           editTitle={this.state.editTitle} 
 	  isEdit={this.state.isEdit}
+          ticFrameSizeAt1fs={this.state.ticFrameSizeAt1fs}
 	  source={this.state.source} />
            : undefined }
        { this.state.removeIsOpen ?

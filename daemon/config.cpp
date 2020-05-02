@@ -59,9 +59,10 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
   if (config.playout_delay_ > 4000)
     config.playout_delay_ = 4000;
   if (config.tic_frame_size_at_1fs_ == 0 ||
-      config.tic_frame_size_at_1fs_ > 8192)
+      config.tic_frame_size_at_1fs_ > 192)
     config.tic_frame_size_at_1fs_ = 192;
-  if (config.max_tic_frame_size_ == 0 || config.max_tic_frame_size_ > 8192)
+  if (config.max_tic_frame_size_ < config.tic_frame_size_at_1fs_ ||
+      config.max_tic_frame_size_ > 1024)
     config.max_tic_frame_size_ = 1024;
   if (config.sample_rate_ == 0)
     config.sample_rate_ = 44100;

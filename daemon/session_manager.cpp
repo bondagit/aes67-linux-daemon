@@ -455,7 +455,9 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_byNbOfChannels = source.map.size();
   strncpy(info.stream.m_cCodec, source.codec.c_str(),
           sizeof(info.stream.m_cCodec) - 1);
-  info.stream.m_ui32MaxSamplesPerPacket = source.max_samples_per_packet;  // only for Source
+  info.stream.m_ui32MaxSamplesPerPacket = 
+    source.max_samples_per_packet > config_->get_tic_frame_size_at_1fs() ?
+      config_->get_tic_frame_size_at_1fs() : source.max_samples_per_packet;
   info.stream.m_ui32SamplingRate = driver_->get_current_sample_rate(); // last set from driver or config
   info.stream.m_uiId = source.id;
   info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();
@@ -717,19 +719,11 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     info.stream.m_ui32FrameSize = config_->get_max_tic_frame_size();
   }
  
-  BOOST_LOG_TRIVIAL(info) << "session_manager:: sink samples per packet " << 
-    info.stream.m_ui32MaxSamplesPerPacket;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: sink frame size " << 
     info.stream.m_ui32FrameSize;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: playout delay " << 
     info.stream.m_ui32PlayOutDelay;
 
-  // info.m_ui32SrcIP = addr;  // only for Source
-  // info.m_usSrcPort = 5004;
-  // info.m_ui32MaxSamplesPerPacket = 48;
-  // info.m_ui32SSRC = 65544;
-  // info.m_ucDSCP = source.dscp; 
-  // info.m_byTTL = source.ttl;
   auto mcast_mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
   std::copy(std::begin(mcast_mac_addr), std::end(mcast_mac_addr),
             info.stream.m_ui8DestMAC);

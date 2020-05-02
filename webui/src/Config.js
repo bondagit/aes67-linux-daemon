@@ -37,7 +37,6 @@ class Config extends Component {
       playoutDelay: '',
       playoutDelayErr: false,
       ticFrameSizeAt1fs: '',
-      ticFrameSizeAt1fsErr: false,
       maxTicFrameSize: '',
       maxTicFrameSizeErr: false,
       sampleRate: '',
@@ -99,7 +98,6 @@ class Config extends Component {
   
   inputIsValid() {
     return !this.state.playoutDelayErr &&
-      !this.state.ticFrameSizeAt1fsErr &&
       !this.state.maxTicFrameSizeErr &&
       !this.state.rtpMcastBaseErr &&
       !this.state.sapMcastAddrErr &&
@@ -139,11 +137,20 @@ class Config extends Component {
             <th align="left"> <input type='number' min='0' max='4000' className='input-number' value={this.state.playoutDelay} onChange={e => this.setState({playoutDelay: e.target.value, playoutDelayErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>
-            <th align="left"> <label>TIC Frame size at @1FS </label> </th>
-            <th align="left"> <input type='number' min='192' max='8192' className='input-number' value={this.state.ticFrameSizeAt1fs} onChange={e => this.setState({ticFrameSizeAt1fs: e.target.value, ticFrameSizeAt1fsErr: !e.currentTarget.checkValidity()})} disabled required/> </th>
+            <th align="left"> <label>TIC frame size @1FS (samples) </label> </th>
+            <th align="left">
+              <select value={this.state.ticFrameSizeAt1fs} onChange={e => this.setState({ticFrameSizeAt1fs: e.target.value})}>
+                <option value="6">6 - 125&mu;s@48Khz</option>
+                <option value="12">12 - 250&mu;s@48Khz</option>
+                <option value="16">16 - 333&mu;s@48Khz</option>
+                <option value="48">48 - 1ms@48Khz</option>
+                <option value="96">96 - 2ms@48Khz</option>
+                <option value="192">192 - 4ms@48Khz</option>
+              </select>
+            </th>
           </tr>
           <tr>
-            <th align="left"> <label>Max TIC frame size </label> </th>
+            <th align="left"> <label>Max TIC frame size (samples) </label> </th>
             <th align="left"> <input type='number' min='192' max='8192' className='input-number' value={this.state.maxTicFrameSize} onChange={e => this.setState({maxTicFrameSize: e.target.value, maxTicFrameSizeErr: !e.currentTarget.checkValidity()})} disabled required/> </th>
           </tr>
           <tr>
