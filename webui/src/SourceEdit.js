@@ -44,6 +44,7 @@ class SourceEdit extends Component {
   static propTypes = {
     source: PropTypes.object.isRequired,
     ticFrameSizeAt1fs: PropTypes.number.isRequired,
+    sampleRate: PropTypes.number.isRequired,
     applyEdit: PropTypes.func.isRequired,
     closeEdit: PropTypes.func.isRequired,
     editIsOpen: PropTypes.bool.isRequired,
@@ -59,8 +60,6 @@ class SourceEdit extends Component {
       name: this.props.source.name,
       nameErr: false,
       io: this.props.source.io,
-      maxSamplesPerPacket: (this.props.source.max_samples_per_packet > this.props.ticFrameSizeAt1fs) ? 
-                              this.props.ticFrameSizeAt1fs : this.props.source.max_samples_per_packet,
       codec: this.props.source.codec,
       ttl: this.props.source.ttl,
       ttlErr: false,
@@ -70,8 +69,9 @@ class SourceEdit extends Component {
       refclkPtpTraceable: this.props.source.refclk_ptp_traceable,
       channels: this.props.source.map.length,
       channelsErr: false,
-      maxChannels: Math.floor(max_packet_size / (this.props.source.max_samples_per_packet * (this.props.source.codec === 'L16' ? 2 : 3))),
       map: this.props.source.map,
+      maxSamplesPerPacket: this.getMaxSamplesPerPacket(),
+      maxChannels: this.getMaxChannels(this.props.source.codec, this.getMaxSamplesPerPacket()),
       audioMap: []
     }
     let v;
@@ -87,6 +87,10 @@ class SourceEdit extends Component {
     this.onChangeCodec = this.onChangeCodec.bind(this);
     this.inputIsValid = this.inputIsValid.bind(this);
     this.checkMaxSamplesPerPacket = this.checkMaxSamplesPerPacket.bind(this);
+    this.getMaxSamplesPerPacket = this.getMaxSamplesPerPacket.bind(this);
+    this.getnFS = this.getnFS.bind(this);
+    this.getPacketDuration = this.getPacketDuration.bind(this);
+    this.getMaxChannels = this.getMaxChannels.bind(this);
   }
 
   componentDidMount() {
@@ -120,16 +124,21 @@ class SourceEdit extends Component {
   onCancel() {
     this.props.closeEdit();
   }
+  
+  getMaxChannels(codec, samples) {
+    let maxChannels = Math.floor(max_packet_size / (samples * (codec === 'L16' ? 2 : 3)));
+    return maxChannels > 64 ? 64 : maxChannels;
+  }
 
   onChangeMaxSamplesPerPacket(e) {
     let samples = parseInt(e.target.value, 10);
-    let maxChannels = Math.floor(max_packet_size / (samples * (this.state.codec === 'L16' ? 2 : 3)));
+    let maxChannels = this.getMaxChannels(this.state.codec, samples);
     this.setState({ maxSamplesPerPacket: samples, maxChannels: maxChannels, channelsErr: this.state.channels > maxChannels });
   }
 
   onChangeCodec(e) {
     let codec = e.target.value;
-    let maxChannels = Math.floor(max_packet_size / (this.state.maxSamplesPerPacket * (codec === 'L16' ? 2 : 3)));
+    let maxChannels = this.getMaxChannels(this.state.codec, this.state.maxSamplesPerPacket);
     this.setState({ codec: codec, maxChannels: maxChannels, channelsErr: this.state.channels > maxChannels });
   }
  
@@ -156,8 +165,47 @@ class SourceEdit extends Component {
     this.setState({ map: map });
   }
 
-  checkMaxSamplesPerPacket(value) {
-    return this.props.ticFrameSizeAt1fs >= value;
+  getnFS() {
+    switch(this.props.sampleRate) {
+      case 384000:
+      case 352800:
+        return 8;
+        break;
+      case 192000:
+      case 176400:
+        return 4;
+        break;
+      case 96000:
+      case 88200:
+        return 2;
+        break;
+      case 48000:
+      case 44100:
+      default:
+        return 1;
+    }
+  }
+
+  checkMaxSamplesPerPacket(samples) {
+    return (samples <= (this.props.ticFrameSizeAt1fs * this.getnFS()));
+  }
+
+  getMaxSamplesPerPacket() {
+    return (this.props.source.max_samples_per_packet > (this.props.ticFrameSizeAt1fs * this.getnFS())) ? 
+            (this.props.ticFrameSizeAt1fs * this.getnFS()) : this.props.source.max_samples_per_packet;
+  }
+
+  getPacketDuration(samples) {
+    let duration = (samples * 1000000) / this.props.sampleRate;
+    if (duration >= 1000) {
+      duration /= 1000;
+      if (duration == Math.round(duration)) 
+        return Math.round(duration).toString() + 'ms';
+      else
+        return (Math.round(duration * 1000) / 1000).toString() + 'ms';
+    }
+    else
+      return Math.round(duration).toString() + 'μs';
   }
 
   inputIsValid() {
@@ -193,12 +241,12 @@ class SourceEdit extends Component {
               <th align="left"> <label>Max samples per packet </label> </th>
               <th align="left"> 
 	        <select value={this.state.maxSamplesPerPacket} onChange={this.onChangeMaxSamplesPerPacket}>
-                  <option value="6" disabled={this.checkMaxSamplesPerPacket(6) ? undefined : true}>6 - 125&mu;s@48Khz</option>
-                  <option value="12" disabled={this.checkMaxSamplesPerPacket(12) ? undefined : true}>12 - 250&mu;s@48Khz</option>
-                  <option value="16" disabled={this.checkMaxSamplesPerPacket(16) ? undefined : true}>16 - 333&mu;s@48Khz</option>
-                  <option value="48" disabled={this.checkMaxSamplesPerPacket(48) ? undefined : true}>48 - 1ms@48Khz</option>
-                  <option value="96" disabled={this.checkMaxSamplesPerPacket(96) ? undefined : true}>96 - 2ms@48Khz</option>
-                  <option value="192" disabled={this.checkMaxSamplesPerPacket(192) ? undefined : true}>192 - 4ms@48Khz</option>
+                  <option value="6" disabled={this.checkMaxSamplesPerPacket(6) ? undefined : true}>6 - {this.getPacketDuration(6)}</option>
+                  <option value="12" disabled={this.checkMaxSamplesPerPacket(12) ? undefined : true}>12 - {this.getPacketDuration(12)}</option>
+                  <option value="16" disabled={this.checkMaxSamplesPerPacket(16) ? undefined : true}>16 - {this.getPacketDuration(16)}</option>
+                  <option value="48" disabled={this.checkMaxSamplesPerPacket(48) ? undefined : true}>48 - {this.getPacketDuration(48)}</option>
+                  <option value="96" disabled={this.checkMaxSamplesPerPacket(96) ? undefined : true}>96 - {this.getPacketDuration(96)}</option>
+                  <option value="192" disabled={this.checkMaxSamplesPerPacket(192) ? undefined : true}>192 - {this.getPacketDuration(192)}</option>
                 </select>
               </th>
             </tr>

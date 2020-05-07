@@ -65,7 +65,7 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
       config.max_tic_frame_size_ > 1024)
     config.max_tic_frame_size_ = 1024;
   if (config.sample_rate_ == 0)
-    config.sample_rate_ = 44100;
+    config.sample_rate_ = 48000;
   boost::system::error_code ec;
   ip::address_v4::from_string(config.rtp_mcast_base_.c_str(), ec);
   if (ec) {
