@@ -455,9 +455,7 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_byNbOfChannels = source.map.size();
   strncpy(info.stream.m_cCodec, source.codec.c_str(),
           sizeof(info.stream.m_cCodec) - 1);
-  info.stream.m_ui32MaxSamplesPerPacket = 
-    source.max_samples_per_packet > config_->get_tic_frame_size_at_1fs() ?
-      config_->get_tic_frame_size_at_1fs() : source.max_samples_per_packet;
+  info.stream.m_ui32MaxSamplesPerPacket = source.max_samples_per_packet;
   info.stream.m_ui32SamplingRate = driver_->get_current_sample_rate(); // last set from driver or config
   info.stream.m_uiId = source.id;
   info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();

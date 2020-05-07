@@ -117,7 +117,7 @@ class SinkEdit extends Component {
   onCancel() {
     this.props.closeEdit();
   }
- 
+
   onChangeChannels(e) {
     if (e.currentTarget.checkValidity()) {
       let channels = parseInt(e.target.value, 10);
@@ -213,7 +213,7 @@ class SinkEdit extends Component {
             </tr>
             <tr>
               <th align="left"> <label>Channels</label> </th>
-              <th align="left"> <input type='number' min='1' max='8' className='input-number' value={this.state.channels} onChange={this.onChangeChannels} required/> </th>
+              <th align="left"> <input type='number' min='1' max='64' className='input-number' value={this.state.channels} onChange={this.onChangeChannels} required/> </th>
             </tr>
             <tr>
               <th align="left">Audio Channels map</th>

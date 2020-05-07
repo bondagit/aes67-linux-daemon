@@ -119,7 +119,7 @@ class Config {
   uint32_t playout_delay_{0};
   uint32_t tic_frame_size_at_1fs_{48};
   uint32_t max_tic_frame_size_{1024};
-  uint32_t sample_rate_{44100};
+  uint32_t sample_rate_{48000};
   std::string rtp_mcast_base_{"239.1.0.1"};
   std::string sap_mcast_addr_{"224.2.127.254"};
   uint16_t rtp_port_{5004};
