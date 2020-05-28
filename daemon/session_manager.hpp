@@ -30,7 +30,6 @@
 #include "driver_manager.hpp"
 #include "igmp.hpp"
 #include "sap.hpp"
-#include "mdns_server.hpp"
 
 struct StreamSource {
   uint8_t id{0};
@@ -107,10 +106,6 @@ class SessionManager {
   // session manager interface
   bool init() {
     if (!running_) {
-      /* init mDNS server */
-      if (config_->get_mdns_enabled() && !mdns_.init()) {
-        return false;
-      }
       running_ = true;
       res_ = std::async(std::launch::async, &SessionManager::worker, this);
     }
@@ -127,9 +122,6 @@ class SessionManager {
       for (auto sink : get_sinks()) {
         remove_sink(sink.id);
       }
-      if (config_->get_mdns_enabled()) {
-        mdns_.terminate();
-      }
       return ret;
     }
     return true;
@@ -141,6 +133,11 @@ class SessionManager {
   std::error_code get_source_sdp(uint32_t id, std::string& sdp) const;
   std::error_code remove_source(uint32_t id);
   uint8_t get_source_id(const std::string& name) const;
+
+  enum class ObserverType { add_source, remove_source };
+  using Observer = std::function<bool(uint8_t id, const std::string& name,
+                                        const std::string& sdp)>;
+  void add_source_observer(ObserverType type, Observer cb);
 
   std::error_code add_sink(const StreamSink& sink);
   std::error_code get_sink(uint8_t id, StreamSink& sink) const;
@@ -210,7 +207,9 @@ class SessionManager {
   PTPStatus ptp_status_;
   mutable std::shared_mutex ptp_mutex_;
 
-  MDNSServer mdns_{config_};
+  std::list<Observer> add_source_observers;
+  std::list<Observer> remove_source_observers;
+
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;
 };

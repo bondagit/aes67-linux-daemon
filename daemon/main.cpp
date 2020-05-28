@@ -24,6 +24,7 @@
 #include "config.hpp"
 #include "driver_manager.hpp"
 #include "http_server.hpp"
+#include "mdns_server.hpp"
 #include "rtsp_server.hpp"
 #include "log.hpp"
 #include "session_manager.hpp"
@@ -117,6 +118,12 @@ int main(int argc, char* argv[]) {
           std::string("SessionManager:: init failed"));
       }
 
+      /* start mDNS server */
+      MDNSServer mdns_server(session_manager, config);
+      if (config->get_mdns_enabled() && !mdns_server.init()) {
+        throw std::runtime_error(std::string("MDNSServer:: init failed"));
+      }
+
       /* start rtsp server */
       RtspServer rtsp_server(session_manager, config);
       if (!rtsp_server.init()) {
@@ -154,8 +161,6 @@ int main(int argc, char* argv[]) {
           break;
         }
 
-	rtsp_server.process();
-
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
 
@@ -178,6 +183,14 @@ int main(int argc, char* argv[]) {
       if (!rtsp_server.terminate()) {
         throw std::runtime_error(
             std::string("RtspServer:: terminate failed"));
+      }
+
+      /* stop mDNS server */
+      if (config->get_mdns_enabled()) {
+        if (!mdns_server.terminate()) {
+          throw std::runtime_error(
+              std::string("MDNServer:: terminate failed"));
+	}
       }
 
       /* stop session manager */

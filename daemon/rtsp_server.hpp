@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <unordered_set>
 
 #include "session_manager.hpp"
 
@@ -52,13 +53,18 @@ class RtspSession : public std::enable_shared_from_this<RtspSession> {
   void start();
   void stop();
 
+  bool announce(uint8_t source_id,
+                const std::string& name,
+                const std::string& sdp,
+                const std::string& address,
+                uint16_t port);
+
  private:
   bool process_request();
   void build_response(const std::string& url);
   void read_request();
   void send_error(int status_code, const std::string& description);
   void send_response(const std::string& response);
-
   std::shared_ptr<SessionManager> session_manager_;
   tcp::socket socket_;
   char data_[max_length + 1];
@@ -66,6 +72,9 @@ class RtspSession : public std::enable_shared_from_this<RtspSession> {
   size_t length_{0};
   int32_t cseq_{-1};
   size_t consumed_{0};
+  int32_t announce_cseq_{0};
+  /* set with the ids described on this session */
+  std::unordered_set<uint8_t> source_ids_;
 };
 
 class RtspServer {
@@ -87,6 +96,14 @@ class RtspServer {
     accept();
     /* start rtsp server on a separate thread */
     res_ = std::async([this](){ io_service_.run(); });
+
+    session_manager_->add_source_observer(
+      SessionManager::ObserverType::add_source,
+      std::bind(&RtspServer::add_source, this,
+          std::placeholders::_1,
+          std::placeholders::_2,
+          std::placeholders::_3));
+
     return true;
   }
 
@@ -97,9 +114,9 @@ class RtspServer {
     return true;
   }
 
-  void process();
-
  private:
+  /* a new source has been added or updated */
+  bool add_source(uint8_t id, const std::string& name, const std::string& sdp);
   void accept();
 
   std::mutex mutex_;

@@ -20,18 +20,22 @@
 
 using boost::asio::ip::tcp;
 
-void RtspServer::process() {
-  /* cleanup of expired sessions */
+
+bool RtspServer::add_source(uint8_t id,
+                            const std::string& name,
+                            const std::string& sdp) {
+  BOOST_LOG_TRIVIAL(info) << "rtsp_server:: added source " << name;
+  bool ret = false;
   std::lock_guard<std::mutex> lock(mutex_);
   for (unsigned int i = 0; i < sessions_.size(); i++) {
-    if (duration_cast<second_t>(steady_clock::now() - sessions_start_point_[i])
-            .count() > RtspSession::session_tout_secs) {
       auto session = sessions_[i].lock();
       if (session != nullptr) {
-        session->stop();
+        ret |= session->announce(id, name, sdp,
+                                 config_->get_ip_addr_str(),
+                                 config_->get_rtsp_port());
       }
-    }
   }
+  return ret;
 }
 
 void RtspServer::accept() {
@@ -62,6 +66,37 @@ void RtspServer::accept() {
     accept();
   });
 }
+
+bool RtspSession::announce(uint8_t id,
+                           const std::string& name,
+                           const std::string& sdp,
+                           const std::string& address,
+                           uint16_t port) {
+  /* if a describe request is currently not beeing process
+   * and the specified source id has been described on this session send update */
+  if (cseq_ < 0 && source_ids_.find(id) != source_ids_.end()) {
+    std::string path(std::string("/by-name/") + get_node_id() + " " + name);
+    std::stringstream ss;
+    ss << "ANNOUNCE rtsp://" << address << ":" << std::to_string(port)
+       << httplib::detail::encode_url(path) << " RTSP/1.0\r\n"
+       << "User-Agent: aes67-daemon\r\n"
+       << "connection: Keep-Alive" << "\r\n"
+       << "CSeq: " << announce_cseq_++ << "\r\n"
+       << "Content-Length: " << sdp.length() << "\r\n"
+       << "Content-Type: application/sdp\r\n"
+       << "\r\n"
+       << sdp;
+
+    BOOST_LOG_TRIVIAL(info)
+        << "rtsp_server:: " << "ANNOUNCE sent to "
+        << socket_.remote_endpoint();
+
+    send_response(ss.str());
+    return true;
+  }
+  return false;
+}
+
 
 bool RtspSession::process_request() {
   /*
@@ -164,6 +199,7 @@ void RtspSession::build_response(const std::string& url) {
           << "rtsp_server:: " << request_ << " response 200 to "
           << socket_.remote_endpoint();
       send_response(ss.str());
+      source_ids_.insert(id);
       return;
     }
   }

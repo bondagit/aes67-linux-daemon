@@ -33,12 +33,17 @@
 #include <mutex>
 #include <thread>
 
+#include "session_manager.hpp"
 #include "config.hpp"
 #include "utils.hpp"
 
 class MDNSServer {
  public:
-  MDNSServer(std::shared_ptr<Config> config) : config_(config){};
+  MDNSServer(std::shared_ptr<SessionManager> session_manager,
+             std::shared_ptr<Config> config)
+      : session_manager_(session_manager),
+        config_(config){}
+
   MDNSServer() = delete;
   MDNSServer(const MDNSServer&) = delete;
   MDNSServer& operator=(const MDNSServer&) = delete;
@@ -52,6 +57,7 @@ class MDNSServer {
 
  protected:
   std::atomic_bool running_{false};
+  std::shared_ptr<SessionManager> session_manager_;
   std::shared_ptr<Config> config_;
   std::string node_id_{get_node_id()};
 

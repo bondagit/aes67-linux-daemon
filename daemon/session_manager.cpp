@@ -420,18 +420,33 @@ uint8_t SessionManager::get_source_id(const std::string& name) const {
   return it != source_names_.end() ? it->second : (stream_id_max + 1);
 }
 
+void SessionManager::add_source_observer(ObserverType type, Observer cb) {
+  switch(type) {
+  case ObserverType::add_source:
+    add_source_observers.push_back(cb);
+    break;
+  case ObserverType::remove_source:
+    remove_source_observers.push_back(cb);
+    break;
+  }
+}
+
 void SessionManager::on_add_source(const StreamSource& source, 
     const StreamInfo& info) {
+  for (auto cb : add_source_observers) {
+    cb(source.id, source.name, get_source_sdp_(source.id, info));
+  }
   igmp_.join(config_->get_ip_addr_str(),
              ip::address_v4(info.stream.m_ui32DestIP).to_string());
-  mdns_.add_service(source.name, get_source_sdp_(source.id, info));
   source_names_[source.name] = source.id;
 }
 
 void SessionManager::on_remove_source(const StreamInfo& info) {
+  for (auto cb : remove_source_observers) {
+    cb(info.stream.m_uiId, info.stream.m_cName, {});
+  }
   igmp_.leave(config_->get_ip_addr_str(),
        ip::address_v4(info.stream.m_ui32DestIP).to_string());
-  mdns_.remove_service(info.stream.m_cName);
   source_names_.erase(info.stream.m_cName);
 }
 
