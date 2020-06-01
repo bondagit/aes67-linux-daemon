@@ -24,8 +24,8 @@ using boost::asio::ip::tcp;
 bool RtspServer::add_source(uint8_t id,
                             const std::string& name,
                             const std::string& sdp) {
-  BOOST_LOG_TRIVIAL(info) << "rtsp_server:: added source " << name;
   bool ret = false;
+  BOOST_LOG_TRIVIAL(debug) << "rtsp_server:: added source " << name;
   std::lock_guard<std::mutex> lock(mutex_);
   for (unsigned int i = 0; i < sessions_.size(); i++) {
       auto session = sessions_[i].lock();
@@ -88,7 +88,7 @@ bool RtspSession::announce(uint8_t id,
        << sdp;
 
     BOOST_LOG_TRIVIAL(info)
-        << "rtsp_server:: " << "ANNOUNCE sent to "
+        << "rtsp_server:: " << "ANNOUNCE for source " << id << " sent to "
         << socket_.remote_endpoint();
 
     send_response(ss.str());
@@ -142,8 +142,11 @@ bool RtspSession::process_request() {
   if (!is_end) {
     return false;
   }
-
-  if (cseq_ < 0) {
+  
+  if (fields[0].substr(0, 5) == "RTSP/") {
+    /* we received a response, step to next request*/
+    return true;
+  } else if (cseq_ < 0) {
     BOOST_LOG_TRIVIAL(error) << "rtsp_server:: CSeq not specified from "
                              << socket_.remote_endpoint();
     send_error(400, "Bad Request");
@@ -153,12 +156,7 @@ bool RtspSession::process_request() {
     send_error(400, "Bad Request");
   } else if (fields[0] != "DESCRIBE") {
     send_error(405, "Method Not Allowed");
-  } /*else if (fields[1].substr(0, 7) != "rtsp://") {
-    BOOST_LOG_TRIVIAL(error)
-        << "rtsp_server:: no rtsp protocol from " << socket_.remote_endpoint();
-    send_error(404, "Not supported");
-  } */
-  else {
+  } else {
     boost::trim(fields[1]);
     build_response(fields[1]);
   }
@@ -241,7 +239,7 @@ void RtspSession::send_error(int status_code, const std::string& description) {
   if (cseq_ >= 0) {
     ss << "CSeq: " << cseq_ << "\r\n";
   }
-  ss << "\n\r";
+  ss << "\r\n";
   send_response(ss.str());
 }
 
