@@ -15,6 +15,9 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifndef _RTSP_SERVER_HPP_
+#define _RTSP_SERVER_HPP_
+
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
 #include <chrono>
@@ -24,9 +27,6 @@
 #include <unordered_set>
 
 #include "session_manager.hpp"
-
-#ifndef _RTSP_SERVER_HPP_
-#define _RTSP_SERVER_HPP_
 
 using namespace std::chrono;
 using boost::asio::deadline_timer;
