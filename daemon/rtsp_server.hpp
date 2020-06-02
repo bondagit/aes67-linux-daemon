@@ -79,13 +79,15 @@ class RtspSession : public std::enable_shared_from_this<RtspSession> {
 
 class RtspServer {
  public:
+  constexpr static uint8_t session_num_max{(SessionManager::stream_id_max + 1) * 2};
+
   RtspServer() = delete;
   RtspServer(std::shared_ptr<SessionManager> session_manager,
              std::shared_ptr<Config> config)
       : session_manager_(session_manager),
         config_(config),
-        sessions_(SessionManager::stream_id_max),
-        sessions_start_point_(SessionManager::stream_id_max),
+        sessions_(session_num_max),
+        sessions_start_point_(session_num_max),
         acceptor_(io_service_,
                   tcp::endpoint(boost::asio::ip::address::from_string(
                                     config_->get_ip_addr_str()),
