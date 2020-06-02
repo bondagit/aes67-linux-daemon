@@ -46,7 +46,7 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * HTTP REST API for the daemon control and configuration
 * SAP sources discovery and advertisement compatible with AES67 standard
 * mDNS sources discovery and advertisement (using Linux Avahi) compatible with Ravenna standard
-* RTSP client and server to retrieve or return SDP files via DESCRIBE method compatible with Ravenna standard
+* RTSP client and server to retrieve, return and update SDP files via DESCRIBE and ANNOUNCE methods according to Ravenna standard
 * IGMP handling for SAP, PTP and RTP sessions
 
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  

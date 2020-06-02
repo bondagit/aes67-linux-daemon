@@ -27,6 +27,7 @@
 #include <ostream>
 #include <string>
 #include <chrono>
+#include <map>
 
 #include "log.hpp"
 #include "utils.hpp"
@@ -36,12 +37,26 @@ using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace boost::algorithm;
 
+
 struct RtspResponse {
-  uint32_t cseq;
+  int32_t cseq{-1};
   std::string content_type;
-  uint64_t content_length;
+  uint64_t content_length{0};
   std::string body;
 };
+
+static std::string sdp_get_subject(const std::string& sdp) {
+  std::stringstream ssstrem(sdp);
+  std::string line;
+  while (getline(ssstrem, line, '\n')) {
+    if (line.substr(0, 2) == "s=") {
+      auto subject = line.substr(2);
+      trim(subject);
+      return subject;
+    }
+  }
+  return "";
+}
 
 RtspResponse read_response(tcp::iostream& s, uint16_t max_length) {
   RtspResponse res;
@@ -73,6 +88,8 @@ RtspResponse read_response(tcp::iostream& s, uint16_t max_length) {
                              << "cannot perform number conversion";
   }
 
+  BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: reading body length " 
+                           << res.content_length;
   // read up to max_length
   if (res.content_length > 0 && res.content_length < max_length) {
     res.body.reserve(res.content_length);
@@ -83,19 +100,17 @@ RtspResponse read_response(tcp::iostream& s, uint16_t max_length) {
   return res;
 }
 
-std::pair<bool, RtspSource> RtspClient::describe(const std::string& path,
-                                                  const std::string& address,
-                                                  const std::string& port) {
-  RtspSource rs;
-  bool success{false};
+std::pair<bool, RtspSource> RtspClient::process(
+                RtspClient::Observer callback,
+                const std::string& name,
+                const std::string& domain,
+                const std::string& path,
+                const std::string& address,
+                const std::string& port,
+                bool wait_for_updates) {
+  RtspSource rtsp_source;
   try {
-    tcp::iostream s;
-
-#if BOOST_VERSION < 106700
-    s.expires_from_now(boost::posix_time::seconds(client_timeout));
-#else
-    s.expires_from_now(std::chrono::seconds(client_timeout));
-#endif
+    ip::tcp::iostream s;
 
     BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: connecting to "
                              << "rtsp://" << address << ":" << port << path;
@@ -103,10 +118,10 @@ std::pair<bool, RtspSource> RtspClient::describe(const std::string& path,
     if (!s) {
       BOOST_LOG_TRIVIAL(warning)
           << "rtsp_client:: unable to connect to " << address << ":" << port;
-      return std::make_pair(success, rs);
+      return std::make_pair(false, rtsp_source);
     }
 
-    uint16_t cseq = seq_number++;
+    uint16_t cseq = g_seq_number++;
     s << "DESCRIBE rtsp://" << address << ":" << port
       << httplib::detail::encode_url(path) << " RTSP/1.0\r\n";
     s << "CSeq: " << cseq << "\r\n";
@@ -122,56 +137,157 @@ std::pair<bool, RtspSource> RtspClient::describe(const std::string& path,
     s >> rtsp_version;
     unsigned int status_code;
     s >> status_code;
-    std::string status_message;
-    std::getline(s, status_message);
+    std::string request;
+    std::getline(s, request);
 
     if (!s || rtsp_version.substr(0, 5) != "RTSP/") {
       BOOST_LOG_TRIVIAL(error) << "rtsp_client:: invalid response from "
                                << "rtsp://" << address << ":" << port << path;
-      return std::make_pair(success, rs);
+      return std::make_pair(false, rtsp_source);
     }
 
     if (status_code != 200) {
       BOOST_LOG_TRIVIAL(error) << "rtsp_client:: response with status code "
                                << status_code << " from "
                                << "rtsp://" << address << ":" << port << path;
-      return std::make_pair(success, rs);
+      return std::make_pair(false, rtsp_source);
     }
 
-    auto res = read_response(s, max_body_length);
-    if (res.content_type.rfind("application/sdp", 0) == std::string::npos) {
-      BOOST_LOG_TRIVIAL(error) << "rtsp_client:: unsupported content-type "
-                               << res.content_type << " from "
-                               << "rtsp://" << address << ":" << port << path;
-      return std::make_pair(success, rs);
-    }
-    if (res.cseq != cseq) {
-      BOOST_LOG_TRIVIAL(error)
-          << "rtsp_client:: invalid response sequence " << res.cseq << " from "
-          << "rtsp://" << address << ":" << port << path;
-      return std::make_pair(success, rs);
-    }
+    bool is_announce = false;
+    bool is_describe = true;
+    std::string announced_name;
+    do {
+      auto res = read_response(s, max_body_length);
+      if (is_describe && res.cseq != cseq) {
+        BOOST_LOG_TRIVIAL(error)
+            << "rtsp_client:: invalid response sequence " << res.cseq 
+            << " from rtsp://" << address << ":" << port << path;
+        return std::make_pair(false, rtsp_source);
+      }
 
-    std::stringstream ss;
-    ss << "rtsp:" << std::hex
-       << crc16(reinterpret_cast<const uint8_t*>(res.body.c_str()),
-                res.body.length());
-       /*<< std::hex << ip::address_v4::from_string(address.c_str()).to_ulong();*/
+      if (res.content_type.rfind("application/sdp", 0) == std::string::npos) {
+        BOOST_LOG_TRIVIAL(error) << "rtsp_client:: unsupported content-type "
+                                 << res.content_type << " from "
+                                 << "rtsp://" << address << ":" << port << path;
+	if (is_describe) {
+          return std::make_pair(false, rtsp_source);
+	}
+      } else {
+        std::stringstream ss;
+        ss << "rtsp:" << std::hex
+           << crc16(reinterpret_cast<const uint8_t*>(res.body.c_str()),
+                    res.body.length());
+        /*<< std::hex << ip::address_v4::from_string(address.c_str()).to_ulong();*/
+        rtsp_source.id = ss.str();
+        rtsp_source.source = "mDNS";
+        rtsp_source.address = address;
+        rtsp_source.sdp = std::move(res.body);
+	BOOST_LOG_TRIVIAL(info) << "rtsp_client:: completed "
+                    << "rtsp://" << address << ":" << port << path;
 
-    rs.id = ss.str();
-    rs.source = "mDNS";
-    rs.address = address;
-    rs.sdp = std::move(res.body);
+        if (is_announce || is_describe) {
+          if (is_announce && announced_name.empty()) {
+            /* if no name from URL we try from SDP file */
+            announced_name = sdp_get_subject(rtsp_source.sdp);
+	  }
+          callback(announced_name.empty() ? name : announced_name, domain, 
+                   rtsp_source);
+        }
 
-    BOOST_LOG_TRIVIAL(info) << "rtsp_client:: describe completed "
-                            << "rtsp://" << address << ":" << port << path;
+	if (is_announce) {
+          s << "RTSP/1.0 200 OK\r\n";
+          s << "CSeq: " << res.cseq << "\r\n";
+          s << "\r\n";
+	} else if (!is_describe) {
+          s << "RTSP/1.0 405 Method Not Allowed\r\n";
+          s << "CSeq: " << res.cseq << "\r\n";
+          s << "\r\n";
+	}
+      }
 
-    success = true;
+      if (wait_for_updates) {
+        auto name_domain = std::make_pair(name, domain);
+	g_mutex.lock();
+	g_active_clients[name_domain] = &s;
+	g_mutex.unlock();
+
+        /* we start waiting for updates */
+	do {
+          std::getline(s, request);
+	} while (request.empty() && !s.error());
+	if (s.error()) {
+          BOOST_LOG_TRIVIAL(info) << "rtsp_client:: end: " 
+                                     << s.error().message();
+          break;
+	}
+        BOOST_LOG_TRIVIAL(info) << "rtsp_client:: received " << request;
+        boost::trim(request);
+	is_describe = is_announce = false;
+	announced_name = "";
+        std::vector<std::string> fields;
+        split(fields, request, boost::is_any_of(" "));
+        if (fields.size() >= 2 && fields[0] == "ANNOUNCE") {
+          auto const [ok, protocol, host, port, path] = parse_url(fields[1]);
+          if (ok) {
+            /* if we find a valid announced source name we use it 
+	     * otherwise we try from SDP file or we use the mDNS name */
+            if (path.rfind("/by-name/") != std::string::npos) {
+              announced_name = path.substr(9);
+	      BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: found announced name "
+                    << announced_name;
+	    }
+	  }
+	  is_announce = true;
+        }
+      }
+    } while (wait_for_updates);
+
   } catch (std::exception& e) {
     BOOST_LOG_TRIVIAL(warning)
         << "rtsp_client:: error with "
         << "rtsp://" << address << ":" << port << path << ": " << e.what();
+    return std::make_pair(false, rtsp_source);
   }
 
-  return std::make_pair(success, rs);
+  return std::make_pair(true, rtsp_source);
 }
+
+
+void RtspClient::stop(const std::string& name, const std::string& domain) {
+  std::lock_guard<std::mutex> lock(g_mutex);
+  auto it = g_active_clients.find(std::make_pair(name, domain));
+  if (it != g_active_clients.end()) {
+    BOOST_LOG_TRIVIAL(info)
+        << "rtsp_client:: stopping client " << name << " " << domain;
+#if BOOST_VERSION < 106600
+    it->second->close();
+#else
+    it->second->socket().shutdown(tcp::socket::shutdown_both);
+#endif
+    g_active_clients.erase(it);
+  }
+}
+
+void RtspClient::stop_all() {
+  std::lock_guard<std::mutex> lock(g_mutex);
+  auto it = g_active_clients.begin();
+  while (it != g_active_clients.end()) {
+    BOOST_LOG_TRIVIAL(info)
+        << "rtsp_client:: stopping client " 
+        << it->first.first << " " << it->first.second;
+#if BOOST_VERSION < 106600
+    it->second->close();
+#else
+    it->second->socket().shutdown(tcp::socket::shutdown_both);
+#endif
+    it = g_active_clients.erase(it);
+  }
+}
+
+std::pair<bool, RtspSource> RtspClient::describe(
+                const std::string& path,
+                const std::string& address,
+                const std::string& port) {
+  return RtspClient::process({}, {}, {}, path, address, port, false);
+}
+

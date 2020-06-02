@@ -73,7 +73,7 @@ class Browser : public MDNSClient {
 
   bool worker();
 
-  virtual void on_new_rtsp_source(
+  virtual void on_change_rtsp_source(
                    const std::string& name,
                    const std::string& domain,
                    const RtspSource& source) override;

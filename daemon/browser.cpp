@@ -107,9 +107,9 @@ bool Browser::worker() {
           BOOST_LOG_TRIVIAL(debug)
                       << "browser:: refreshing SAP source " << it->id;
           // annoucement, update last seen and announce period
-	  auto upd_source{*it};
           uint32_t last_seen = 
             duration_cast<second_t>(steady_clock::now() - startup_).count();
+          auto upd_source{*it};
           upd_source.announce_period = last_seen - upd_source.last_seen;
           upd_source.last_seen = last_seen;
 	  sources_.replace(it, upd_source);
@@ -155,26 +155,32 @@ bool Browser::worker() {
   return true;
 }
 
-void Browser::on_new_rtsp_source(const std::string& name,
-                                 const std::string& domain,
-                                 const RtspSource& s) {
+void Browser::on_change_rtsp_source(const std::string& name,
+                                   const std::string& domain,
+                                   const RtspSource& s) {
   uint32_t last_seen = duration_cast<second_t>(steady_clock::now() - 
                                                startup_).count();
   std::unique_lock sources_lock(sources_mutex_);
+  /* search by name */
   auto rng = sources_.get<name_tag>().equal_range(name);
   while(rng.first != rng.second){
     const auto& it = rng.first;
     if (it->source == "mDNS" && it->domain == domain) {
-      /* conflict ? */
-      BOOST_LOG_TRIVIAL(warning) << "browser:: mDNS source conflict on"
-                                 << " name " << it->name
-                                 << " domain " << it->domain
-                                 << ", skipping ... ";
+      /* mDNS source with same name and domain -> update */
+      BOOST_LOG_TRIVIAL(info) << "browser:: updating RTSP source " << s.id
+                              << " name " << name
+                              << " domain " << domain;
+      auto upd_source{*it};
+      upd_source.id = s.id;
+      upd_source.sdp = s.sdp;
+      upd_source.address = s.address;
+      upd_source.last_seen = last_seen;
+      sources_.get<name_tag>().replace(it, upd_source);
       return;
     }
     ++rng.first;
   }
-
+  /* entry not found -> add */
   BOOST_LOG_TRIVIAL(info) << "browser:: adding RTSP source " << s.id
                           << " name " << name
                           << " domain " << domain;

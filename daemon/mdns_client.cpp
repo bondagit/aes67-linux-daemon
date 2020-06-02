@@ -17,14 +17,13 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "mdns_client.hpp"
-
 #include <boost/asio.hpp>
 
 #include "config.hpp"
 #include "interface.hpp"
 #include "log.hpp"
 #include "rtsp_client.hpp"
+#include "mdns_client.hpp"
 
 #ifdef _USE_AVAHI_
 void MDNSClient::resolve_callback(AvahiServiceResolver* r,
@@ -89,6 +88,7 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
 	    (mdns.config_->get_interface_name() == "lo"))) {
         std::lock_guard<std::mutex> lock(mdns.sources_res_mutex_);
 
+	/* process RTSP client in async task */
         mdns.sources_res_.emplace_back(std::async(
             std::launch::async,
             [&mdns,
@@ -96,11 +96,12 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
              domain_ = std::forward<std::string>(domain),
              addr_ = std::forward<std::string>(addr),
              port_ = std::forward<std::string>(std::to_string(port))] {
-              auto res = RtspClient::describe(std::string("/by-name/") + name_,
-                                              addr_, port_);
-              if (res.first) {
-                mdns.on_new_rtsp_source(name_, domain_, res.second);
-              }
+               RtspClient::process(
+		  std::bind(&MDNSClient::on_change_rtsp_source, &mdns,
+                         std::placeholders::_1, std::placeholders::_2,
+                         std::placeholders::_3),
+		  name_, domain_, std::string("/by-name/") + name_,
+		  addr_, port_);
             }));
       }
 
@@ -153,6 +154,7 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
       BOOST_LOG_TRIVIAL(info) << "mdns_client:: (Browser) REMOVE: "
                               << "service " << name << " of type " << type
                               << " in domain " << domain;
+      RtspClient::stop(name, domain);
       mdns.on_remove_rtsp_source(name, domain);
       break;
 
@@ -259,6 +261,7 @@ void MDNSClient::process_results() {
 bool MDNSClient::terminate() {
   if (running_) {
     running_ = false;
+    RtspClient::stop_all();
 #ifdef _USE_AVAHI_
     /* wait for all pending results and remove from list */
     std::lock_guard<std::mutex> lock(sources_res_mutex_);

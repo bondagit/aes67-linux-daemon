@@ -48,11 +48,11 @@ class MDNSClient {
   virtual bool terminate();
 
  protected:
-  virtual void on_new_rtsp_source(const std::string& name,
-                                  const std::string& domain, 
-                                  const RtspSource& source) = 0;
+  virtual void on_change_rtsp_source(const std::string& name,
+                                     const std::string& domain,
+                                     const RtspSource& source){};
   virtual void on_remove_rtsp_source(const std::string& name,
-                                     const std::string& domain) = 0;
+                                     const std::string& domain){};
 
   void process_results();
   std::list<std::future<void> > sources_res_;
