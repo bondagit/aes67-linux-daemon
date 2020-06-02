@@ -246,7 +246,12 @@ std::pair<bool, RtspSource> RtspClient::process(
     BOOST_LOG_TRIVIAL(warning)
         << "rtsp_client:: error with "
         << "rtsp://" << address << ":" << port << path << ": " << e.what();
-    return std::make_pair(false, rtsp_source);
+  }
+
+  if (wait_for_updates) {
+    auto name_domain = std::make_pair(name, domain);
+    std::lock_guard<std::mutex> lock(g_mutex);
+    g_active_clients.erase(name_domain);
   }
 
   return std::make_pair(true, rtsp_source);
