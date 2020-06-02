@@ -109,9 +109,8 @@ std::pair<bool, RtspSource> RtspClient::process(
                 const std::string& port,
                 bool wait_for_updates) {
   RtspSource rtsp_source;
+  ip::tcp::iostream s;
   try {
-    ip::tcp::iostream s;
-
     BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: connecting to "
                              << "rtsp://" << address << ":" << port << path;
     s.connect(address, port.length() ? port : dft_port);
@@ -249,9 +248,11 @@ std::pair<bool, RtspSource> RtspClient::process(
   }
 
   if (wait_for_updates) {
-    auto name_domain = std::make_pair(name, domain);
     std::lock_guard<std::mutex> lock(g_mutex);
-    g_active_clients.erase(name_domain);
+    auto it = g_active_clients.find(std::make_pair(name, domain));
+    if (it != g_active_clients.end() && it->second == &s) {
+      g_active_clients.erase(it);
+    }
   }
 
   return std::make_pair(true, rtsp_source);
