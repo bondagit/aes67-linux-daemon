@@ -96,6 +96,7 @@ RtspResponse read_response(tcp::iostream& s, uint16_t max_length) {
     std::copy_n(std::istreambuf_iterator(s), res.content_length,
                 std::back_inserter(res.body));
   }
+  BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: body " << res.body;
 
   return res;
 }
@@ -164,7 +165,8 @@ std::pair<bool, RtspSource> RtspClient::process(
         return std::make_pair(false, rtsp_source);
       }
 
-      if (res.content_type.rfind("application/sdp", 0) == std::string::npos) {
+      if (!res.content_type.empty() && 
+            res.content_type.rfind("application/sdp", 0) == std::string::npos) {
         BOOST_LOG_TRIVIAL(error) << "rtsp_client:: unsupported content-type "
                                  << res.content_type << " from "
                                  << "rtsp://" << address << ":" << port << path;
