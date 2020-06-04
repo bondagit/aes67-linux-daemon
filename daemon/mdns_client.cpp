@@ -109,7 +109,7 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
   }
 
   /* remove the resolver from the active pool */
-  mdns.active_resolvers.erase(std::pair(name, domain));
+  mdns.active_resolvers.erase({name, domain});
   avahi_service_resolver_free(r);
 }
 
@@ -138,7 +138,7 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
                               << "service " << name << " of type " << type
                               << " in domain " << domain;
       /* check if a resolver is already running for this name and domain */
-      if (mdns.active_resolvers.find(std::pair(name, domain)) !=
+      if (mdns.active_resolvers.find({name, domain}) !=
               mdns.active_resolvers.end()) {
         /* if already running we don't run a new resolver */
         BOOST_LOG_TRIVIAL(info)
@@ -154,7 +154,7 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
             << avahi_strerror(avahi_client_errno(mdns.client_.get()));
       } else {
         /* add the resolver to the active pool */
-        mdns.active_resolvers.insert(std::pair(name, domain));
+        mdns.active_resolvers.insert({name, domain});
       }
       break;
 

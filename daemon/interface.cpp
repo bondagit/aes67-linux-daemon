@@ -31,7 +31,7 @@ std::pair<uint32_t, std::string> get_interface_ip(
   if (fd < 0) {
     BOOST_LOG_TRIVIAL(error)
         << "Cannot retrieve IP address for interface " << interface_name;
-    return std::make_pair(0, "");
+    return {0, ""};
   }
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
@@ -40,7 +40,7 @@ std::pair<uint32_t, std::string> get_interface_ip(
     close(fd);
     BOOST_LOG_TRIVIAL(error)
         << "Cannot retrieve IP address for interface " << interface_name;
-    return std::make_pair(0, "");
+    return {0, ""};
   }
   close(fd);
 
@@ -51,7 +51,7 @@ std::pair<uint32_t, std::string> get_interface_ip(
   /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name
                              << " IP address " << str_addr;*/
 
-  return std::make_pair(addr, str_addr);
+  return {addr, str_addr};
 }
 
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
@@ -61,7 +61,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
   if (fd < 0) {
     BOOST_LOG_TRIVIAL(error)
         << "Cannot retrieve MAC address for interface " << interface_name;
-    return std::make_pair(mac, "");
+    return {mac, ""};
   }
 
   struct ifreq ifr;
@@ -71,7 +71,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
     close(fd);
     BOOST_LOG_TRIVIAL(error)
         << "Cannot retrieve MAC address for interface " << interface_name;
-    return std::make_pair(mac, "");
+    return {mac, ""};
   }
   close(fd);
 
@@ -84,7 +84,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
   /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name
                              << " MAC address " << str_mac;*/
 
-  return std::make_pair(mac, str_mac);
+  return {mac, str_mac};
 }
 
 int get_interface_index(const std::string& interface_name) {

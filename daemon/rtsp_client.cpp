@@ -118,7 +118,7 @@ std::pair<bool, RtspSource> RtspClient::process(
     if (!s) {
       BOOST_LOG_TRIVIAL(warning)
           << "rtsp_client:: unable to connect to " << address << ":" << port;
-      return std::make_pair(false, rtsp_source);
+      return {false, rtsp_source};
     }
 
     uint16_t cseq = g_seq_number++;
@@ -143,14 +143,14 @@ std::pair<bool, RtspSource> RtspClient::process(
     if (!s || rtsp_version.substr(0, 5) != "RTSP/") {
       BOOST_LOG_TRIVIAL(error) << "rtsp_client:: invalid response from "
                                << "rtsp://" << address << ":" << port << path;
-      return std::make_pair(false, rtsp_source);
+      return {false, rtsp_source};
     }
 
     if (status_code != 200) {
       BOOST_LOG_TRIVIAL(error) << "rtsp_client:: response with status code "
                                << status_code << " from "
                                << "rtsp://" << address << ":" << port << path;
-      return std::make_pair(false, rtsp_source);
+      return {false, rtsp_source};
     }
 
     bool is_announce = false;
@@ -162,7 +162,7 @@ std::pair<bool, RtspSource> RtspClient::process(
         BOOST_LOG_TRIVIAL(error)
             << "rtsp_client:: invalid response sequence " << res.cseq 
             << " from rtsp://" << address << ":" << port << path;
-        return std::make_pair(false, rtsp_source);
+        return {false, rtsp_source};
       }
 
       if (!res.content_type.empty() && 
@@ -171,7 +171,7 @@ std::pair<bool, RtspSource> RtspClient::process(
                                  << res.content_type << " from "
                                  << "rtsp://" << address << ":" << port << path;
 	if (is_describe) {
-          return std::make_pair(false, rtsp_source);
+          return {false, rtsp_source};
 	}
       } else {
         std::stringstream ss;
@@ -207,9 +207,8 @@ std::pair<bool, RtspSource> RtspClient::process(
       }
 
       if (wait_for_updates) {
-        auto name_domain = std::make_pair(name, domain);
 	g_mutex.lock();
-	g_active_clients[name_domain] = &s;
+	g_active_clients[{name, domain}] = &s;
 	g_mutex.unlock();
 
         /* we start waiting for updates */
@@ -251,19 +250,19 @@ std::pair<bool, RtspSource> RtspClient::process(
 
   if (wait_for_updates) {
     std::lock_guard<std::mutex> lock(g_mutex);
-    auto it = g_active_clients.find(std::make_pair(name, domain));
+    auto it = g_active_clients.find({name, domain});
     if (it != g_active_clients.end() && it->second == &s) {
       g_active_clients.erase(it);
     }
   }
 
-  return std::make_pair(true, rtsp_source);
+  return {true, rtsp_source};
 }
 
 
 void RtspClient::stop(const std::string& name, const std::string& domain) {
   std::lock_guard<std::mutex> lock(g_mutex);
-  auto it = g_active_clients.find(std::make_pair(name, domain));
+  auto it = g_active_clients.find({name, domain});
   if (it != g_active_clients.end()) {
     BOOST_LOG_TRIVIAL(info)
         << "rtsp_client:: stopping client " << name << " " << domain;

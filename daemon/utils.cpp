@@ -43,7 +43,7 @@ parse_url(const std::string& _url) {
   size_t protocol_sep_pos = url.find_first_of("://");
   if (protocol_sep_pos == std::string::npos) {
     /* no protocol, invalid URL */
-    return std::make_tuple(false, "", "", "", "");
+    return {false, "", "", "", ""};
   }
 
   std::string port, host, path("/");
@@ -70,7 +70,7 @@ parse_url(const std::string& _url) {
     /* port and path not specified */
     host = url_new;
   }
-  return std::make_tuple(host.length() > 0, protocol, host, port, path);
+  return {host.length() > 0, protocol, host, port, path};
 }
 
 std::string get_node_id() {
