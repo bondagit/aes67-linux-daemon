@@ -1,1 +1,1 @@
-speaker-test -D plughw:RAVENNA -r 44100 -c 2 -t sine
+speaker-test -D plughw:RAVENNA -r 48000 -c 2 -t sine
