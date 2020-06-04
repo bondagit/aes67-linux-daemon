@@ -116,7 +116,7 @@ struct Client {
   std::pair<bool, std::string> get_config() {
     auto res = cli_.Get("/api/config");
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   bool set_ptp_config(int domain, int dscp) {
@@ -130,13 +130,13 @@ struct Client {
   std::pair<bool, std::string> get_ptp_status() {
     auto res = cli_.Get("/api/ptp/status");
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   std::pair<bool, std::string> get_ptp_config() {
     auto res = cli_.Get("/api/ptp/config");
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   bool add_source(int id) {
@@ -189,35 +189,35 @@ struct Client {
     std::string url = std::string("/api/source/sdp/") + std::to_string(id);
     auto res = cli_.Get(url.c_str());
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   std::pair<bool, std::string> get_sink_status(int id) {
     std::string url = std::string("/api/sink/status/") + std::to_string(id);
     auto res = cli_.Get(url.c_str());
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   std::pair<bool, std::string> get_streams() {
     std::string url = std::string("/api/streams");
     auto res = cli_.Get(url.c_str());
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   std::pair<bool, std::string> get_sources() {
     std::string url = std::string("/api/sources");
     auto res = cli_.Get(url.c_str());
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   std::pair<bool, std::string> get_sinks() {
     std::string url = std::string("/api/sinks");
     auto res = cli_.Get(url.c_str());
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   bool remove_source(int id) {
@@ -334,14 +334,14 @@ struct Client {
     std::string url = std::string("/api/browse/sources/sap");
     auto res = cli_.Get(url.c_str());
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   std::pair<bool, std::string> get_remote_mdns_sources() {
     std::string url = std::string("/api/browse/sources/mdns");
     auto res = cli_.Get(url.c_str());
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
-    return std::make_pair(res->status == 200, res->body);
+    return {res->status == 200, res->body};
   }
 
   bool wait_for_remote_mdns_sources(int num) {
