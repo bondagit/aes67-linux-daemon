@@ -21,9 +21,9 @@
 using boost::asio::ip::tcp;
 
 
-bool RtspServer::add_source(uint8_t id,
-                            const std::string& name,
-                            const std::string& sdp) {
+bool RtspServer::update_source(uint8_t id,
+                               const std::string& name,
+                               const std::string& sdp) {
   bool ret = false;
   BOOST_LOG_TRIVIAL(debug) << "rtsp_server:: added source " << name;
   std::lock_guard<std::mutex> lock(mutex_);
@@ -88,7 +88,7 @@ bool RtspSession::announce(uint8_t id,
        << sdp;
 
     BOOST_LOG_TRIVIAL(info)
-        << "rtsp_server:: " << "ANNOUNCE for source " << id << " sent to "
+        << "rtsp_server:: " << "ANNOUNCE for source " << name << " sent to "
         << socket_.remote_endpoint();
 
     send_response(ss.str());

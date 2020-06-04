@@ -134,7 +134,7 @@ class SessionManager {
   std::error_code remove_source(uint32_t id);
   uint8_t get_source_id(const std::string& name) const;
 
-  enum class ObserverType { add_source, remove_source };
+  enum class ObserverType{ add_source, remove_source, update_source };
   using Observer = std::function<bool(uint8_t id, const std::string& name,
                                         const std::string& sdp)>;
   void add_source_observer(ObserverType type, Observer cb);
@@ -164,6 +164,10 @@ class SessionManager {
 
   void on_add_sink(const StreamSink& sink, const StreamInfo& info);
   void on_remove_sink(const StreamInfo& info);
+
+  void on_ptp_status_locked();
+
+  void on_update_sources();
 
   std::string get_removed_source_sdp_(uint32_t id, uint32_t src_addr) const;
   std::string get_source_sdp_(uint32_t id, const StreamInfo& info) const;
@@ -209,6 +213,7 @@ class SessionManager {
 
   std::list<Observer> add_source_observers;
   std::list<Observer> remove_source_observers;
+  std::list<Observer> update_source_observers;
 
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;

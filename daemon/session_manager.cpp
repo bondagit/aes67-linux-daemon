@@ -428,6 +428,9 @@ void SessionManager::add_source_observer(ObserverType type, Observer cb) {
   case ObserverType::remove_source:
     remove_source_observers.push_back(cb);
     break;
+  case ObserverType::update_source:
+    update_source_observers.push_back(cb);
+    break;
   }
 }
 
@@ -916,6 +919,20 @@ size_t SessionManager::process_sap() {
   return sdp_len_sum;
 }
 
+void SessionManager::on_update_sources() {
+  // trigger sources SDP file update
+  std::shared_lock sources_lock(sources_mutex_);
+  for (auto const& [id, info]: sources_) {
+    for (auto cb : update_source_observers) {
+      cb(id, info.stream.m_cName, get_source_sdp_(id, info));
+    }
+  }
+}
+
+void SessionManager::on_ptp_status_locked() {
+  // set sample rate, this may require seconds
+  (void)driver_->set_sample_rate(driver_->get_current_sample_rate());
+}
 
 using namespace std::chrono;
 using second_t  = duration<double, std::ratio<1> >;
@@ -927,6 +944,7 @@ bool SessionManager::worker() {
   auto ptp_timepoint = steady_clock::now();
   int sap_interval = 1;
   int ptp_interval = 0;
+  uint32_t sample_rate = driver_->get_current_sample_rate();
 
   sap_.set_multicast_interface(config_->get_ip_addr_str());
 
@@ -950,10 +968,16 @@ bool SessionManager::worker() {
                  "%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",
                  pui64GMID[0], pui64GMID[1], pui64GMID[2], pui64GMID[3],
                  pui64GMID[4], pui64GMID[5], pui64GMID[6], pui64GMID[7]);
+
+	bool ptp_changed_gmid = false;
+	bool ptp_changed_to_locked = false;
         // update PTP clock status
-        std::unique_lock ptp_lock(ptp_mutex_);
+	ptp_mutex_.lock();
 	// update status
-        ptp_status_.gmid = ptp_clock_id;
+	if (ptp_status_.gmid != ptp_clock_id) {
+          ptp_status_.gmid = ptp_clock_id;
+          ptp_changed_gmid = true;
+	}
         ptp_status_.jitter = ptp_status.i32Jitter;
         std::string new_ptp_status;
         switch (ptp_status.nPTPLockStatus) {
@@ -967,15 +991,30 @@ bool SessionManager::worker() {
             new_ptp_status = "locked";
             break;
         }
+
         if (ptp_status_.status != new_ptp_status) {
           BOOST_LOG_TRIVIAL(info)
               << "session_manager:: new PTP clock status " << new_ptp_status;
           ptp_status_.status = new_ptp_status;
           if (new_ptp_status == "locked") {
-	    // set sample rate, this may require seconds
-            (void)driver_->set_sample_rate(driver_->get_current_sample_rate());
-          }
-        }
+	    ptp_changed_to_locked = true;
+	  }
+	}
+        // end update PTP clock status
+	ptp_mutex_.unlock();
+
+
+	if (ptp_changed_to_locked) {
+          on_ptp_status_locked();
+	}
+
+	if (ptp_changed_gmid ||
+              sample_rate != driver_->get_current_sample_rate()) {
+          /* master clock id changed or sample rate changed 
+           * we need to update all the sources */
+          sample_rate = driver_->get_current_sample_rate();
+	  on_update_sources();
+	}
       }
       ptp_interval = 10;
     }

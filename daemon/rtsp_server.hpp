@@ -101,7 +101,14 @@ class RtspServer {
 
     session_manager_->add_source_observer(
       SessionManager::ObserverType::add_source,
-      std::bind(&RtspServer::add_source, this,
+      std::bind(&RtspServer::update_source, this,
+          std::placeholders::_1,
+          std::placeholders::_2,
+          std::placeholders::_3));
+
+    session_manager_->add_source_observer(
+      SessionManager::ObserverType::update_source,
+      std::bind(&RtspServer::update_source, this,
           std::placeholders::_1,
           std::placeholders::_2,
           std::placeholders::_3));
@@ -117,8 +124,8 @@ class RtspServer {
   }
 
  private:
-  /* a new source has been added or updated */
-  bool add_source(uint8_t id, const std::string& name, const std::string& sdp);
+  /* a source was updated */
+  bool update_source(uint8_t id, const std::string& name, const std::string& sdp);
   void accept();
 
   std::mutex mutex_;
