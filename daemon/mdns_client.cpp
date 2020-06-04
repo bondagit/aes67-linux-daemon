@@ -108,6 +108,8 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
       break;
   }
 
+  /* remove the resolver from the active pool */
+  mdns.active_resolvers.erase(std::pair(name, domain));
   avahi_service_resolver_free(r);
 }
 
@@ -135,18 +137,24 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
       BOOST_LOG_TRIVIAL(info) << "mdns_client:: (Browser) NEW: "
                               << "service " << name << " of type " << type
                               << " in domain " << domain;
-      /* We ignore the returned resolver object. In the callback
-         function we free it. If the server is terminated before
-         the callback function is called the server will free
-         the resolver for us. */
-      if (!(avahi_service_resolver_new(mdns.client_.get(), interface, protocol,
-                                       name, type, domain, AVAHI_PROTO_UNSPEC,
-                                       AVAHI_LOOKUP_NO_TXT, resolve_callback,
-                                       &mdns))) {
+      /* check if a resolver is already running for this name and domain */
+      if (mdns.active_resolvers.find(std::pair(name, domain)) !=
+              mdns.active_resolvers.end()) {
+        /* if already running we don't run a new resolver */
+        BOOST_LOG_TRIVIAL(info)
+            << "mdns_client:: (Browser): resolution already ongoing ...";
+      }
+      else if (!(avahi_service_resolver_new(mdns.client_.get(), interface,
+                                      protocol, name, type, domain,
+                                      AVAHI_PROTO_UNSPEC, AVAHI_LOOKUP_NO_TXT,
+                                      resolve_callback, &mdns))) {
         BOOST_LOG_TRIVIAL(error)
             << "mdns_client:: "
             << "Failed to resolve service " << name << " : "
             << avahi_strerror(avahi_client_errno(mdns.client_.get()));
+      } else {
+        /* add the resolver to the active pool */
+        mdns.active_resolvers.insert(std::pair(name, domain));
       }
       break;
 

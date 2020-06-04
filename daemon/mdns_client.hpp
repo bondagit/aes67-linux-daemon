@@ -96,6 +96,9 @@ class MDNSClient {
                               AvahiClientState state,
                               void* userdata);
 
+  std::set<std::pair<std::string /*name*/, std::string /*domain */> >
+        active_resolvers;
+
 #endif
 };
 
