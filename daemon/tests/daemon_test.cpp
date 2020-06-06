@@ -344,7 +344,7 @@ struct Client {
     return {res->status == 200, res->body};
   }
 
-  bool wait_for_remote_mdns_sources(int num) {
+  bool wait_for_remote_mdns_sources(unsigned int num) {
     boost::property_tree::ptree pt;
     int retry = 10;
     do {

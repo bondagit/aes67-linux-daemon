@@ -25,6 +25,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_set>
+#include <vector>
 
 #include "session_manager.hpp"
 

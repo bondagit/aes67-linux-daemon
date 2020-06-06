@@ -32,6 +32,7 @@
 #include <list>
 #include <shared_mutex>
 #include <thread>
+#include <set>
 
 #include "config.hpp"
 #include "rtsp_client.hpp"
