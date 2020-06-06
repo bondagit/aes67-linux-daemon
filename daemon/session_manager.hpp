@@ -65,6 +65,7 @@ struct SinkStreamStatus {
   bool is_receiving_rtp_packet{false};
   bool is_muted{false};
   bool is_some_muted{false};
+  bool is_all_muted{false};
   int min_time{0};
 };
 

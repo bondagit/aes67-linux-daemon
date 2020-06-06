@@ -72,6 +72,8 @@ class SinkEntry extends Component {
           flags += 'receiving';
         if (status.sink_flags._some_muted)
           flags += (flags ? ',' : '') + 'some muted';
+        if (status.sink_flags._all_muted)
+          flags += (flags ? ',' : '') + 'all muted';
         if (status.sink_flags._muted)
           flags += (flags ? ',' : '') + 'muted';
         this.setState({ 

@@ -158,6 +158,7 @@ std::string sink_status_to_json(const SinkStreamStatus& status) {
      << ", \n    \"rtp_sac_error\": " << status.is_rtp_sac_error
      << ", \n    \"receiving_rtp_packet\": " << status.is_receiving_rtp_packet
      << ", \n    \"some_muted\": " << status.is_some_muted
+     << ", \n    \"all_muted\": " << status.is_all_muted
      << ", \n    \"muted\": " << status.is_muted << "\n  },"
      << "\n  \"sink_min_time\": " << status.min_time << "\n}\n";
   return ss.str();

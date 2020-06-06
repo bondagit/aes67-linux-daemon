@@ -830,6 +830,7 @@ std::error_code SessionManager::get_sink_status(
     sink_status.is_receiving_rtp_packet = status.u.flags & 0x10;
     sink_status.is_muted = status.u.flags & 0x20;
     sink_status.is_some_muted = status.u.flags & 0x40;
+    sink_status.is_all_muted = status.u.flags & 0x80;
     sink_status.min_time = status.sink_min_time;
   }
 

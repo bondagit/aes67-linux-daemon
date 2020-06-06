@@ -1,28 +1,3 @@
-diff --git a/driver/MTAL_LKernelAPI.c b/driver/MTAL_LKernelAPI.c
-index 164f315..a993b41 100644
---- a/driver/MTAL_LKernelAPI.c
-+++ b/driver/MTAL_LKernelAPI.c
-@@ -35,7 +35,7 @@
- #include <linux/spinlock.h>
- #include <linux/version.h>
- 
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) || LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
- #include <linux/timekeeping.h>
- #else
- #include <linux/time.h>
-@@ -214,7 +214,10 @@ uint64_t MTAL_LK_GetCounterFreq(void)
- uint64_t MTAL_LK_GetSystemTime(void)
- {
-     uint64_t timeVal = 0ull;
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
-+    struct timespec64 ts64;
-+    ktime_get_real_ts64(&ts64);
-+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
-     struct timespec64 ts64;
-     getnstimeofday64(&ts64);
- #else
 diff --git a/driver/module_timer.c b/driver/module_timer.c
 index 5f64a8e..0ba770f 100644
 --- a/driver/module_timer.c

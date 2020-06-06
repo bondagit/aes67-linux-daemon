@@ -425,6 +425,7 @@ Example:
         "rtp_sac_error": false, 
         "receiving_rtp_packet": false, 
         "some_muted": false, 
+        "all_muted": false, 
         "muted": true
       },
       "sink_min_time": 0
@@ -446,6 +447,8 @@ where:
 >    - **receiving\_rtp\_packet** JSON boolean specifying whether the sink is currently receiving RTP packets from the source.   
 
 >    - **some\_muted** JSON boolean (not used)
+
+>    - **all\_muted** JSON boolean (not used)
 
 >    - **muted** JSON boolean specifying whether the sink is currently muted.
 

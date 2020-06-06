@@ -1,0 +1,19 @@
+diff --git a/driver/PTP.c b/driver/PTP.c
+--- a/driver/PTP.c
++++ b/driver/PTP.c
+@@ -306,6 +306,7 @@ EDispatchResult process_PTP_packet(TClock_PTP* self, TUDPPacketBase* pUDPPacketB
+ 	}
+ 
+ 	// verify checksum
++#if 0
+ 	if (pUDPPacketBase->UDPHeader.usCheckSum != 0)
+ 	{
+ 		uint16_t ui16CheckSum = MTAL_ComputeUDPChecksum(&pPTPPacketBase->UDPHeader, MTAL_SWAP16(pUDPPacketBase->UDPHeader.usLen), (unsigned short*)&pPTPPacketBase->IPV4Header.ui32SrcIP, (unsigned short*)&pPTPPacketBase->IPV4Header.ui32DestIP);
+@@ -319,6 +320,7 @@ EDispatchResult process_PTP_packet(TClock_PTP* self, TUDPPacketBase* pUDPPacketB
+ 			return DR_PACKET_ERROR;
+ 		}
+ 	}
++#endif
+ 
+ 	//DumpPTPV2MsgHeader(&pPTPPacketBase->V2MsgHeader);
+ 
