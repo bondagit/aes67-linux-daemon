@@ -76,17 +76,9 @@ parse_url(const std::string& _url) {
 
 std::string get_node_id(uint32_t ip_addr) {
   std::stringstream ss;
-  if (gethostid() == 0x7f0101) {
-    /* hostid is using lo interface ip
-       we create an host ID based on the current IP */
-    ss << "AES67 daemon "
-       << boost::format("%02x%02x%02x%02x")
-       % ((ip_addr >> 8) & 0xff) 
-       % ((ip_addr >> 24) & 0xff) 
-       % (ip_addr & 0xff) 
-       % ((ip_addr >> 16) & 0xff);
-  } else {
-    ss << "AES67 daemon " << std::hex << (uint32_t)gethostid();
-  }
+  ip_addr = htonl(ip_addr);
+  /* we create an host ID based on the current IP */
+  ss << "AES67 daemon " << boost::format("%08x") %
+     ((ip_addr << 16) | (ip_addr >> 16));
   return ss.str();
 }
