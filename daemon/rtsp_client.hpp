@@ -20,8 +20,8 @@
 #ifndef _RTSP_CLIENT_HPP_
 #define _RTSP_CLIENT_HPP_
 
-#include <mutex>
 #include <boost/asio/ip/tcp.hpp>
+#include <mutex>
 
 struct RtspSource {
   std::string id;
@@ -36,33 +36,32 @@ class RtspClient {
   constexpr static uint16_t client_timeout = 10;     // sec
   constexpr static const char dft_port[] = "554";
 
-  using Observer = std::function<void(
-                  const std::string& name,
-                  const std::string& domain,
-                  const RtspSource& source)>;
+  using Observer = std::function<void(const std::string& name,
+                                      const std::string& domain,
+                                      const RtspSource& source)>;
 
-  static std::pair<bool, RtspSource> process(
-                  Observer callback,
-		  const std::string& name,
-                  const std::string& domain,
-                  const std::string& path,
-                  const std::string& address,
-                  const std::string& port = dft_port,
-                  bool wait_for_updates = true);
+  static std::pair<bool, RtspSource> process(Observer callback,
+                                             const std::string& name,
+                                             const std::string& domain,
+                                             const std::string& path,
+                                             const std::string& address,
+                                             const std::string& port = dft_port,
+                                             bool wait_for_updates = true);
 
   static void stop(const std::string& name, const std::string& domain);
   static void stop_all();
 
   static std::pair<bool, RtspSource> describe(
-                  const std::string& path,
-                  const std::string& address,
-                  const std::string& port = dft_port);
+      const std::string& path,
+      const std::string& address,
+      const std::string& port = dft_port);
 
   inline static std::atomic<uint16_t> g_seq_number{0};
-  inline static std::map<std::pair<std::string /*name*/, std::string /*domain*/>, 
-                            boost::asio::ip::tcp::iostream* /*stream*/> g_active_clients;
+  inline static std::map<
+      std::pair<std::string /*name*/, std::string /*domain*/>,
+      boost::asio::ip::tcp::iostream* /*stream*/>
+      g_active_clients;
   inline static std::mutex g_mutex;
-
 };
 
 #endif
