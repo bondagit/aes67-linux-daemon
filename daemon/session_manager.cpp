@@ -557,7 +557,8 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   ss << "v=0\n"
      << "o=- " << static_cast<unsigned>(id) << " 0 IN IP4 "
      << ip::address_v4(info.stream.m_ui32SrcIP).to_string() << "\n"
-     << "s=" << get_node_id() << " " << info.stream.m_cName << "\n"
+     << "s=" << get_node_id(config_->get_ip_addr()) << " "
+     << info.stream.m_cName << "\n"
      << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string()
      << "/" << static_cast<unsigned>(info.stream.m_byTTL) << "\n"
      << "t=0 0\n"

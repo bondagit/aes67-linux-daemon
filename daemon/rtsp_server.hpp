@@ -39,9 +39,11 @@ class RtspSession : public std::enable_shared_from_this<RtspSession> {
   constexpr static uint16_t max_length = 4096;       // byte
   constexpr static uint16_t session_tout_secs = 10;  // sec
 
-  RtspSession(std::shared_ptr<SessionManager> session_manager,
+  RtspSession(std::shared_ptr<Config> config,
+              std::shared_ptr<SessionManager> session_manager,
               tcp::socket socket)
-      : session_manager_(session_manager),
+      : config_(config),
+        session_manager_(session_manager),
         socket_(std::move(socket)),
         length_{0},
         cseq_{-1},
@@ -66,6 +68,7 @@ class RtspSession : public std::enable_shared_from_this<RtspSession> {
   void read_request();
   void send_error(int status_code, const std::string& description);
   void send_response(const std::string& response);
+  std::shared_ptr<Config> config_;
   std::shared_ptr<SessionManager> session_manager_;
   tcp::socket socket_;
   char data_[max_length + 1];

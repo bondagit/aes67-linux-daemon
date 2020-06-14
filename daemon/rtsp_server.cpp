@@ -46,9 +46,8 @@ void RtspServer::accept() {
       unsigned int i = 0;
       for (; i < sessions_.size(); i++) {
         if (sessions_[i].use_count() == 0) {
-          auto session = std::make_shared<RtspSession>(session_manager_,
-                                                       std::move(socket_));
-
+          auto session = std::make_shared<RtspSession>(config_,
+              session_manager_, std::move(socket_));
           sessions_[i] = session;
           sessions_start_point_[i] = steady_clock::now();
           session->start();
@@ -75,7 +74,8 @@ bool RtspSession::announce(uint8_t id,
   /* if a describe request is currently not beeing process
    * and the specified source id has been described on this session send update */
   if (cseq_ < 0 && source_ids_.find(id) != source_ids_.end()) {
-    std::string path(std::string("/by-name/") + get_node_id() + " " + name);
+    std::string path(std::string("/by-name/") + 
+        get_node_id(config_->get_ip_addr()) + " " + name);
     std::stringstream ss;
     ss << "ANNOUNCE rtsp://" << address << ":" << std::to_string(port)
        << httplib::detail::encode_url(path) << " RTSP/1.0\r\n"
@@ -164,15 +164,16 @@ bool RtspSession::process_request() {
 }
 
 void RtspSession::build_response(const std::string& url) {
-  auto const [ok, protocol, host, port, path] = parse_url(url);
-  if (!ok) {
+  auto const res = parse_url(url);
+  if (!std::get<0>(res)) {
     BOOST_LOG_TRIVIAL(error) << "rtsp_server:: cannot parse URL " << url
                              << " from " << socket_.remote_endpoint();
     send_error(400, "Bad Request");
     return;
   }
-
-  auto base_path = std::string("/by-name/") + get_node_id() + " ";
+  auto path = std::get<4>(res);
+  auto base_path = std::string("/by-name/") +
+                   get_node_id(config_->get_ip_addr()) + " ";
   uint8_t id = SessionManager::stream_id_max + 1;
   if (path.rfind(base_path) != std::string::npos) {
     /* extract the source name from path and retrive the id */

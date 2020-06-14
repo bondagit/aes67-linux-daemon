@@ -96,7 +96,7 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
      << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str()) << "\""
      << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
-     << ",\n  \"node_id\": \"" << escape_json(get_node_id()) << "\""
+     << ",\n  \"node_id\": \"" << escape_json(get_node_id(config.get_ip_addr())) << "\""
      << "\n}\n";
   return ss.str();
 }

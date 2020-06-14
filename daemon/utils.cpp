@@ -18,6 +18,7 @@
 //
 //
 
+#include <boost/format.hpp>
 #include "utils.hpp"
 
 uint16_t crc16(const uint8_t* p, size_t len) {
@@ -73,8 +74,19 @@ parse_url(const std::string& _url) {
   return {host.length() > 0, protocol, host, port, path};
 }
 
-std::string get_node_id() {
+std::string get_node_id(uint32_t ip_addr) {
   std::stringstream ss;
-  ss << "AES67 daemon " << std::hex << (uint32_t)gethostid();
+  if (gethostid() == 0x7f0101) {
+    /* hostid is using lo interface ip
+       we create an host ID based on the current IP */
+    ss << "AES67 daemon "
+       << boost::format("%02x%02x%02x%02x")
+       % ((ip_addr >> 8) & 0xff) 
+       % ((ip_addr >> 24) & 0xff) 
+       % (ip_addr & 0xff) 
+       % ((ip_addr >> 16) & 0xff);
+  } else {
+    ss << "AES67 daemon " << std::hex << (uint32_t)gethostid();
+  }
   return ss.str();
 }
