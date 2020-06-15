@@ -120,7 +120,9 @@ setup the kernel parameters with:
 
 make sure that no instances of the aes67-daemon are running, enter the [tests](daemon/tests) subdirectory and run:
 
-      ./daemon-test
+      ./daemon-test -p
+
+**_NOTE:_** when running regression tests make sure that no other Ravenna mDNS sources are advertised on the network because this will affect the results. Regression tests run on loopback interface but Avahi ignores the interface parameter set and will forward to the daemon the sources found on all network interfaces.
 
 ## Run the demo ##
 <a name="demo"></a>

@@ -866,7 +866,6 @@ BOOST_AUTO_TEST_CASE(add_remove_check_mdns_browser_update_all) {
         }
       }
     }
-    retry--;
   } while (retry-- && found < g_stream_num_max);
   BOOST_REQUIRE_MESSAGE(retry > 0, "all remote mdns source updated");
   for (int id = 0; id < g_stream_num_max; id++) {
