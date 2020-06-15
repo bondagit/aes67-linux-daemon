@@ -65,3 +65,17 @@ index ac65bbb..a65994f 100644
  #else
      #include <string.h>
  #endif
+diff --git a/driver/audio_driver.c b/driver/audio_driver.c
+index 3d9debd..0ff2dfc 100644
+--- a/driver/audio_driver.c
++++ b/driver/audio_driver.c
+@@ -1312,7 +1312,7 @@ static int mr_alsa_audio_pcm_playback_copy_internal( struct snd_pcm_substream *s
+     
+     if (channel > 0 && channel >= runtime->channels)
+     {
+-        printk(KERN_WARNING "Channel %d copy ignored because it does not fit the available runtime channels (%d)", channel, runtime->channels);
++        //printk(KERN_WARNING "Channel %d copy ignored because it does not fit the available runtime channels (%d)", channel, runtime->channels);
+        return 0;
+     }
+ 
+
