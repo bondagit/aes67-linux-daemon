@@ -21,8 +21,9 @@
 #define _JSON_HPP_
 
 #include <list>
-#include "session_manager.hpp"
+
 #include "browser.hpp"
+#include "session_manager.hpp"
 
 /* JSON serializers */
 std::string config_to_json(const Config& config);
@@ -46,14 +47,10 @@ Config json_to_config(const std::string& json);
 StreamSource json_to_source(const std::string& id, const std::string& json);
 StreamSink json_to_sink(const std::string& id, const std::string& json);
 PTPConfig json_to_ptp_config(const std::string& json);
-void json_to_sources(std::istream& jstream,
-                     std::list<StreamSource>& sources);
-void json_to_sources(const std::string& json,
-                     std::list<StreamSource>& sources);
-void json_to_sinks(std::istream& jstream,
-                     std::list<StreamSink>& sinks);
-void json_to_sinks(const std::string& json,
-                     std::list<StreamSink>& sinks);
+void json_to_sources(std::istream& jstream, std::list<StreamSource>& sources);
+void json_to_sources(const std::string& json, std::list<StreamSource>& sources);
+void json_to_sinks(std::istream& jstream, std::list<StreamSink>& sinks);
+void json_to_sinks(const std::string& json, std::list<StreamSink>& sinks);
 void json_to_streams(std::istream& jstream,
                      std::list<StreamSource>& sources,
                      std::list<StreamSink>& sinks);

@@ -21,10 +21,10 @@
 #define _SESSION_MANAGER_HPP_
 
 #include <future>
+#include <list>
 #include <map>
 #include <shared_mutex>
 #include <thread>
-#include <list>
 
 #include "config.hpp"
 #include "driver_manager.hpp"
@@ -102,7 +102,7 @@ class SessionManager {
   SessionManager() = delete;
   SessionManager(const SessionManager&) = delete;
   SessionManager& operator=(const SessionManager&) = delete;
-  virtual ~SessionManager(){ terminate(); };
+  virtual ~SessionManager() { terminate(); };
 
   // session manager interface
   bool init() {
@@ -135,9 +135,9 @@ class SessionManager {
   std::error_code remove_source(uint32_t id);
   uint8_t get_source_id(const std::string& name) const;
 
-  enum class ObserverType{ add_source, remove_source, update_source };
-  using Observer = std::function<bool(uint8_t id, const std::string& name,
-                                        const std::string& sdp)>;
+  enum class ObserverType { add_source, remove_source, update_source };
+  using Observer = std::function<
+      bool(uint8_t id, const std::string& name, const std::string& sdp)>;
   void add_source_observer(ObserverType type, Observer cb);
 
   std::error_code add_sink(const StreamSink& sink);
@@ -180,7 +180,7 @@ class SessionManager {
   // singleton, use create() to build
   SessionManager(std::shared_ptr<DriverManager> driver,
                  std::shared_ptr<Config> config)
-      : driver_(driver), config_(config){
+      : driver_(driver), config_(config) {
     ptp_config_.domain = config->get_ptp_domain();
     ptp_config_.dscp = config->get_ptp_dscp();
   };
@@ -205,7 +205,7 @@ class SessionManager {
       announced_sources_;
 
   /* number of deletions sent for a  a deleted source */
-  std::unordered_map<uint32_t /* msg_id_hash */, int /* count */> 
+  std::unordered_map<uint32_t /* msg_id_hash */, int /* count */>
       deleted_sources_count_;
 
   PTPConfig ptp_config_;

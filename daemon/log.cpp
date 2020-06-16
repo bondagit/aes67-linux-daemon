@@ -17,14 +17,13 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <vector>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/sinks/syslog_backend.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/console.hpp>
+#include <vector>
 
 #include "config.hpp"
 #include "log.hpp"
@@ -37,7 +36,6 @@ namespace keywords = boost::log::keywords;
 using sink_t = sinks::synchronous_sink<sinks::syslog_backend>;
 
 void log_init(const Config& config) {
-
   boost::shared_ptr<logging::core> core = logging::core::get();
 
   // remove all sink in case of re-configuration
@@ -84,4 +82,3 @@ void log_init(const Config& config) {
     core->add_sink(boost::make_shared<sink_t>(backend));
   }
 }
-

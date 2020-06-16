@@ -25,6 +25,7 @@
 #include "rtsp_client.hpp"
 #include "mdns_client.hpp"
 
+
 #ifdef _USE_AVAHI_
 void MDNSClient::resolve_callback(AvahiServiceResolver* r,
                                   AvahiIfIndex interface,
@@ -57,9 +58,10 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
 
       char addr[AVAHI_ADDRESS_STR_MAX];
       if ((flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
-           (mdns.config_->get_interface_name() == "lo")) {
-        ::strncpy(addr, mdns.config_->get_ip_addr_str().c_str(), sizeof addr - 1);
-	addr[sizeof addr - 1] = 0;
+          (mdns.config_->get_interface_name() == "lo")) {
+        ::strncpy(addr, mdns.config_->get_ip_addr_str().c_str(),
+                  sizeof addr - 1);
+        addr[sizeof addr - 1] = 0;
       } else {
         avahi_address_snprint(addr, sizeof(addr), address);
       }
@@ -72,36 +74,35 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
                "wide_area: %i, "
                "multicast: %i, "
                "cached: %i",
-               host_name, port, addr, 
-               !!(flags & AVAHI_LOOKUP_RESULT_LOCAL),
+               host_name, port, addr, !!(flags & AVAHI_LOOKUP_RESULT_LOCAL),
                !!(flags & AVAHI_LOOKUP_RESULT_OUR_OWN),
                !!(flags & AVAHI_LOOKUP_RESULT_WIDE_AREA),
                !!(flags & AVAHI_LOOKUP_RESULT_MULTICAST),
                !!(flags & AVAHI_LOOKUP_RESULT_CACHED));
       BOOST_LOG_TRIVIAL(debug) << "mdns_client:: (Resolver) " << info;
 
-      /* if not on loopback interface we don't want to receive self announced sessions 
-       * or if on loopback interface we want only local announced sessions */
-      if ((!(flags & AVAHI_LOOKUP_RESULT_LOCAL) && 
-            (mdns.config_->get_interface_name() != "lo")) || 
-           ((flags & AVAHI_LOOKUP_RESULT_LOCAL) && 
-	    (mdns.config_->get_interface_name() == "lo"))) {
+      /* if not on loopback interface we don't want to receive self announced
+       * sessions or if on loopback interface we want only local announced
+       * sessions */
+      if ((!(flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
+           (mdns.config_->get_interface_name() != "lo")) ||
+          ((flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
+           (mdns.config_->get_interface_name() == "lo"))) {
         std::lock_guard<std::mutex> lock(mdns.sources_res_mutex_);
 
-	/* process RTSP client in async task */
+        /* process RTSP client in async task */
         mdns.sources_res_.emplace_back(std::async(
             std::launch::async,
-            [&mdns,
-             name_ = std::forward<std::string>(name),
+            [&mdns, name_ = std::forward<std::string>(name),
              domain_ = std::forward<std::string>(domain),
              addr_ = std::forward<std::string>(addr),
              port_ = std::forward<std::string>(std::to_string(port))] {
-               RtspClient::process(
-		  std::bind(&MDNSClient::on_change_rtsp_source, &mdns,
-                         std::placeholders::_1, std::placeholders::_2,
-                         std::placeholders::_3),
-		  name_, domain_, std::string("/by-name/") + name_,
-		  addr_, port_);
+              RtspClient::process(
+                  std::bind(&MDNSClient::on_change_rtsp_source, &mdns,
+                            std::placeholders::_1, std::placeholders::_2,
+                            std::placeholders::_3),
+                  name_, domain_, std::string("/by-name/") + name_, addr_,
+                  port_);
             }));
       }
 
@@ -139,15 +140,14 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
                               << " in domain " << domain;
       /* check if a resolver is already running for this name and domain */
       if (mdns.active_resolvers.find({name, domain}) !=
-              mdns.active_resolvers.end()) {
+          mdns.active_resolvers.end()) {
         /* if already running we don't run a new resolver */
         BOOST_LOG_TRIVIAL(info)
             << "mdns_client:: (Browser): resolution already ongoing ...";
-      }
-      else if (!(avahi_service_resolver_new(mdns.client_.get(), interface,
-                                      protocol, name, type, domain,
-                                      AVAHI_PROTO_UNSPEC, AVAHI_LOOKUP_NO_TXT,
-                                      resolve_callback, &mdns))) {
+      } else if (!(avahi_service_resolver_new(
+                     mdns.client_.get(), interface, protocol, name, type,
+                     domain, AVAHI_PROTO_UNSPEC, AVAHI_LOOKUP_NO_TXT,
+                     resolve_callback, &mdns))) {
         BOOST_LOG_TRIVIAL(error)
             << "mdns_client:: "
             << "Failed to resolve service " << name << " : "
@@ -183,34 +183,32 @@ void MDNSClient::client_callback(AvahiClient* client,
   /* Called whenever the client or server state changes */
 
   switch (state) {
-  case AVAHI_CLIENT_FAILURE:
-    BOOST_LOG_TRIVIAL(fatal) << "mdns_client:: server connection failure: "
-                             << avahi_strerror(avahi_client_errno(client));
-    /* TODO reconnect if disconnected */
-    avahi_threaded_poll_quit(mdns.poll_.get());
-    break;
-
-   case AVAHI_CLIENT_S_REGISTERING:
-   case AVAHI_CLIENT_S_RUNNING:
-   case AVAHI_CLIENT_S_COLLISION:
-    /* Create the service browser */
-    mdns.sb_.reset(avahi_service_browser_new(client,
-                                        mdns.config_->get_interface_idx(),
-                                        AVAHI_PROTO_INET, 
-                                        "_ravenna_session._sub._rtsp._tcp", 
-					nullptr, {}, browse_callback, &mdns));
-    if (mdns.sb_ == nullptr) {
-      BOOST_LOG_TRIVIAL(fatal)
-          << "mdns_client:: failed to create service browser: "
-          << avahi_strerror(avahi_client_errno(mdns.client_.get()));
+    case AVAHI_CLIENT_FAILURE:
+      BOOST_LOG_TRIVIAL(fatal) << "mdns_client:: server connection failure: "
+                               << avahi_strerror(avahi_client_errno(client));
+      /* TODO reconnect if disconnected */
       avahi_threaded_poll_quit(mdns.poll_.get());
-    }
-    break;
+      break;
 
-  case AVAHI_CLIENT_CONNECTING:
-    break;
+    case AVAHI_CLIENT_S_REGISTERING:
+    case AVAHI_CLIENT_S_RUNNING:
+    case AVAHI_CLIENT_S_COLLISION:
+      /* Create the service browser */
+      mdns.sb_.reset(avahi_service_browser_new(
+          client, mdns.config_->get_interface_idx(), AVAHI_PROTO_INET,
+          "_ravenna_session._sub._rtsp._tcp", nullptr, {}, browse_callback,
+          &mdns));
+      if (mdns.sb_ == nullptr) {
+        BOOST_LOG_TRIVIAL(fatal)
+            << "mdns_client:: failed to create service browser: "
+            << avahi_strerror(avahi_client_errno(mdns.client_.get()));
+        avahi_threaded_poll_quit(mdns.poll_.get());
+      }
+      break;
+
+    case AVAHI_CLIENT_CONNECTING:
+      break;
   }
-
 }
 #endif
 

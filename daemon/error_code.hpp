@@ -45,18 +45,18 @@ std::error_code get_driver_error(int code);
 
 // Daemon errors
 enum class DaemonErrc {
-  invalid_stream_id = 40,       // daemon invalid stream id
-  stream_id_in_use = 41,        // daemon stream id is in use
-  stream_id_not_in_use = 42,    // daemon stream not in use
-  invalid_url = 43,             // daemon invalid URL
-  cannot_retrieve_sdp = 44,     // daemon cannot retrieve SDP
-  cannot_parse_sdp = 45,        // daemon cannot parse SDP
-  stream_name_in_use = 46,      // daemon source or sink name in use
-  send_invalid_size = 50,       // daemon data size too big for buffer
-  send_u2k_failed = 51,         // daemon failed to send command to driver
-  send_k2u_failed = 52,         // daemon failed to send event response to driver
-  receive_u2k_failed = 53,      // daemon failed to receive response from driver
-  receive_k2u_failed = 54,      // daemon failed to receive event from driver
+  invalid_stream_id = 40,     // daemon invalid stream id
+  stream_id_in_use = 41,      // daemon stream id is in use
+  stream_id_not_in_use = 42,  // daemon stream not in use
+  invalid_url = 43,           // daemon invalid URL
+  cannot_retrieve_sdp = 44,   // daemon cannot retrieve SDP
+  cannot_parse_sdp = 45,      // daemon cannot parse SDP
+  stream_name_in_use = 46,    // daemon source or sink name in use
+  send_invalid_size = 50,     // daemon data size too big for buffer
+  send_u2k_failed = 51,       // daemon failed to send command to driver
+  send_k2u_failed = 52,       // daemon failed to send event response to driver
+  receive_u2k_failed = 53,    // daemon failed to receive response from driver
+  receive_k2u_failed = 54,    // daemon failed to receive event from driver
   invalid_driver_response = 55  // unexpected driver command response code
 };
 

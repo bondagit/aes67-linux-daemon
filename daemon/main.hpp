@@ -17,7 +17,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-
 #ifndef _MAIN_HPP_
 #define _MAIN_HPP_
 

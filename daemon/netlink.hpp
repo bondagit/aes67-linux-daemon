@@ -26,7 +26,7 @@
 template <typename Protocol>
 class nl_endpoint {
  private:
-  sockaddr_nl sockaddr {.nl_family = AF_NETLINK};
+  sockaddr_nl sockaddr{.nl_family = AF_NETLINK};
 
  public:
   using protocol_type = Protocol;
@@ -59,7 +59,8 @@ class nl_endpoint {
 
   std::size_t size() const { return sizeof(sockaddr); }
 
-  void resize(std::size_t size) { /* nothing we can do here */ }
+  void resize(std::size_t size) { /* nothing we can do here */
+  }
 
   std::size_t capacity() const { return sizeof(sockaddr); }
 };
@@ -81,7 +82,6 @@ class nl_protocol {
 
  private:
   int proto;
-
 };
 
 #endif

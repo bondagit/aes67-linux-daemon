@@ -22,9 +22,9 @@
 
 #include <httplib.h>
 
+#include "browser.hpp"
 #include "config.hpp"
 #include "session_manager.hpp"
-#include "browser.hpp"
 
 class HttpServer {
  public:
@@ -32,9 +32,7 @@ class HttpServer {
   HttpServer(std::shared_ptr<SessionManager> session_manager,
              std::shared_ptr<Browser> browser,
              std::shared_ptr<Config> config)
-      : session_manager_(session_manager),
-        browser_(browser),
-        config_(config) {};
+      : session_manager_(session_manager), browser_(browser), config_(config){};
   bool init();
   bool terminate();
 

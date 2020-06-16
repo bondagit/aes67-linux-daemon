@@ -20,10 +20,10 @@
 #ifndef _UTILS_HPP_
 #define _UTILS_HPP_
 
-#include <iostream>
-#include <cstddef>
-
 #include <httplib.h>
+
+#include <cstddef>
+#include <iostream>
 
 uint16_t crc16(const uint8_t* p, size_t len);
 
@@ -35,5 +35,7 @@ std::tuple<bool /* res */,
 parse_url(const std::string& _url);
 
 std::string get_node_id(uint32_t ip_addr);
+
+std::string sdp_get_subject(const std::string& sdp);
 
 #endif

@@ -23,14 +23,16 @@
 #include <iostream>
 #include <string>
 
-#include "http_server.hpp"
-#include "log.hpp"
 #include "json.hpp"
+#include "log.hpp"
+#include "http_server.hpp"
 
 using namespace httplib;
 
-static inline void set_headers(Response& res, const std::string content_type = "") {
-  res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+static inline void set_headers(Response& res,
+                               const std::string content_type = "") {
+  res.set_header("Access-Control-Allow-Methods",
+                 "GET, POST, PUT, DELETE, OPTIONS");
   res.set_header("Access-Control-Allow-Origin", "*");
   res.set_header("Access-Control-Allow-Headers", "x-user-id");
   if (!content_type.empty()) {
@@ -52,26 +54,24 @@ static inline int get_http_error_status(const std::error_code& code) {
   return 500;
 }
 
-static inline std::string get_http_error_message(
-              const std::error_code& code) {
-  std::stringstream ss;;
+static inline std::string get_http_error_message(const std::error_code& code) {
+  std::stringstream ss;
+  ;
   ss << "(" << code.category().name() << ") " << code.message();
   return ss.str();
 }
 
-static inline void set_error(
-              const std::error_code& code,
-              const std::string& message,
-              Response& res) {
+static inline void set_error(const std::error_code& code,
+                             const std::string& message,
+                             Response& res) {
   res.status = get_http_error_status(code);
   set_headers(res, "text/plain");
   res.body = message + " : " + get_http_error_message(code);
 }
 
-static inline void set_error(
-              int status,
-              const std::string& message,
-              Response& res) {
+static inline void set_error(int status,
+                             const std::string& message,
+                             Response& res) {
   res.status = status;
   set_headers(res, "text/plain");
   res.body = message;
@@ -85,15 +85,16 @@ bool HttpServer::init() {
 
   svr_.set_base_dir(config_->get_http_base_dir().c_str());
 
-  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser)", [&](const Request& req, Response& res) {
-    std::ifstream file(config_->get_http_base_dir() + "/index.html");
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    res.set_content(buffer.str(), "text/html");
-  });
+  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser)",
+           [&](const Request& req, Response& res) {
+             std::ifstream file(config_->get_http_base_dir() + "/index.html");
+             std::stringstream buffer;
+             buffer << file.rdbuf();
+             res.set_content(buffer.str(), "text/html");
+           });
 
   /* allows cross-origin */
-  svr_.Options("/api/(.*?)", [&](const Request & /*req*/, Response &res) {
+  svr_.Options("/api/(.*?)", [&](const Request& /*req*/, Response& res) {
     set_headers(res);
   });
 
@@ -178,43 +179,44 @@ bool HttpServer::init() {
   });
 
   /* get a source SDP */
-  svr_.Get("/api/source/sdp/([0-9]+)", [this](const Request& req, Response& res) {
-    uint32_t id;
-    try {
-      id = std::stoi(req.matches[1]);
-    } catch (...) {
-      set_error(400, "failed to convert id", res);
-      return;
-    }
+  svr_.Get(
+      "/api/source/sdp/([0-9]+)", [this](const Request& req, Response& res) {
+        uint32_t id;
+        try {
+          id = std::stoi(req.matches[1]);
+        } catch (...) {
+          set_error(400, "failed to convert id", res);
+          return;
+        }
 
-    auto ret = session_manager_->get_source_sdp(id, res.body);
-    if (ret) {
-      set_error(ret, "get source " + std::to_string(id) + " failed", res);
-    } else {
-      set_headers(res, "application/sdp");
-    }
-  });
+        auto ret = session_manager_->get_source_sdp(id, res.body);
+        if (ret) {
+          set_error(ret, "get source " + std::to_string(id) + " failed", res);
+        } else {
+          set_headers(res, "application/sdp");
+        }
+      });
 
   /* get stream status */
-  svr_.Get("/api/sink/status/([0-9]+)", [this](const Request& req,
-                                               Response& res) {
-    uint32_t id;
-    try {
-      id = std::stoi(req.matches[1]);
-    } catch (...) {
-      set_error(400, "failed to convert id", res);
-      return;
-    }
-    SinkStreamStatus status;
-    auto ret = session_manager_->get_sink_status(id, status);
-    if (ret) {
-        set_error(ret, "failed to get sink " + std::to_string(id) + 
-                  " status", res);
-    } else {
-      set_headers(res, "application/json");
-      res.body = sink_status_to_json(status);
-    }
-  });
+  svr_.Get(
+      "/api/sink/status/([0-9]+)", [this](const Request& req, Response& res) {
+        uint32_t id;
+        try {
+          id = std::stoi(req.matches[1]);
+        } catch (...) {
+          set_error(400, "failed to convert id", res);
+          return;
+        }
+        SinkStreamStatus status;
+        auto ret = session_manager_->get_sink_status(id, status);
+        if (ret) {
+          set_error(ret, "failed to get sink " + std::to_string(id) + " status",
+                    res);
+        } else {
+          set_headers(res, "application/json");
+          res.body = sink_status_to_json(status);
+        }
+      });
 
   /* add a source */
   svr_.Put("/api/source/([0-9]+)", [this](const Request& req, Response& res) {
@@ -222,7 +224,8 @@ bool HttpServer::init() {
       StreamSource source = json_to_source(req.matches[1], req.body);
       auto ret = session_manager_->add_source(source);
       if (ret) {
-        set_error(ret, "failed to add source " + std::to_string(source.id), res);
+        set_error(ret, "failed to add source " + std::to_string(source.id),
+                  res);
       } else {
         set_headers(res);
       }
@@ -232,21 +235,22 @@ bool HttpServer::init() {
   });
 
   /* remove a source */
-  svr_.Delete("/api/source/([0-9]+)", [this](const Request& req, Response& res) {
-    uint32_t id;
-    try {
-      id = std::stoi(req.matches[1]);
-    } catch (...) {
-      set_error(400, "failed to convert id", res);
-      return;
-    }
-    auto ret = session_manager_->remove_source(id);
-    if (ret) {
-      set_error(ret, "failed to remove source " + std::to_string(id), res);
-    } else {
-      set_headers(res);
-    }
-  });
+  svr_.Delete(
+      "/api/source/([0-9]+)", [this](const Request& req, Response& res) {
+        uint32_t id;
+        try {
+          id = std::stoi(req.matches[1]);
+        } catch (...) {
+          set_error(400, "failed to convert id", res);
+          return;
+        }
+        auto ret = session_manager_->remove_source(id);
+        if (ret) {
+          set_error(ret, "failed to remove source " + std::to_string(id), res);
+        } else {
+          set_headers(res);
+        }
+      });
 
   /* add a sink */
   svr_.Put("/api/sink/([0-9]+)", [this](const Request& req, Response& res) {
@@ -281,12 +285,12 @@ bool HttpServer::init() {
   });
 
   /* get remote sources */
-  svr_.Get("/api/browse/sources/(all|mdns|sap)", 
-            [this](const Request& req, Response& res) {
-    auto const sources = browser_->get_remote_sources(req.matches[1]);
-    set_headers(res, "application/json");
-    res.body = remote_sources_to_json(sources);
-  });
+  svr_.Get("/api/browse/sources/(all|mdns|sap)",
+           [this](const Request& req, Response& res) {
+             auto const sources = browser_->get_remote_sources(req.matches[1]);
+             set_headers(res, "application/json");
+             res.body = remote_sources_to_json(sources);
+           });
 
   svr_.set_logger([](const Request& req, const Response& res) {
     if (res.status == 200) {
@@ -314,7 +318,8 @@ bool HttpServer::init() {
   });
 
   /* wait for HTTP server to show up */
-  httplib::Client cli(config_->get_ip_addr_str().c_str(), config_->get_http_port());
+  httplib::Client cli(config_->get_ip_addr_str().c_str(),
+                      config_->get_http_port());
   int retry = 3;
   while (retry--) {
     auto res = cli.Get("/api/config");

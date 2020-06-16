@@ -15,11 +15,11 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "rtsp_server.hpp"
+
 #include "utils.hpp"
+#include "rtsp_server.hpp"
 
 using boost::asio::ip::tcp;
-
 
 bool RtspServer::update_source(uint8_t id,
                                const std::string& name,
@@ -28,12 +28,11 @@ bool RtspServer::update_source(uint8_t id,
   BOOST_LOG_TRIVIAL(debug) << "rtsp_server:: added source " << name;
   std::lock_guard<std::mutex> lock(mutex_);
   for (unsigned int i = 0; i < sessions_.size(); i++) {
-      auto session = sessions_[i].lock();
-      if (session != nullptr) {
-        ret |= session->announce(id, name, sdp,
-                                 config_->get_ip_addr_str(),
-                                 config_->get_rtsp_port());
-      }
+    auto session = sessions_[i].lock();
+    if (session != nullptr) {
+      ret |= session->announce(id, name, sdp, config_->get_ip_addr_str(),
+                               config_->get_rtsp_port());
+    }
   }
   return ret;
 }
@@ -46,8 +45,8 @@ void RtspServer::accept() {
       unsigned int i = 0;
       for (; i < sessions_.size(); i++) {
         if (sessions_[i].use_count() == 0) {
-          auto session = std::make_shared<RtspSession>(config_,
-              session_manager_, std::move(socket_));
+          auto session = std::make_shared<RtspSession>(
+              config_, session_manager_, std::move(socket_));
           sessions_[i] = session;
           sessions_start_point_[i] = steady_clock::now();
           session->start();
@@ -72,31 +71,32 @@ bool RtspSession::announce(uint8_t id,
                            const std::string& address,
                            uint16_t port) {
   /* if a describe request is currently not beeing process
-   * and the specified source id has been described on this session send update */
+   * and the specified source id has been described on this session send update
+   */
   if (cseq_ < 0 && source_ids_.find(id) != source_ids_.end()) {
-    std::string path(std::string("/by-name/") + 
-        get_node_id(config_->get_ip_addr()) + " " + name);
+    std::string path(std::string("/by-name/") +
+                     get_node_id(config_->get_ip_addr()) + " " + name);
     std::stringstream ss;
     ss << "ANNOUNCE rtsp://" << address << ":" << std::to_string(port)
        << httplib::detail::encode_url(path) << " RTSP/1.0\r\n"
        << "User-Agent: aes67-daemon\r\n"
-       << "connection: Keep-Alive" << "\r\n"
+       << "connection: Keep-Alive"
+       << "\r\n"
        << "CSeq: " << announce_cseq_++ << "\r\n"
        << "Content-Length: " << sdp.length() << "\r\n"
        << "Content-Type: application/sdp\r\n"
        << "\r\n"
        << sdp;
 
-    BOOST_LOG_TRIVIAL(info)
-        << "rtsp_server:: " << "ANNOUNCE for source " << name << " sent to "
-        << socket_.remote_endpoint();
+    BOOST_LOG_TRIVIAL(info) << "rtsp_server:: "
+                            << "ANNOUNCE for source " << name << " sent to "
+                            << socket_.remote_endpoint();
 
     send_response(ss.str());
     return true;
   }
   return false;
 }
-
 
 bool RtspSession::process_request() {
   /*
@@ -142,7 +142,7 @@ bool RtspSession::process_request() {
   if (!is_end) {
     return false;
   }
-  
+
   if (fields[0].substr(0, 5) == "RTSP/") {
     /* we received a response, step to next request*/
     return true;
@@ -172,8 +172,8 @@ void RtspSession::build_response(const std::string& url) {
     return;
   }
   auto path = std::get<4>(res);
-  auto base_path = std::string("/by-name/") +
-                   get_node_id(config_->get_ip_addr()) + " ";
+  auto base_path =
+      std::string("/by-name/") + get_node_id(config_->get_ip_addr()) + " ";
   uint8_t id = SessionManager::stream_id_max + 1;
   if (path.rfind(base_path) != std::string::npos) {
     /* extract the source name from path and retrive the id */

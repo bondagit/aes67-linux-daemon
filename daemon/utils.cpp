@@ -18,8 +18,10 @@
 //
 //
 
-#include <boost/format.hpp>
 #include "utils.hpp"
+
+#include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 
 uint16_t crc16(const uint8_t* p, size_t len) {
   uint8_t x;
@@ -78,7 +80,20 @@ std::string get_node_id(uint32_t ip_addr) {
   std::stringstream ss;
   ip_addr = htonl(ip_addr);
   /* we create an host ID based on the current IP */
-  ss << "AES67 daemon " << boost::format("%08x") %
-     ((ip_addr << 16) | (ip_addr >> 16));
+  ss << "AES67 daemon "
+     << boost::format("%08x") % ((ip_addr << 16) | (ip_addr >> 16));
   return ss.str();
+}
+
+std::string sdp_get_subject(const std::string& sdp) {
+  std::stringstream ssstrem(sdp);
+  std::string line;
+  while (getline(ssstrem, line, '\n')) {
+    if (line.substr(0, 2) == "s=") {
+      auto subject = line.substr(2);
+      boost::trim(subject);
+      return subject;
+    }
+  }
+  return "";
 }

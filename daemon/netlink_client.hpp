@@ -35,7 +35,7 @@ using boost::asio::deadline_timer;
 class NetlinkClient {
  public:
   NetlinkClient() = delete;
-  NetlinkClient(const std::string & name) : name_(name) { }
+  NetlinkClient(const std::string& name) : name_(name) {}
 
   void init(const nl_endpoint<nl_protocol>& listen_endpoint,
             const nl_protocol& protocol) {
@@ -45,9 +45,7 @@ class NetlinkClient {
     check_deadline();
   }
 
-  void terminate() {
-    socket_.close();
-  }
+  void terminate() { socket_.close(); }
 
   std::size_t receive(const boost::asio::mutable_buffer& buffer,
                       boost::posix_time::time_duration timeout,
@@ -79,7 +77,8 @@ class NetlinkClient {
     if (deadline_.expires_at() <= deadline_timer::traits_type::now()) {
       socket_.cancel();
       deadline_.expires_at(boost::posix_time::pos_infin);
-      //BOOST_LOG_TRIVIAL(debug) << "netlink_client:: (" << name_ << ") timeout expired";
+      // BOOST_LOG_TRIVIAL(debug) << "netlink_client:: (" << name_ << ") timeout
+      // expired";
     }
 
     deadline_.async_wait(boost::bind(&NetlinkClient::check_deadline, this));

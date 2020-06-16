@@ -21,15 +21,15 @@
 #include <iostream>
 #include <thread>
 
+#include "browser.hpp"
 #include "config.hpp"
 #include "driver_manager.hpp"
 #include "http_server.hpp"
+#include "interface.hpp"
+#include "log.hpp"
 #include "mdns_server.hpp"
 #include "rtsp_server.hpp"
-#include "log.hpp"
 #include "session_manager.hpp"
-#include "interface.hpp"
-#include "browser.hpp"
 
 namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
@@ -50,12 +50,12 @@ bool is_terminated() {
 int main(int argc, char* argv[]) {
   int rc = EXIT_SUCCESS;
   po::options_description desc("Options");
-  desc.add_options()
-      ("config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
-       "daemon configuration file")
-      ("interface_name,i", po::value<std::string>(), "Network interface name")
-      ("http_port,p", po::value<int>(), "HTTP server port")
-      ("help,h", "Print this help message");
+  desc.add_options()(
+      "config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
+      "daemon configuration file")("interface_name,i", po::value<std::string>(),
+                                   "Network interface name")(
+      "http_port,p", po::value<int>(), "HTTP server port")(
+      "help,h", "Print this help message");
   int unix_style = postyle::unix_style | postyle::short_allow_next;
 
   po::variables_map vm;
@@ -114,8 +114,7 @@ int main(int argc, char* argv[]) {
       /* start session manager */
       auto session_manager = SessionManager::create(driver, config);
       if (session_manager == nullptr || !session_manager->init()) {
-        throw std::runtime_error(
-          std::string("SessionManager:: init failed"));
+        throw std::runtime_error(std::string("SessionManager:: init failed"));
       }
 
       /* start mDNS server */
@@ -133,10 +132,9 @@ int main(int argc, char* argv[]) {
       /* start browser */
       auto browser = Browser::create(config);
       if (browser == nullptr || !browser->init()) {
-        throw std::runtime_error(
-          std::string("Browser:: init failed"));
+        throw std::runtime_error(std::string("Browser:: init failed"));
       }
- 
+
       /* start http server */
       HttpServer http_server(session_manager, browser, config);
       if (!http_server.init()) {
@@ -150,10 +148,11 @@ int main(int argc, char* argv[]) {
       while (!is_terminated()) {
         auto [ip_addr, ip_str] = get_interface_ip(config->get_interface_name());
         if (!ip_str.empty() && config->get_ip_addr_str() != ip_str) {
-          BOOST_LOG_TRIVIAL(warning) << "main:: IP address changed, restarting ...";
+          BOOST_LOG_TRIVIAL(warning)
+              << "main:: IP address changed, restarting ...";
           config->set_ip_addr_str(ip_str);
           config->set_ip_addr(ip_addr);
-	  break;
+          break;
         }
 
         if (config->get_need_restart()) {
@@ -169,28 +168,24 @@ int main(int argc, char* argv[]) {
 
       /* stop http server */
       if (!http_server.terminate()) {
-        throw std::runtime_error(
-            std::string("HttpServer:: terminate failed"));
+        throw std::runtime_error(std::string("HttpServer:: terminate failed"));
       }
 
       /* stop browser */
       if (!browser->terminate()) {
-        throw std::runtime_error(
-            std::string("Browser:: terminate failed"));
+        throw std::runtime_error(std::string("Browser:: terminate failed"));
       }
 
       /* stop rtsp server */
       if (!rtsp_server.terminate()) {
-        throw std::runtime_error(
-            std::string("RtspServer:: terminate failed"));
+        throw std::runtime_error(std::string("RtspServer:: terminate failed"));
       }
 
       /* stop mDNS server */
       if (config->get_mdns_enabled()) {
         if (!mdns_server.terminate()) {
-          throw std::runtime_error(
-              std::string("MDNServer:: terminate failed"));
-	}
+          throw std::runtime_error(std::string("MDNServer:: terminate failed"));
+        }
       }
 
       /* stop session manager */
@@ -209,7 +204,7 @@ int main(int argc, char* argv[]) {
       BOOST_LOG_TRIVIAL(fatal) << "main:: fatal exception error: " << e.what();
       rc = EXIT_FAILURE;
     }
- 
+
     BOOST_LOG_TRIVIAL(info) << "main:: end ";
   }
 

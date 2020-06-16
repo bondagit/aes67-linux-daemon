@@ -18,8 +18,9 @@
 //  MIT License
 //
 
-#include <utility>
 #include <boost/asio.hpp>
+#include <utility>
+
 #include "log.hpp"
 
 using namespace boost::asio;
@@ -79,8 +80,8 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
   std::copy(sa, sa + 8, std::begin(mac));
 
   char str_mac[18];
-  sprintf(str_mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x",
-          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  sprintf(str_mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac[0], mac[1], mac[2],
+          mac[3], mac[4], mac[5]);
   /*BOOST_LOG_TRIVIAL(debug) << "interface " << interface_name
                              << " MAC address " << str_mac;*/
 

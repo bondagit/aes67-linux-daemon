@@ -23,10 +23,9 @@
 #include <boost/asio.hpp>
 #include <mutex>
 
-#include "driver_handler.hpp"
-
 #include "RTP_stream_info.h"
 #include "audio_streamer_clock_PTP_defs.h"
+#include "driver_handler.hpp"
 
 class DriverManager : public DriverHandler {
  public:

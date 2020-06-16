@@ -83,7 +83,8 @@ class RtspSession : public std::enable_shared_from_this<RtspSession> {
 
 class RtspServer {
  public:
-  constexpr static uint8_t session_num_max{(SessionManager::stream_id_max + 1) * 2};
+  constexpr static uint8_t session_num_max{(SessionManager::stream_id_max + 1) *
+                                           2};
 
   RtspServer() = delete;
   RtspServer(std::shared_ptr<SessionManager> session_manager,
@@ -101,21 +102,17 @@ class RtspServer {
   bool init() {
     accept();
     /* start rtsp server on a separate thread */
-    res_ = std::async([this](){ io_service_.run(); });
+    res_ = std::async([this]() { io_service_.run(); });
 
     session_manager_->add_source_observer(
-      SessionManager::ObserverType::add_source,
-      std::bind(&RtspServer::update_source, this,
-          std::placeholders::_1,
-          std::placeholders::_2,
-          std::placeholders::_3));
+        SessionManager::ObserverType::add_source,
+        std::bind(&RtspServer::update_source, this, std::placeholders::_1,
+                  std::placeholders::_2, std::placeholders::_3));
 
     session_manager_->add_source_observer(
-      SessionManager::ObserverType::update_source,
-      std::bind(&RtspServer::update_source, this,
-          std::placeholders::_1,
-          std::placeholders::_2,
-          std::placeholders::_3));
+        SessionManager::ObserverType::update_source,
+        std::bind(&RtspServer::update_source, this, std::placeholders::_1,
+                  std::placeholders::_2, std::placeholders::_3));
 
     return true;
   }
@@ -129,7 +126,9 @@ class RtspServer {
 
  private:
   /* a source was updated */
-  bool update_source(uint8_t id, const std::string& name, const std::string& sdp);
+  bool update_source(uint8_t id,
+                     const std::string& name,
+                     const std::string& sdp);
   void accept();
 
   std::mutex mutex_;

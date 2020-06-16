@@ -17,7 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096 //max for SDP file 
+#define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096  // max for SDP file
 #define CPPHTTPLIB_READ_TIMEOUT_SECOND 30
 #include <httplib.h>
 #include <boost/foreach.hpp>
@@ -33,7 +33,7 @@
 #define BOOST_TEST_MODULE DaemonTest
 #include <boost/test/unit_test.hpp>
 
-#if ! (defined (__arm__) || defined (__arm64__))
+#if !(defined(__arm__) || defined(__arm64__))
 //#define _MEMORY_CHECK_
 #endif
 
@@ -79,17 +79,12 @@ struct DaemonInstance {
   static bool is_ok() { return ok; }
 
  private:
-  child daemon_{
+  child daemon_ {
 #if defined _MEMORY_CHECK_
-               search_path("valgrind"),
+    search_path("valgrind"),
 #endif
-               "../aes67-daemon",
-               "-c",
-               "daemon.conf",
-               "-p",
-               "9999",
-               "-i",
-               "lo"};
+        "../aes67-daemon", "-c", "daemon.conf", "-p", "9999", "-i", "lo"
+  };
   inline static bool ok{false};
 };
 
@@ -259,11 +254,12 @@ struct Client {
   "map": [ 0, 1 ],
   )";
 
-    std::string json = json1 + 
-        std::string("\"name\": \"ALSA " + std::to_string(id) + "\",\n") + 
-        std::string("\"source\": \"http://") + 
-        g_daemon_address + ":" + std::to_string(g_daemon_port) + 
-        std::string("/api/source/sdp/") + std::to_string(id) + "\"\n}";
+    std::string json =
+        json1 +
+        std::string("\"name\": \"ALSA " + std::to_string(id) + "\",\n") +
+        std::string("\"source\": \"http://") + g_daemon_address + ":" +
+        std::to_string(g_daemon_port) + std::string("/api/source/sdp/") +
+        std::to_string(id) + "\"\n}";
     std::string url = std::string("/api/sink/") + std::to_string(id);
     auto res = cli_.Put(url.c_str(), json, "application/json");
     BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
@@ -287,9 +283,9 @@ struct Client {
         auto len = socket_.receive(boost::asio::buffer(data, g_udp_size));
         if (len <= g_sap_header_len) {
           continue;
-	}
-	sap_sdp.assign(data + g_sap_header_len, data + len);
-      } while(data[0] != 0x20 || sap_sdp != sdp);
+        }
+        sap_sdp.assign(data + g_sap_header_len, data + len);
+      } while (data[0] != 0x20 || sap_sdp != sdp);
       BOOST_CHECK_MESSAGE(true, "SAP announcement SDP and source SDP match");
     }
     return true;
@@ -305,10 +301,11 @@ struct Client {
       }
       std::string sap_sdp_(data + g_sap_header_len, data + len);
       if (data[0] == 0x24 && sap_sdp_.length() > 3) {
-         //o=- 56 0 IN IP4 127.0.0.1
-         ids.insert(std::atoi(sap_sdp_.c_str() + 3));
-         BOOST_TEST_MESSAGE("waiting deletion for " + 
-             std::to_string(g_stream_num_max - ids.size()) + " sources");
+        // o=- 56 0 IN IP4 127.0.0.1
+        ids.insert(std::atoi(sap_sdp_.c_str() + 3));
+        BOOST_TEST_MESSAGE("waiting deletion for " +
+                           std::to_string(g_stream_num_max - ids.size()) +
+                           " sources");
       }
     }
   }
@@ -322,9 +319,9 @@ struct Client {
         auto len = socket_.receive(boost::asio::buffer(data, g_udp_size));
         if (len <= g_sap_header_len) {
           continue;
-	}
-	sap_sdp.assign(data + g_sap_header_len, data + len);
-      } while(data[0] != 0x24 || sdp.find(sap_sdp) == std::string::npos);
+        }
+        sap_sdp.assign(data + g_sap_header_len, data + len);
+      } while (data[0] != 0x24 || sdp.find(sap_sdp) == std::string::npos);
       BOOST_CHECK_MESSAGE(true, "SAP deletion SDP matches");
     }
     return true;
@@ -353,7 +350,7 @@ struct Client {
       BOOST_REQUIRE_MESSAGE(json.first, "got remote mdns sources");
       std::stringstream ss(json.second);
       boost::property_tree::read_json(ss, pt);
-      //BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
+      // BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
     } while (pt.get_child("remote_sources").size() != num && retry--);
     return (retry > 0);
   }
@@ -379,7 +376,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   std::stringstream ss(json.second);
   boost::property_tree::read_json(ss, pt);
   auto http_port = pt.get<int>("http_port");
-  //auto log_severity = pt.get<int>("log_severity");
+  // auto log_severity = pt.get<int>("log_severity");
   auto playout_delay = pt.get<int>("playout_delay");
   auto tic_frame_size_at_1fs = pt.get<int>("tic_frame_size_at_1fs");
   auto max_tic_frame_size = pt.get<int>("max_tic_frame_size");
@@ -396,7 +393,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto mac_addr = pt.get<std::string>("mac_addr");
   auto ip_addr = pt.get<std::string>("ip_addr");
   BOOST_CHECK_MESSAGE(http_port == 9999, "config as excepcted");
-  //BOOST_CHECK_MESSAGE(log_severity == 5, "config as excepcted");
+  // BOOST_CHECK_MESSAGE(log_severity == 5, "config as excepcted");
   BOOST_CHECK_MESSAGE(playout_delay == 0, "config as excepcted");
   BOOST_CHECK_MESSAGE(tic_frame_size_at_1fs == 192, "config as excepcted");
   BOOST_CHECK_MESSAGE(max_tic_frame_size == 1024, "config as excepcted");
@@ -407,7 +404,8 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(ptp_dscp == 46, "config as excepcted");
   BOOST_CHECK_MESSAGE(sap_interval == 1, "config as excepcted");
   BOOST_CHECK_MESSAGE(syslog_proto == "none", "config as excepcted");
-  BOOST_CHECK_MESSAGE(syslog_server == "255.255.255.254:1234", "config as excepcted");
+  BOOST_CHECK_MESSAGE(syslog_server == "255.255.255.254:1234",
+                      "config as excepcted");
   BOOST_CHECK_MESSAGE(status_file == "", "config as excepcted");
   BOOST_CHECK_MESSAGE(interface_name == "lo", "config as excepcted");
   BOOST_CHECK_MESSAGE(mac_addr == "00:00:00:00:00:00", "config as excepcted");
@@ -423,7 +421,8 @@ BOOST_AUTO_TEST_CASE(get_ptp_status) {
   boost::property_tree::read_json(ss, pt);
   auto status = pt.get<std::string>("status");
   auto jitter = pt.get<int>("jitter");
-  BOOST_REQUIRE_MESSAGE(status == "unlocked" && jitter == 0, "ptp status as excepcted");
+  BOOST_REQUIRE_MESSAGE(status == "unlocked" && jitter == 0,
+                        "ptp status as excepcted");
 }
 
 BOOST_AUTO_TEST_CASE(get_ptp_config) {
@@ -455,7 +454,8 @@ BOOST_AUTO_TEST_CASE(set_ptp_config) {
   boost::property_tree::read_json(fs, pt);
   domain = pt.get<int>("ptp_domain");
   dscp = pt.get<int>("ptp_dscp");
-  BOOST_REQUIRE_MESSAGE(domain == 1 && dscp == 48, "ptp config file as excepcted");
+  BOOST_REQUIRE_MESSAGE(domain == 1 && dscp == 48,
+                        "ptp config file as excepcted");
   res = cli.set_ptp_config(0, 46);
   BOOST_REQUIRE_MESSAGE(res, "set default ptp config");
 }
@@ -463,13 +463,14 @@ BOOST_AUTO_TEST_CASE(set_ptp_config) {
 BOOST_AUTO_TEST_CASE(add_invalid_source) {
   Client cli;
   BOOST_REQUIRE_MESSAGE(!cli.add_source(g_stream_num_max),
-      "not added source " + std::to_string(g_stream_num_max));
+                        "not added source " + std::to_string(g_stream_num_max));
   BOOST_REQUIRE_MESSAGE(!cli.add_source(-1), "not added source -1");
 }
 
 BOOST_AUTO_TEST_CASE(remove_invalid_source) {
   Client cli;
-  BOOST_REQUIRE_MESSAGE(!cli.remove_source(g_stream_num_max),
+  BOOST_REQUIRE_MESSAGE(
+      !cli.remove_source(g_stream_num_max),
       "not removed source " + std::to_string(g_stream_num_max));
   BOOST_REQUIRE_MESSAGE(!cli.remove_source(-1), "not removed source -1");
 }
@@ -522,8 +523,9 @@ BOOST_AUTO_TEST_CASE(source_check_sap_browser) {
   std::stringstream ss(json.second);
   boost::property_tree::read_json(ss, pt);
   BOOST_FOREACH (auto const& v, pt.get_child("remote_sources")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<std::string>("sdp") == sdp.second,
-                     "returned sap source " + v.second.get<std::string>("id"));
+    BOOST_REQUIRE_MESSAGE(
+        v.second.get<std::string>("sdp") == sdp.second,
+        "returned sap source " + v.second.get<std::string>("id"));
   }
   BOOST_REQUIRE_MESSAGE(cli.remove_source(0), "removed source 0");
   cli.sap_wait_deletion(0, sdp.second, 3);
@@ -531,8 +533,8 @@ BOOST_AUTO_TEST_CASE(source_check_sap_browser) {
   BOOST_REQUIRE_MESSAGE(json.first, "got remote sap sources");
   std::stringstream ss1(json.second);
   boost::property_tree::read_json(ss1, pt);
-  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 0, 
-                     "no remote sap sources");
+  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 0,
+                        "no remote sap sources");
 }
 
 #ifdef _USE_AVAHI_
@@ -541,24 +543,28 @@ BOOST_AUTO_TEST_CASE(source_check_mdns_browser) {
   BOOST_REQUIRE_MESSAGE(cli.add_source(0), "added source 0");
   auto sdp = cli.get_source_sdp(0);
   BOOST_REQUIRE_MESSAGE(sdp.first, "got source sdp 0");
-  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(1), "remote mdns source found");
+  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(1),
+                        "remote mdns source found");
   auto json = cli.get_remote_mdns_sources();
   BOOST_REQUIRE_MESSAGE(json.first, "got remote mdns sources");
   boost::property_tree::ptree pt;
   std::stringstream ss(json.second);
   boost::property_tree::read_json(ss, pt);
   BOOST_FOREACH (auto const& v, pt.get_child("remote_sources")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<std::string>("sdp") == sdp.second,
-                     "returned mdns source " + v.second.get<std::string>("id"));
+    BOOST_REQUIRE_MESSAGE(
+        v.second.get<std::string>("sdp") == sdp.second,
+        "returned mdns source " + v.second.get<std::string>("id"));
   }
   BOOST_REQUIRE_MESSAGE(cli.remove_source(0), "removed source 0");
-  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0), "no remote mdns sources");
+  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0),
+                        "no remote mdns sources");
 }
 
 BOOST_AUTO_TEST_CASE(source_check_mdns_browser_update) {
   Client cli;
   BOOST_REQUIRE_MESSAGE(cli.add_source(0), "added source 0");
-  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(1), "remote mdns source found");
+  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(1),
+                        "remote mdns source found");
   BOOST_REQUIRE_MESSAGE(cli.update_source(0), "updated source 0");
   auto sdp = cli.get_source_sdp(0);
   BOOST_REQUIRE_MESSAGE(sdp.first, "got source sdp 0");
@@ -571,7 +577,7 @@ BOOST_AUTO_TEST_CASE(source_check_mdns_browser_update) {
     std::stringstream ss(json.second);
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(ss, pt);
-    //BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
+    // BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
     BOOST_FOREACH (auto const& v, pt.get_child("remote_sources")) {
       if (v.second.get<std::string>("sdp") == sdp.second) {
         found = true;
@@ -580,7 +586,8 @@ BOOST_AUTO_TEST_CASE(source_check_mdns_browser_update) {
   } while (retry-- && !found);
   BOOST_REQUIRE_MESSAGE(retry > 0, "remote mdns source updated");
   BOOST_REQUIRE_MESSAGE(cli.remove_source(0), "removed source 0");
-  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0), "no remote mdns sources");
+  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0),
+                        "no remote mdns sources");
 }
 #endif
 
@@ -592,10 +599,10 @@ BOOST_AUTO_TEST_CASE(sink_check_status) {
   boost::property_tree::ptree pt;
   std::stringstream ss(json.second);
   boost::property_tree::read_json(ss, pt);
-  //auto is_sink_muted = pt.get<bool>("sink_flags.muted");
+  // auto is_sink_muted = pt.get<bool>("sink_flags.muted");
   auto is_sink_some_muted = pt.get<bool>("sink_flags.some_muted");
   auto is_sink_all_muted = pt.get<bool>("sink_flags.all_muted");
-  //BOOST_REQUIRE_MESSAGE(is_sink_muted, "sink is muted");
+  // BOOST_REQUIRE_MESSAGE(is_sink_muted, "sink is muted");
   BOOST_REQUIRE_MESSAGE(!is_sink_all_muted, "all sinks are mutes");
   BOOST_REQUIRE_MESSAGE(!is_sink_some_muted, "some sinks are muted");
   BOOST_REQUIRE_MESSAGE(cli.remove_sink(0), "removed sink 0");
@@ -614,7 +621,7 @@ BOOST_AUTO_TEST_CASE(add_remove_all_sources) {
   boost::property_tree::read_json(ss, pt);
   uint8_t id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sources")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned source " + std::to_string(id));
     ++id;
   }
@@ -637,7 +644,7 @@ BOOST_AUTO_TEST_CASE(add_remove_all_sinks) {
   boost::property_tree::read_json(ss, pt);
   uint8_t id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sinks")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned sink " + std::to_string(id));
     ++id;
   }
@@ -664,13 +671,13 @@ BOOST_AUTO_TEST_CASE(add_remove_check_all) {
   boost::property_tree::read_json(ss, pt);
   uint8_t id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sources")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned source " + std::to_string(id));
     ++id;
   }
   id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sinks")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned sink " + std::to_string(id));
     ++id;
   }
@@ -709,13 +716,13 @@ BOOST_AUTO_TEST_CASE(add_remove_update_check_all) {
   boost::property_tree::read_json(ss, pt);
   uint8_t id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sources")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned source " + std::to_string(id));
     ++id;
   }
   id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sinks")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned sink " + std::to_string(id));
     ++id;
   }
@@ -737,7 +744,8 @@ BOOST_AUTO_TEST_CASE(add_remove_check_sap_browser_all) {
   }
   for (int id = 0; id < g_stream_num_max; id++) {
     auto sdp = cli.get_source_sdp(id);
-    BOOST_REQUIRE_MESSAGE(sdp.first, std::string("got source sdp ") + std::to_string(id));
+    BOOST_REQUIRE_MESSAGE(sdp.first,
+                          std::string("got source sdp ") + std::to_string(id));
     cli.sap_wait_announcement(id, sdp.second);
   }
   boost::property_tree::ptree pt;
@@ -748,10 +756,13 @@ BOOST_AUTO_TEST_CASE(add_remove_check_sap_browser_all) {
     BOOST_REQUIRE_MESSAGE(json.first, "got remote sap sources");
     std::stringstream ss(json.second);
     boost::property_tree::read_json(ss, pt);
-    //BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
-  } while (pt.get_child("remote_sources").size() != g_stream_num_max && retry--);
-  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == g_stream_num_max, 
-      "found " + std::to_string(pt.get_child("remote_sources").size()) + " remote sap sources");
+    // BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
+  } while (pt.get_child("remote_sources").size() != g_stream_num_max &&
+           retry--);
+  BOOST_REQUIRE_MESSAGE(
+      pt.get_child("remote_sources").size() == g_stream_num_max,
+      "found " + std::to_string(pt.get_child("remote_sources").size()) +
+          " remote sap sources");
   for (int id = 0; id < g_stream_num_max; id++) {
     BOOST_REQUIRE_MESSAGE(cli.add_sink_sdp(id),
                           std::string("added sink ") + std::to_string(id));
@@ -762,13 +773,13 @@ BOOST_AUTO_TEST_CASE(add_remove_check_sap_browser_all) {
   boost::property_tree::read_json(ss1, pt);
   uint8_t id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sources")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned source " + std::to_string(id));
     ++id;
   }
   id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sinks")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned sink " + std::to_string(id));
     ++id;
   }
@@ -784,9 +795,10 @@ BOOST_AUTO_TEST_CASE(add_remove_check_sap_browser_all) {
     BOOST_REQUIRE_MESSAGE(json.first, "got remote sap sources");
     std::stringstream ss2(json.second);
     boost::property_tree::read_json(ss2, pt);
-    //BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
+    // BOOST_TEST_MESSAGE(std::to_string(pt.get_child("remote_sources").size()));
   } while (pt.get_child("remote_sources").size() > 0 && retry--);
-  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 0, "no remote sap sources");
+  BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 0,
+                        "no remote sap sources");
   for (int id = 0; id < g_stream_num_max; id++) {
     BOOST_REQUIRE_MESSAGE(cli.remove_sink(id),
                           std::string("removed sink ") + std::to_string(id));
@@ -800,8 +812,8 @@ BOOST_AUTO_TEST_CASE(add_remove_check_mdns_browser_all) {
     BOOST_REQUIRE_MESSAGE(cli.add_source(id),
                           std::string("added source ") + std::to_string(id));
   }
-  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(g_stream_num_max), 
-      "remote mdns sources found");
+  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(g_stream_num_max),
+                        "remote mdns sources found");
   for (int id = 0; id < g_stream_num_max; id++) {
     BOOST_REQUIRE_MESSAGE(cli.add_sink_sdp(id),
                           std::string("added sink ") + std::to_string(id));
@@ -813,13 +825,13 @@ BOOST_AUTO_TEST_CASE(add_remove_check_mdns_browser_all) {
   boost::property_tree::read_json(ss1, pt);
   uint8_t id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sources")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned source " + std::to_string(id));
     ++id;
   }
   id = 0;
   BOOST_FOREACH (auto const& v, pt.get_child("sinks")) {
-    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id, 
+    BOOST_REQUIRE_MESSAGE(v.second.get<uint8_t>("id") == id,
                           "returned sink " + std::to_string(id));
     ++id;
   }
@@ -827,7 +839,8 @@ BOOST_AUTO_TEST_CASE(add_remove_check_mdns_browser_all) {
     BOOST_REQUIRE_MESSAGE(cli.remove_source(id),
                           std::string("removed source ") + std::to_string(id));
   }
-  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0), "no remote mdns sources found");
+  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0),
+                        "no remote mdns sources found");
   for (int id = 0; id < g_stream_num_max; id++) {
     BOOST_REQUIRE_MESSAGE(cli.remove_sink(id),
                           std::string("removed sink ") + std::to_string(id));
@@ -872,6 +885,7 @@ BOOST_AUTO_TEST_CASE(add_remove_check_mdns_browser_update_all) {
     BOOST_REQUIRE_MESSAGE(cli.remove_source(id),
                           std::string("removed source ") + std::to_string(id));
   }
-  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0), "no remote mdns sources found");
+  BOOST_REQUIRE_MESSAGE(cli.wait_for_remote_mdns_sources(0),
+                        "no remote mdns sources found");
 }
 #endif

@@ -18,17 +18,16 @@
 //
 
 #include <boost/bind.hpp>
-#include "sap.hpp"
 
+#include "sap.hpp"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-
-SAP::SAP(const std::string& sap_mcast_addr) : 
-  addr_(sap_mcast_addr)
+SAP::SAP(const std::string& sap_mcast_addr)
+    : addr_(sap_mcast_addr)
 //  remote_endpoint_(ip::address::from_string(addr_), port)
-{ 
+{
   socket_.open(boost::asio::ip::udp::v4());
   socket_.set_option(udp::socket::reuse_address(true));
   socket_.bind(listen_endpoint_);
@@ -92,9 +91,8 @@ bool SAP::receive(bool& is_announce,
     io_service_.run_one();
   } while (ec == boost::asio::error::would_block);
 
-
   if (!ec && length > 4 && (buffer[0] == 0x20 || buffer[0] == 0x24)) {
-    // only accept SAP announce or delete v2 with IPv4 
+    // only accept SAP announce or delete v2 with IPv4
     // no reserved, no compress, no encryption
     // and content/type = application/sdp
     is_announce = (buffer[0] == 0x20);
@@ -125,7 +123,7 @@ void SAP::check_deadline() {
     // cancel receive operation
     socket_.cancel();
     deadline_.expires_at(boost::posix_time::pos_infin);
-    //BOOST_LOG_TRIVIAL(debug) << "SAP:: timeout expired when receiving";
+    // BOOST_LOG_TRIVIAL(debug) << "SAP:: timeout expired when receiving";
   }
 
   deadline_.async_wait(boost::bind(&SAP::check_deadline, this));

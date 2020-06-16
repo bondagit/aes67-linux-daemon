@@ -19,14 +19,14 @@
 
 #include <boost/asio.hpp>
 
-#include "mdns_server.hpp"
 #include "config.hpp"
 #include "interface.hpp"
 #include "log.hpp"
 #include "utils.hpp"
+#include "mdns_server.hpp"
+
 
 #ifdef _USE_AVAHI_
-
 struct AvahiLockGuard {
   AvahiLockGuard() = delete;
   AvahiLockGuard(AvahiThreadedPoll* poll) : poll_(poll) {
@@ -323,8 +323,8 @@ bool MDNSServer::init() {
 
   session_manager_->add_source_observer(
       SessionManager::ObserverType::add_source,
-      std::bind(&MDNSServer::add_service, this,
-          std::placeholders::_2, std::placeholders::_3));
+      std::bind(&MDNSServer::add_service, this, std::placeholders::_2,
+                std::placeholders::_3));
 
   session_manager_->add_source_observer(
       SessionManager::ObserverType::remove_source,

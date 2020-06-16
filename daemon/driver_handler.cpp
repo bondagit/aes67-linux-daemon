@@ -20,8 +20,8 @@
 #include <iostream>
 #include <thread>
 
-#include "driver_handler.hpp"
 #include "log.hpp"
+#include "driver_handler.hpp"
 
 /*
 void dump(const void* mem, unsigned int n) {
@@ -107,13 +107,13 @@ bool DriverHandler::event_receiver() {
         if (palsa_msg->errCode == 0) {
           size_t res_size = sizeof(int32_t);
           uint8_t res[sizeof(int32_t)];
-	  memset(res, 0, res_size);
+          memset(res, 0, res_size);
           on_event(palsa_msg->id, res_size, res, palsa_msg->dataSize,
                    reinterpret_cast<const uint8_t*>(palsa_msg) + data_offset);
 
           BOOST_LOG_TRIVIAL(debug) << "driver_handler::sending event response "
                                    << palsa_msg->id << " data len " << res_size;
-	  memset(response_buffer_, 0, sizeof(response_buffer_));
+          memset(response_buffer_, 0, sizeof(response_buffer_));
           try {
             send(palsa_msg->id, client_k2u_, response_buffer_, res_size, res);
           } catch (boost::system::error_code& ec) {
@@ -183,8 +183,9 @@ void DriverHandler::send_command(enum MT_ALSA_msg_id id,
           << palsa_msg->errCode << " data len " << palsa_msg->dataSize;
 
       if (id != palsa_msg->id) {
-        BOOST_LOG_TRIVIAL(warning) << "driver_handler:: unexpected cmd response:"
-          << "sent " << id << " received " << palsa_msg->id;
+        BOOST_LOG_TRIVIAL(warning)
+            << "driver_handler:: unexpected cmd response:"
+            << "sent " << id << " received " << palsa_msg->id;
         on_command_error(palsa_msg->id, DaemonErrc::invalid_driver_response);
       } else {
         if (palsa_msg->errCode == 0) {

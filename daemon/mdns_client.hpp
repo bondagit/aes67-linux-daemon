@@ -30,16 +30,16 @@
 
 #include <future>
 #include <list>
+#include <set>
 #include <shared_mutex>
 #include <thread>
-#include <set>
 
 #include "config.hpp"
 #include "rtsp_client.hpp"
 
 class MDNSClient {
  public:
-  MDNSClient(std::shared_ptr<Config> config): config_(config){};
+  MDNSClient(std::shared_ptr<Config> config) : config_(config){};
   MDNSClient() = delete;
   MDNSClient(const MDNSClient&) = delete;
   MDNSClient& operator=(const MDNSClient&) = delete;
@@ -64,10 +64,10 @@ class MDNSClient {
 
 #ifdef _USE_AVAHI_
   /* order is important here */
-  std::unique_ptr<AvahiThreadedPoll, decltype(&avahi_threaded_poll_free)> 
-      poll_{nullptr, &avahi_threaded_poll_free};
-  std::unique_ptr<AvahiClient, decltype(&avahi_client_free)>
-      client_{nullptr, &avahi_client_free};
+  std::unique_ptr<AvahiThreadedPoll, decltype(&avahi_threaded_poll_free)> poll_{
+      nullptr, &avahi_threaded_poll_free};
+  std::unique_ptr<AvahiClient, decltype(&avahi_client_free)> client_{
+      nullptr, &avahi_client_free};
   std::unique_ptr<AvahiServiceBrowser, decltype(&avahi_service_browser_free)>
       sb_{nullptr, &avahi_service_browser_free};
 
@@ -98,7 +98,7 @@ class MDNSClient {
                               void* userdata);
 
   std::set<std::pair<std::string /*name*/, std::string /*domain */> >
-        active_resolvers;
+      active_resolvers;
 
 #endif
 };

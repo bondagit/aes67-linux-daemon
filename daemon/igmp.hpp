@@ -21,8 +21,9 @@
 #define _IGMP_HPP_
 
 #include <boost/asio.hpp>
-#include <mutex>
 #include <map>
+#include <mutex>
+
 #include "log.hpp"
 
 using namespace boost::asio;
@@ -38,7 +39,8 @@ class IGMP {
   };
 
   bool join(const std::string& interface_ip, const std::string& mcast_ip) {
-    uint32_t mcast_ip_addr = ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
+    uint32_t mcast_ip_addr =
+        ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
     std::lock_guard<std::mutex> lock(mutex);
 
     auto it = mcast_ref.find(mcast_ip_addr);
@@ -61,18 +63,19 @@ class IGMP {
     ip::multicast::enable_loopback el_option(true);
     socket_.set_option(el_option, ec);
     if (ec) {
-      BOOST_LOG_TRIVIAL(error) << "igmp:: enable loopback option " 
-	                       << ec.message();
+      BOOST_LOG_TRIVIAL(error)
+          << "igmp:: enable loopback option " << ec.message();
     }
 
-    BOOST_LOG_TRIVIAL(info) << "igmp:: joined multicast group " 
-                             << mcast_ip << " on " << interface_ip;
+    BOOST_LOG_TRIVIAL(info) << "igmp:: joined multicast group " << mcast_ip
+                            << " on " << interface_ip;
     mcast_ref[mcast_ip_addr] = 1;
     return true;
   }
 
   bool leave(const std::string& interface_ip, const std::string& mcast_ip) {
-    uint32_t mcast_ip_addr = ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
+    uint32_t mcast_ip_addr =
+        ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
     std::lock_guard<std::mutex> lock(mutex);
 
     auto it = mcast_ref.find(mcast_ip_addr);
@@ -95,8 +98,8 @@ class IGMP {
       return false;
     }
 
-    BOOST_LOG_TRIVIAL(info) << "igmp:: left multicast group "
-                             << mcast_ip << " on " << interface_ip;
+    BOOST_LOG_TRIVIAL(info)
+        << "igmp:: left multicast group " << mcast_ip << " on " << interface_ip;
     return true;
   }
 

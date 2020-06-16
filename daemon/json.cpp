@@ -20,14 +20,13 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <regex>
 #include <iostream>
+#include <regex>
 #include <string>
 
-#include "json.hpp"
 #include "log.hpp"
 #include "utils.hpp"
-
+#include "json.hpp"
 
 static inline std::string remove_undesired_chars(const std::string& s) {
   std::regex html_regex("[^ A-Za-z0-9:~._/=%\()\\r\\n\\t\?#-]?");
@@ -83,20 +82,28 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"tic_frame_size_at_1fs\": " << config.get_tic_frame_size_at_1fs()
      << ",\n  \"max_tic_frame_size\": " << config.get_max_tic_frame_size()
      << ",\n  \"sample_rate\": " << config.get_sample_rate()
-     << ",\n  \"rtp_mcast_base\": \"" << escape_json(config.get_rtp_mcast_base()) << "\""
+     << ",\n  \"rtp_mcast_base\": \""
+     << escape_json(config.get_rtp_mcast_base()) << "\""
      << ",\n  \"rtp_port\": " << config.get_rtp_port()
      << ",\n  \"ptp_domain\": " << unsigned(config.get_ptp_domain())
      << ",\n  \"ptp_dscp\": " << unsigned(config.get_ptp_dscp())
-     << ",\n  \"sap_mcast_addr\": \"" << escape_json(config.get_sap_mcast_addr()) << "\""
+     << ",\n  \"sap_mcast_addr\": \""
+     << escape_json(config.get_sap_mcast_addr()) << "\""
      << ",\n  \"sap_interval\": " << config.get_sap_interval()
-     << ",\n  \"syslog_proto\": \"" << escape_json(config.get_syslog_proto()) << "\""
-     << ",\n  \"syslog_server\": \"" << escape_json(config.get_syslog_server()) << "\""
-     << ",\n  \"status_file\": \"" << escape_json(config.get_status_file()) << "\""
-     << ",\n  \"interface_name\": \"" << escape_json(config.get_interface_name()) << "\""
+     << ",\n  \"syslog_proto\": \"" << escape_json(config.get_syslog_proto())
+     << "\""
+     << ",\n  \"syslog_server\": \"" << escape_json(config.get_syslog_server())
+     << "\""
+     << ",\n  \"status_file\": \"" << escape_json(config.get_status_file())
+     << "\""
+     << ",\n  \"interface_name\": \""
+     << escape_json(config.get_interface_name()) << "\""
      << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
-     << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str()) << "\""
+     << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str())
+     << "\""
      << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
-     << ",\n  \"node_id\": \"" << escape_json(get_node_id(config.get_ip_addr())) << "\""
+     << ",\n  \"node_id\": \"" << escape_json(get_node_id(config.get_ip_addr()))
+     << "\""
      << "\n}\n";
   return ss.str();
 }
@@ -185,7 +192,7 @@ std::string sources_to_json(const std::list<StreamSource>& sources) {
   int count = 0;
   std::stringstream ss;
   ss << "{\n  \"sources\": [";
-  for (auto const& source: sources) {
+  for (auto const& source : sources) {
     if (count++) {
       ss << ", ";
     }
@@ -199,7 +206,7 @@ std::string sinks_to_json(const std::list<StreamSink>& sinks) {
   int count = 0;
   std::stringstream ss;
   ss << "{\n  \"sinks\": [";
-  for (auto const& sink: sinks) {
+  for (auto const& sink : sinks) {
     if (count++) {
       ss << ", ";
     }
@@ -210,11 +217,11 @@ std::string sinks_to_json(const std::list<StreamSink>& sinks) {
 }
 
 std::string streams_to_json(const std::list<StreamSource>& sources,
-                           const std::list<StreamSink>& sinks) {
+                            const std::list<StreamSink>& sinks) {
   int count = 0;
   std::stringstream ss;
   ss << "{\n  \"sources\": [";
-  for (auto const& source: sources) {
+  for (auto const& source : sources) {
     if (count++) {
       ss << ", ";
     }
@@ -222,7 +229,7 @@ std::string streams_to_json(const std::list<StreamSource>& sources,
   }
   count = 0;
   ss << "  ],\n  \"sinks\": [";
-  for (auto const& sink: sinks) {
+  for (auto const& sink : sinks) {
     if (count++) {
       ss << ", ";
     }
@@ -251,7 +258,7 @@ std::string remote_sources_to_json(const std::list<RemoteSource>& sources) {
   int count = 0;
   std::stringstream ss;
   ss << "{\n  \"remote_sources\": [";
-  for (auto const& source: sources) {
+  for (auto const& source : sources) {
     if (count++) {
       ss << ", ";
     }
@@ -272,11 +279,13 @@ Config json_to_config_(std::istream& js, Config& config) {
       } else if (key == "rtsp_port") {
         config.set_rtsp_port(val.get_value<int>());
       } else if (key == "http_base_dir") {
-        config.set_http_base_dir(remove_undesired_chars(val.get_value<std::string>()));
+        config.set_http_base_dir(
+            remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "log_severity") {
         config.set_log_severity(val.get_value<int>());
       } else if (key == "interface_name") {
-        config.set_interface_name(remove_undesired_chars(val.get_value<std::string>()));
+        config.set_interface_name(
+            remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "playout_delay") {
         config.set_playout_delay(val.get_value<uint32_t>());
       } else if (key == "tic_frame_size_at_1fs") {
@@ -286,7 +295,8 @@ Config json_to_config_(std::istream& js, Config& config) {
       } else if (key == "sample_rate") {
         config.set_sample_rate(val.get_value<uint32_t>());
       } else if (key == "rtp_mcast_base") {
-        config.set_rtp_mcast_base(remove_undesired_chars(val.get_value<std::string>()));
+        config.set_rtp_mcast_base(
+            remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "rtp_port") {
         config.set_rtp_port(val.get_value<uint16_t>());
       } else if (key == "ptp_domain") {
@@ -294,18 +304,22 @@ Config json_to_config_(std::istream& js, Config& config) {
       } else if (key == "ptp_dscp") {
         config.set_ptp_dscp(val.get_value<uint8_t>());
       } else if (key == "sap_mcast_addr") {
-        config.set_sap_mcast_addr(remove_undesired_chars(val.get_value<std::string>()));
+        config.set_sap_mcast_addr(
+            remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "sap_interval") {
         config.set_sap_interval(val.get_value<uint16_t>());
       } else if (key == "mdns_enabled") {
         config.set_mdns_enabled(val.get_value<bool>());
       } else if (key == "status_file") {
-        config.set_status_file(remove_undesired_chars(val.get_value<std::string>()));
+        config.set_status_file(
+            remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "syslog_proto") {
-        config.set_syslog_proto(remove_undesired_chars(val.get_value<std::string>()));
+        config.set_syslog_proto(
+            remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "syslog_server") {
-        config.set_syslog_server(remove_undesired_chars(val.get_value<std::string>()));
-      } else if (key == "mac_addr" || key == "ip_addr" || key == "node_id" ) {
+        config.set_syslog_server(
+            remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "mac_addr" || key == "ip_addr" || key == "node_id") {
         /* ignored */
       } else {
         std::cerr << "Warning: unkown configuration option " << key
@@ -331,12 +345,12 @@ Config json_to_config(std::istream& js) {
   return json_to_config_(js, config);
 }
 
-Config json_to_config(const std::string & json, const Config& curConfig) {
+Config json_to_config(const std::string& json, const Config& curConfig) {
   std::stringstream ss(json);
   return json_to_config(ss, curConfig);
 }
 
-Config json_to_config(const std::string & json) {
+Config json_to_config(const std::string& json) {
   std::stringstream ss(json);
   return json_to_config(ss);
 }
@@ -441,7 +455,7 @@ PTPConfig json_to_ptp_config(const std::string& json) {
   return ptpConfig;
 }
 
-void json_to_sources(const std::string & json,
+void json_to_sources(const std::string& json,
                      std::list<StreamSource>& sources) {
   std::stringstream ss(json);
   return json_to_sources(ss, sources);
@@ -455,7 +469,8 @@ static void parse_json_sources(boost::property_tree::ptree& pt,
     source.enabled = v.second.get<bool>("enabled");
     source.name = v.second.get<std::string>("name");
     source.io = v.second.get<std::string>("io");
-    source.max_samples_per_packet = v.second.get<uint32_t>("max_samples_per_packet");
+    source.max_samples_per_packet =
+        v.second.get<uint32_t>("max_samples_per_packet");
     source.codec = v.second.get<std::string>("codec");
     source.ttl = v.second.get<uint8_t>("ttl");
     source.payload_type = v.second.get<uint8_t>("payload_type");
@@ -471,8 +486,7 @@ static void parse_json_sources(boost::property_tree::ptree& pt,
   }
 }
 
-void json_to_sources(std::istream& js,
-                     std::list<StreamSource>& sources) {
+void json_to_sources(std::istream& js, std::list<StreamSource>& sources) {
   try {
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(js, pt);
@@ -483,8 +497,7 @@ void json_to_sources(std::istream& js,
   }
 }
 
-void json_to_sinks(const std::string & json,
-                     std::list<StreamSink>& sinks) {
+void json_to_sinks(const std::string& json, std::list<StreamSink>& sinks) {
   std::stringstream ss(json);
   return json_to_sinks(ss, sinks);
 }
@@ -511,8 +524,7 @@ static void parse_json_sinks(boost::property_tree::ptree& pt,
   }
 }
 
-void json_to_sinks(std::istream& js,
-                     std::list<StreamSink>& sinks) {
+void json_to_sinks(std::istream& js, std::list<StreamSink>& sinks) {
   try {
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(js, pt);
@@ -523,7 +535,7 @@ void json_to_sinks(std::istream& js,
   }
 }
 
-void json_to_streams(const std::string & json,
+void json_to_streams(const std::string& json,
                      std::list<StreamSource>& sources,
                      std::list<StreamSink>& sinks) {
   std::stringstream ss(json);
@@ -543,4 +555,3 @@ void json_to_streams(std::istream& js,
                              std::to_string(je.line()) + " :" + je.message());
   }
 }
-

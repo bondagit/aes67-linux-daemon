@@ -21,6 +21,7 @@
 #define _SAP_HPP_
 
 #include <boost/asio.hpp>
+
 #include "log.hpp"
 
 using namespace boost::asio;

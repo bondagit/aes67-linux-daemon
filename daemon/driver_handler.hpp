@@ -24,9 +24,9 @@
 
 #include "MT_ALSA_message_defs.h"
 #include "config.hpp"
+#include "error_code.hpp"
 #include "log.hpp"
 #include "netlink_client.hpp"
-#include "error_code.hpp"
 
 class DriverHandler {
  public:
@@ -40,7 +40,7 @@ class DriverHandler {
   DriverHandler(){};
   DriverHandler(const DriverHandler&) = delete;
   DriverHandler& operator=(const DriverHandler&) = delete;
-  virtual ~DriverHandler(){ terminate(); };
+  virtual ~DriverHandler() { terminate(); };
 
   virtual bool init(const Config& config);
   virtual bool terminate();
@@ -76,8 +76,8 @@ class DriverHandler {
   uint8_t event_buffer_[buffer_size];
   uint8_t response_buffer_[buffer_size];
   NetlinkClient client_u2k_{"commands"}; /* u2k for commands */
-  NetlinkClient client_k2u_{"events"}; /* k2u for events */
-  std::mutex mutex_; /* one command at a time */
+  NetlinkClient client_k2u_{"events"};   /* k2u for events */
+  std::mutex mutex_;                     /* one command at a time */
 };
 
 #endif

@@ -63,7 +63,9 @@ class Config {
 
   void set_http_port(uint16_t http_port) { http_port_ = http_port; };
   void set_rtsp_port(uint16_t rtsp_port) { rtsp_port_ = rtsp_port; };
-  void set_http_base_dir(const std::string& http_base_dir) { http_base_dir_ = http_base_dir; };
+  void set_http_base_dir(const std::string& http_base_dir) {
+    http_base_dir_ = http_base_dir;
+  };
   void set_log_severity(int log_severity) { log_severity_ = log_severity; };
   void set_playout_delay(uint32_t playout_delay) {
     playout_delay_ = playout_delay;
@@ -105,9 +107,7 @@ class Config {
   void set_mac_addr(const std::array<uint8_t, 6>& mac_addr) {
     mac_addr_ = mac_addr;
   };
-  void set_mdns_enabled(bool enabled) {
-    mdns_enabled_ = enabled;
-  };
+  void set_mdns_enabled(bool enabled) { mdns_enabled_ = enabled; };
   void set_interface_idx(int index) { interface_idx_ = index; };
 
  private:

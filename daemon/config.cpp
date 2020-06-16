@@ -17,23 +17,22 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+
 #include <boost/asio.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-
 #include <exception>
 #include <iostream>
 #include <sstream>
 #include <string>
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
-#include "config.hpp"
 #include "interface.hpp"
 #include "json.hpp"
+#include "config.hpp"
 
 using namespace boost::asio;
 
@@ -58,8 +57,7 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
     config.log_severity_ = 2;
   if (config.playout_delay_ > 4000)
     config.playout_delay_ = 4000;
-  if (config.tic_frame_size_at_1fs_ == 0 ||
-      config.tic_frame_size_at_1fs_ > 192)
+  if (config.tic_frame_size_at_1fs_ == 0 || config.tic_frame_size_at_1fs_ > 192)
     config.tic_frame_size_at_1fs_ = 192;
   if (config.max_tic_frame_size_ < config.tic_frame_size_at_1fs_ ||
       config.max_tic_frame_size_ > 1024)
@@ -76,8 +74,8 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
     config.sap_mcast_addr_ = "224.2.127.254";
   }
   if (config.ptp_domain_ > 127)
-  if (config.ptp_domain_ > 127)
-    config.ptp_domain_ = 0;
+    if (config.ptp_domain_ > 127)
+      config.ptp_domain_ = 0;
 
   auto [mac_addr, mac_str] = get_interface_mac(config.interface_name_);
   if (mac_str.empty()) {

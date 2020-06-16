@@ -19,50 +19,45 @@
 
 #include <thread>
 
-#include "driver_manager.hpp"
 #include "log.hpp"
+#include "driver_manager.hpp"
 
-static const std::vector<std::string> alsa_msg_str = {
-  "Start",
-  "Stop",
-  "Reset",
-  "StartIO",
-  "StopIO",
-  "SetSampleRate",
-  "GetSampleRate",
-  "GetAudioMode",
-  "SetDSDAudioMode",
-  "SetTICFrameSizeAt1FS",
-  "SetMaxTICFrameSize",
-  "SetNumberOfInputs",
-  "SetNumberOfOutputs",
-  "GetNumberOfInputs",
-  "GetNumberOfOutputs",
-  "SetInterfaceName",
-  "Add_RTPStream",
-  "Remove_RTPStream",
-  "Update_RTPStream_Name",
-  "GetPTPInfo",
-  "Hello",
-  "Bye",
-  "Ping",
-  "SetMasterOutputVolume",
-  "SetMasterOutputSwitch",
-  "GetMasterOutputVolume",
-  "GetMasterOutputSwitch",
-  "SetPlayoutDelay",
-  "SetCaptureDelay",
-  "GetRTPStreamStatus",
-  "SetPTPConfig",
-  "GetPTPConfig",
-  "GetPTPStatus"
-};
+static const std::vector<std::string> alsa_msg_str = {"Start",
+                                                      "Stop",
+                                                      "Reset",
+                                                      "StartIO",
+                                                      "StopIO",
+                                                      "SetSampleRate",
+                                                      "GetSampleRate",
+                                                      "GetAudioMode",
+                                                      "SetDSDAudioMode",
+                                                      "SetTICFrameSizeAt1FS",
+                                                      "SetMaxTICFrameSize",
+                                                      "SetNumberOfInputs",
+                                                      "SetNumberOfOutputs",
+                                                      "GetNumberOfInputs",
+                                                      "GetNumberOfOutputs",
+                                                      "SetInterfaceName",
+                                                      "Add_RTPStream",
+                                                      "Remove_RTPStream",
+                                                      "Update_RTPStream_Name",
+                                                      "GetPTPInfo",
+                                                      "Hello",
+                                                      "Bye",
+                                                      "Ping",
+                                                      "SetMasterOutputVolume",
+                                                      "SetMasterOutputSwitch",
+                                                      "GetMasterOutputVolume",
+                                                      "GetMasterOutputSwitch",
+                                                      "SetPlayoutDelay",
+                                                      "SetCaptureDelay",
+                                                      "GetRTPStreamStatus",
+                                                      "SetPTPConfig",
+                                                      "GetPTPConfig",
+                                                      "GetPTPStatus"};
 
-static const std::vector<std::string> ptp_status_str = {
-  "unlocked", 
-  "locking",
-  "locked"
-};
+static const std::vector<std::string> ptp_status_str = {"unlocked", "locking",
+                                                        "locked"};
 
 std::shared_ptr<DriverManager> DriverManager::create() {
   // no need to be thread-safe here
@@ -86,9 +81,7 @@ bool DriverManager::init(const Config& config) {
   ptp_config.ui8Domain = config.get_ptp_domain();
   ptp_config.ui8DSCP = config.get_ptp_dscp();
 
-  bool res = hello() || 
-             start() || 
-             reset() ||
+  bool res = hello() || start() || reset() ||
              set_interface_name(config.get_interface_name()) ||
              set_ptp_config(ptp_config) ||
              set_tic_frame_size_at_1fs(config.get_tic_frame_size_at_1fs()) ||
@@ -288,8 +281,7 @@ void DriverManager::on_event(enum MT_ALSA_msg_id id,
       if (req_size == sizeof(int32_t)) {
         memcpy(&output_volume, req, req_size);
         BOOST_LOG_TRIVIAL(info)
-            << "driver_manager:: event SetMasterOutputVolume "
-            << output_volume;
+            << "driver_manager:: event SetMasterOutputVolume " << output_volume;
       }
       resp_size = 0;
       break;
@@ -297,15 +289,15 @@ void DriverManager::on_event(enum MT_ALSA_msg_id id,
       if (req_size == sizeof(int32_t)) {
         memcpy(&output_switch, req, req_size);
         BOOST_LOG_TRIVIAL(info)
-            << "driver_manager:: event SetMasterOutputSwitch "
-            << output_switch;
+            << "driver_manager:: event SetMasterOutputSwitch " << output_switch;
       }
       resp_size = 0;
       break;
     case MT_ALSA_Msg_SetSampleRate:
       if (req_size == sizeof(uint32_t)) {
         memcpy(&sample_rate, req, req_size);
-        BOOST_LOG_TRIVIAL(info) << "driver_manager:: event SetSampleRate " << sample_rate;
+        BOOST_LOG_TRIVIAL(info)
+            << "driver_manager:: event SetSampleRate " << sample_rate;
       }
       resp_size = 0;
       break;

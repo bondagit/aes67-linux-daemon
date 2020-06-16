@@ -102,7 +102,7 @@ std::string DaemonErrCategory::message(int ev) const {
     case DaemonErrc::cannot_retrieve_sdp:
       return "cannot retrieve SDP";
     case DaemonErrc::cannot_parse_sdp:
-       return "cannot parse SDP";
+      return "cannot parse SDP";
     case DaemonErrc::send_invalid_size:
       return "send data size too big";
     case DaemonErrc::send_u2k_failed:

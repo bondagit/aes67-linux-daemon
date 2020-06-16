@@ -44,19 +44,6 @@ struct RtspResponse {
   std::string body;
 };
 
-static std::string sdp_get_subject(const std::string& sdp) {
-  std::stringstream ssstrem(sdp);
-  std::string line;
-  while (getline(ssstrem, line, '\n')) {
-    if (line.substr(0, 2) == "s=") {
-      auto subject = line.substr(2);
-      trim(subject);
-      return subject;
-    }
-  }
-  return "";
-}
-
 RtspResponse read_response(tcp::iostream& s, uint16_t max_length) {
   RtspResponse res;
   std::string header;
