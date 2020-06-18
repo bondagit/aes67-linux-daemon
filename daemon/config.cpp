@@ -86,21 +86,23 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
   config.mac_addr_ = mac_addr;
   config.mac_str_ = mac_str;
 
-  auto [ip_addr, ip_str] = get_interface_ip(config.interface_name_);
-  if (ip_str.empty()) {
-    std::cerr << "Cannot retrieve IPv4 address for interface "
-              << config.interface_name_ << std::endl;
-    return nullptr;
-  }
-  config.ip_addr_ = ip_addr;
-  config.ip_str_ = ip_str;
   auto interface_idx = get_interface_index(config.interface_name_);
   if (interface_idx < 0) {
     std::cerr << "Cannot retrieve index for interface "
               << config.interface_name_ << std::endl;
-    return nullptr;
+  } else {
+    config.interface_idx_ = interface_idx;
   }
-  config.interface_idx_ = interface_idx;
+
+  auto [ip_addr, ip_str] = get_interface_ip(config.interface_name_);
+  if (ip_str.empty()) {
+    std::cerr << "Cannot retrieve IPv4 address for interface "
+              << config.interface_name_ << std::endl;
+  } else {
+    config.ip_addr_ = ip_addr;
+    config.ip_str_ = ip_str;
+  }
+
   config.config_filename_ = filename;
   config.need_restart_ = false;
 

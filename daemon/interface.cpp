@@ -30,7 +30,7 @@ std::pair<uint32_t, std::string> get_interface_ip(
     const std::string& interface_name) {
   int fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd < 0) {
-    BOOST_LOG_TRIVIAL(error)
+    BOOST_LOG_TRIVIAL(warning)
         << "Cannot retrieve IP address for interface " << interface_name;
     return {0, ""};
   }
@@ -39,7 +39,7 @@ std::pair<uint32_t, std::string> get_interface_ip(
   strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ - 1);
   if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
     close(fd);
-    BOOST_LOG_TRIVIAL(error)
+    BOOST_LOG_TRIVIAL(warning)
         << "Cannot retrieve IP address for interface " << interface_name;
     return {0, ""};
   }
@@ -91,7 +91,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
 int get_interface_index(const std::string& interface_name) {
   int fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd < 0) {
-    BOOST_LOG_TRIVIAL(error)
+    BOOST_LOG_TRIVIAL(warning)
         << "Cannot retrieve index for interface " << interface_name;
     return -1;
   }
@@ -100,7 +100,7 @@ int get_interface_index(const std::string& interface_name) {
   strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ - 1);
   if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
     close(fd);
-    BOOST_LOG_TRIVIAL(error)
+    BOOST_LOG_TRIVIAL(warning)
         << "Cannot retrieve index for interface " << interface_name;
     return -1;
   }

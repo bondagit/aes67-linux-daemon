@@ -149,8 +149,8 @@ bool SAP::send(bool is_announce,
   try {
     socket_.send_to(boost::asio::buffer(buffer, sap_header_len + sdp.length()),
                     remote_endpoint_);
-  } catch (boost::system::error_code& ec) {
-    BOOST_LOG_TRIVIAL(error) << "sap::send_to " << ec.message();
+  } catch (...) {
+    BOOST_LOG_TRIVIAL(error) << "sap::send_to failed";
     return false;
   }
   return true;

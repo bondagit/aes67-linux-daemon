@@ -52,9 +52,8 @@ int main(int argc, char* argv[]) {
   po::options_description desc("Options");
   desc.add_options()(
       "config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
-      "daemon configuration file")("interface_name,i", po::value<std::string>(),
-                                   "Network interface name")(
-      "http_port,p", po::value<int>(), "HTTP server port")(
+      "daemon configuration file")("http_port,p", po::value<int>(),
+                                   "HTTP server port")(
       "help,h", "Print this help message");
   int unix_style = postyle::unix_style | postyle::short_allow_next;
 
@@ -94,14 +93,17 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
     /* override configuration according to command line args */
-    if (vm.count("interface_name")) {
-      config->set_interface_name(vm["interface_name"].as<std::string>());
-    }
     if (vm.count("http_port")) {
       config->set_http_port(vm["http_port"].as<int>());
     }
     /* init logging */
     log_init(*config);
+
+    if (config->get_ip_addr_str().empty()) {
+      BOOST_LOG_TRIVIAL(info) << "main:: no IP address, waiting ...";
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      continue;
+    }
 
     BOOST_LOG_TRIVIAL(debug) << "main:: initializing daemon";
     try {
@@ -147,11 +149,9 @@ int main(int argc, char* argv[]) {
       BOOST_LOG_TRIVIAL(debug) << "main:: init done, entering loop...";
       while (!is_terminated()) {
         auto [ip_addr, ip_str] = get_interface_ip(config->get_interface_name());
-        if (!ip_str.empty() && config->get_ip_addr_str() != ip_str) {
+        if (config->get_ip_addr_str() != ip_str) {
           BOOST_LOG_TRIVIAL(warning)
               << "main:: IP address changed, restarting ...";
-          config->set_ip_addr_str(ip_str);
-          config->set_ip_addr(ip_addr);
           break;
         }
 
