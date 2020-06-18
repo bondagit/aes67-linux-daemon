@@ -42,7 +42,7 @@ std::tuple<bool /* res */,
            std::string /* port */,
            std::string /* path */>
 parse_url(const std::string& _url) {
-  std::string url = httplib::detail::decode_url(_url);
+  std::string url = httplib::detail::decode_url(_url, false);
   size_t protocol_sep_pos = url.find_first_of("://");
   if (protocol_sep_pos == std::string::npos) {
     /* no protocol, invalid URL */

@@ -83,7 +83,7 @@ bool HttpServer::init() {
     return false;
   }
 
-  svr_.set_base_dir(config_->get_http_base_dir().c_str());
+  svr_.set_mount_point(nullptr, config_->get_http_base_dir().c_str());
 
   svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser)",
            [&](const Request& req, Response& res) {

@@ -18,7 +18,6 @@
 //
 
 #define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096  // max for SDP file
-#define CPPHTTPLIB_READ_TIMEOUT_SECOND 10
 
 #include <httplib.h>
 
@@ -683,7 +682,9 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     if (boost::iequals(protocol, "http")) {
       httplib::Client cli(host.c_str(),
                           !atoi(port.c_str()) ? 80 : atoi(port.c_str()));
-      cli.set_timeout_sec(10);
+      cli.set_connection_timeout(10);
+      cli.set_read_timeout(10);
+      cli.set_write_timeout(10);
       auto res = cli.Get(path.c_str());
       if (!res) {
         BOOST_LOG_TRIVIAL(error)

@@ -28,7 +28,7 @@ fi
 if [ ! -d cpp-httplib.git ]; then
   git clone https://github.com/yhirose/cpp-httplib.git
   cd cpp-httplib
-  git checkout 301a419c0243d3ab843e5fc2bb9fa56a9daa7bcd
+  git checkout 42f9f9107f87ad2ee04be117dbbadd621c449552
   cd ..
 fi
 cd ..

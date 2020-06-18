@@ -18,7 +18,6 @@
 //
 
 #define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096  // max for SDP file
-#define CPPHTTPLIB_READ_TIMEOUT_SECOND 30
 #include <httplib.h>
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
@@ -83,7 +82,7 @@ struct DaemonInstance {
 #if defined _MEMORY_CHECK_
     search_path("valgrind"),
 #endif
-        "../aes67-daemon", "-c", "daemon.conf", "-p", "9999", "-i", "lo"
+        "../aes67-daemon", "-c", "daemon.conf", "-p", "9999"
   };
   inline static bool ok{false};
 };
@@ -99,7 +98,9 @@ struct Client {
         multicast::join_group(address::from_string(g_sap_address).to_v4(),
                               address::from_string(g_daemon_address).to_v4()));
 
-    cli_.set_timeout_sec(30);
+    cli_.set_connection_timeout(30);
+    cli_.set_read_timeout(30);
+    cli_.set_write_timeout(30);
   }
 
   bool is_alive() {
