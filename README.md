@@ -142,34 +142,8 @@ The demo performs the following operations:
 * start playing a test sound on the configured ALSA source
 * wait for the recording to complete and terminate ptp4l and the AES67 daemon
 
-## Interoperability tests ##
-To run interoperability tests using the [Hasseb audio over Ethernet receiver](http://hasseb.fi/shop2/index.php?route=product/product&product_id=62) follow these steps:
-
-* open the daemon configuration file *daemon.conf* and change the following parameters:
-  * set network interface name to your Ethernet card, e.g.: *"interface\_name": "eth0"*
-  * set default sample rate to 48Khz: *"sample\_rate": 48000*
-* verify that PulseAdio is not running. See [PulseAudio](#notes).
-* install the ALSA RAVENNA/AES67 module with:     
-
-      sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
-
-* run the daemon using the new configuration file:     
-         
-      aes67-daemon -c daemon.conf
-
-* open the Daemon WebUi *http://[address:8080]* and do the following:
-  * go to Config tab and verify that the sample rate is set to 48KHz
-  * go to Sources tab and add a new Source using the plus button, set Codec to L24 and press the Submit button
-  * go to Sources tab and click on the info icon on the right of the newly created source and copy the SDP file
-* open the Hasseb WebUI and do the following:
-  * deselect the "PTP slave only" checkbox to enable PTP master on Hasseb device
-  * select the "Add SDP file manually" checkbox and copy the previous Source SDP into the SDP field
-  * alternatively to the step above, select in the "Stream name" drop down the daemon Source just added
-  * press the Submit button
-* return to the daemon WebUI, click on the PTP tab and wait for the "PTP Status" to report "locked"
-* open a shell on the Linux host and start the playback on the ravenna ALSA device. For example to playback a test sound use:
-
-          speaker-test -D plughw:RAVENNA -r 48000 -c 2 -t sine
+## Devices and interoperability tests ##
+See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
 ## Notes ##
 <a name="notes"></a>
