@@ -127,7 +127,7 @@ index 25b77dc..ec62624 100644
 +    } else {
 +        printk(KERN_DEBUG "stopping playback I/O\n");
 +        MuteOutputBuffer(self);
-+        self->m_bIsPlaybackIO = true;
++        self->m_bIsPlaybackIO = false;
 +    }
 +
 +    self->m_bIORunning = self->m_bIsRecordingIO || self->m_bIsPlaybackIO;
