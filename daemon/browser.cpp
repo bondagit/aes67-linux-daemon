@@ -89,7 +89,7 @@ bool Browser::worker() {
                static_cast<uint32_t>(
                    duration_cast<second_t>(steady_clock::now() - startup_)
                        .count()),
-               360});
+               config_->get_sap_interval()});
         }
       } else {
         // Source is already in the map
