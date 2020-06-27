@@ -90,6 +90,8 @@ struct StreamInfo {
   bool sink_use_sdp{true};
   std::string sink_source;
   std::string sink_sdp;
+  uint32_t session_id{0};
+  uint32_t session_version{0};
 };
 
 class SessionManager {
@@ -166,11 +168,14 @@ class SessionManager {
   void on_add_sink(const StreamSink& sink, const StreamInfo& info);
   void on_remove_sink(const StreamInfo& info);
 
-  void on_ptp_status_locked();
+  void on_ptp_status_locked() const;
 
   void on_update_sources();
 
-  std::string get_removed_source_sdp_(uint32_t id, uint32_t src_addr) const;
+  std::string get_removed_source_sdp_(uint32_t id,
+                                      uint32_t src_addr,
+                                      uint32_t session_id,
+                                      uint32_t session_version) const;
   std::string get_source_sdp_(uint32_t id, const StreamInfo& info) const;
   StreamSource get_source_(uint8_t id, const StreamInfo& info) const;
   StreamSink get_sink_(uint8_t id, const StreamInfo& info) const;
@@ -201,7 +206,10 @@ class SessionManager {
   mutable std::shared_mutex sinks_mutex_;
 
   /* current announced sources */
-  std::map<uint32_t /* msg_id_hash */, uint32_t /* src_addr */>
+  std::map<uint32_t /* msg_id_hash */,
+           std::tuple<uint32_t /* src_addr */,
+                      uint32_t /* session_id */,
+                      uint32_t /* session_version */> >
       announced_sources_;
 
   /* number of deletions sent for a  a deleted source */
@@ -218,6 +226,9 @@ class SessionManager {
 
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;
+
+  /* used to handle session versioning */
+  inline static std::atomic<uint16_t> g_session_version{0};
 };
 
 #endif
