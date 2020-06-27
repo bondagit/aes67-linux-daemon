@@ -1,6 +1,7 @@
 # Devices and interoperability tests #
 
 This document describes the interoperability tests carried out using the AES67 daemon and provides a guide to execute them.
+
 Before starting make sure that the [AES67 daemon basic setup](#daemon_setup) is done.
 
 The following devices have been tested:
@@ -10,7 +11,7 @@ The following devices have been tested:
 * [Hasseb audio over Ethernet receiver](#hasseb_receiver)
 
 
-## AES67 daemon basic setup##
+## AES67 daemon basic setup ##
 <a name="daemon_setup"></a>
 Before running any interoperability test configure the AES67 daemon with the following instructions:
 
@@ -53,7 +54,7 @@ To run interoperability tests using the [Dante Controller](https://www.audinate.
 
 ## Audinate Dante Controller and Dante transmitter ##
 <a name="dante_avio_transmitter"></a>
-To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante transmitter use the followings steps. These were tested using a Dante AVIOUBS and AVIOAI2 devices.
+To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante transmitter use the followings steps. These were tested using Dante AVIOUBS and AVIOAI2 devices.
 
 * make sure [AES67 daemon basic setup](#daemon_setup) is done
 * download and install the Dante controller
@@ -74,7 +75,7 @@ To run interoperability tests using the [Hasseb audio over Ethernet receiver](ht
 * make sure [AES67 daemon basic setup](#daemon_setup) is done
 * open the Hasseb WebUI and do the following:
   * deselect the "PTP slave only" checkbox to enable PTP master on Hasseb device
-  * wait for the daemon source to show up in the "Stream name" drop down list and select it. Please note that mDNS support must be enabled on the daemon
+  * wait for the daemon source to show up in the "Stream name" drop down list and select it. In this case mDNS support must be enabled on the daemon
   * press the Submit button
 * go to the daemon WebUI, click on the PTP tab and wait for the "PTP Status" to report "locked"
 * open a shell on the Linux host and start the playback on the RAVENNA ALSA device. For example to playback a test sound use:
