@@ -1,21 +1,73 @@
 diff --git a/driver/module_timer.c b/driver/module_timer.c
-index 5f64a8e..0ba770f 100644
+index 5f64a8e..158d5ee 100644
 --- a/driver/module_timer.c
 +++ b/driver/module_timer.c
-@@ -35,7 +35,11 @@
+@@ -35,12 +35,61 @@
  #include "module_main.h"
  #include "module_timer.h"
-
+ 
+-static struct tasklet_hrtimer my_hrtimer_;
 +#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
-+static struct hrtimer my_hrtimer_;
-+#else
- static struct tasklet_hrtimer my_hrtimer_;
++struct tasklet_hrtimer {
++	struct hrtimer		timer;
++	struct tasklet_struct	tasklet;
++	enum hrtimer_restart	(*function)(struct hrtimer *);
++};
++
++static inline
++void tasklet_hrtimer_cancel(struct tasklet_hrtimer *ttimer)
++{
++	hrtimer_cancel(&ttimer->timer);
++	tasklet_kill(&ttimer->tasklet);
++}
++
++static enum hrtimer_restart __hrtimer_tasklet_trampoline(struct hrtimer *timer)
++{
++	struct tasklet_hrtimer *ttimer =
++		container_of(timer, struct tasklet_hrtimer, timer);
++	tasklet_hi_schedule(&ttimer->tasklet);
++	return HRTIMER_NORESTART;
++}
++
++static void __tasklet_hrtimer_trampoline(unsigned long data)
++{
++	struct tasklet_hrtimer *ttimer = (void *)data;
++	enum hrtimer_restart restart;
++	restart = ttimer->function(&ttimer->timer);
++	if (restart != HRTIMER_NORESTART)
++		hrtimer_restart(&ttimer->timer);
++}
++
++void tasklet_hrtimer_init(struct tasklet_hrtimer *ttimer,
++			  enum hrtimer_restart (*function)(struct hrtimer *),
++			  clockid_t which_clock, enum hrtimer_mode mode)
++{
++	hrtimer_init(&ttimer->timer, which_clock, mode);
++	ttimer->timer.function = __hrtimer_tasklet_trampoline;
++	tasklet_init(&ttimer->tasklet, __tasklet_hrtimer_trampoline,
++		     (unsigned long)ttimer);
++	ttimer->function = function;
++}
++
++static inline
++void tasklet_hrtimer_start(struct tasklet_hrtimer *ttimer, ktime_t time,
++			   const enum hrtimer_mode mode)
++{
++	hrtimer_start(&ttimer->timer, time, mode);
++}
 +#endif
++
  static uint64_t base_period_;
  static uint64_t max_period_allowed;
  static uint64_t min_period_allowed;
-@@ -57,15 +61,15 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
-
+ static int stop_;
+-
++static struct tasklet_hrtimer my_hrtimer_;
+ 
+ enum hrtimer_restart timer_callback(struct hrtimer *timer)
+ {
+@@ -57,15 +106,15 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
+ 
          if (now > next_wakeup)
          {
 -            printk(KERN_INFO "Timer won't sleep, clock_timer is recall instantly\n");
@@ -33,7 +85,7 @@ index 5f64a8e..0ba770f 100644
                  period = ktime_set(0,((unsigned long)1E9L)); //1s
              }
          }
-@@ -80,8 +84,8 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
+@@ -80,8 +129,8 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
      ///ret_overrun = hrtimer_forward(timer, kt_now, period);
      ret_overrun = hrtimer_forward_now(timer, period);
      // comment it when running in VM
@@ -42,55 +94,55 @@ index 5f64a8e..0ba770f 100644
 +    /*if(ret_overrun > 1)
 +        printk(KERN_INFO "Timer overrun ! (%d times)\n", ret_overrun);*/
      return HRTIMER_RESTART;
-
+ 
  }
-@@ -89,9 +93,12 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
+@@ -89,15 +138,10 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer)
  int init_clock_timer(void)
  {
      stop_ = 0;
 -    ///hrtimer_init(&my_hrtimer_, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
-+    hrtimer_init(&my_hrtimer_, CLOCK_MONOTONIC, HRTIMER_MODE_PINNED);
-+    my_hrtimer_.function = &timer_callback;
-+#else
-     tasklet_hrtimer_init(&my_hrtimer_, timer_callback, CLOCK_MONOTONIC/*_RAW*/, HRTIMER_MODE_PINNED/*HRTIMER_MODE_ABS*/);
+-    tasklet_hrtimer_init(&my_hrtimer_, timer_callback, CLOCK_MONOTONIC/*_RAW*/, HRTIMER_MODE_PINNED/*HRTIMER_MODE_ABS*/);
 -    ///my_hrtimer_.function = &timer_callback;
-+#endif
-
+-
++    tasklet_hrtimer_init(&my_hrtimer_, timer_callback, CLOCK_MONOTONIC/*_RAW*/, HRTIMER_MODE_ABS /*HRTIMER_MODE_PINNED*/);
      //base_period_ = 100 * ((unsigned long)1E6L); // 100 ms
      base_period_ = 1333333; // 1.3 ms
-@@ -108,8 +115,12 @@ void kill_clock_timer(void)
-
+     set_base_period(base_period_);
+-
+-    //start_clock_timer(); //used when no daemon
+     return 0;
+ }
+ 
+@@ -108,24 +152,14 @@ void kill_clock_timer(void)
+ 
  int start_clock_timer(void)
  {
 -    ktime_t period = ktime_set(0, base_period_); //100 ms
 +    ktime_t period = ktime_set(0, base_period_);
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
-+    hrtimer_start(&my_hrtimer_, period, HRTIMER_MODE_REL);
-+#else
      tasklet_hrtimer_start(&my_hrtimer_, period, HRTIMER_MODE_ABS);
-+#endif
-
+-
      return 0;
  }
-@@ -117,7 +128,11 @@ int start_clock_timer(void)
+ 
  void stop_clock_timer(void)
  {
-
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
-+    hrtimer_cancel(&my_hrtimer_);
-+#else
+-
      tasklet_hrtimer_cancel(&my_hrtimer_);
-+#endif
-     /*int ret_cancel = 0;
-     while(hrtimer_callback_running(&my_hrtimer_))
-         ++ret_cancel;
-@@ -145,4 +160,4 @@ void set_base_period(uint64_t base_period)
+-    /*int ret_cancel = 0;
+-    while(hrtimer_callback_running(&my_hrtimer_))
+-        ++ret_cancel;
+-
+-    if(hrtimer_active(&my_hrtimer_) != 0)
+-        ret_cancel = hrtimer_cancel(&my_hrtimer_);
+-    if (hrtimer_is_queued(&my_hrtimer_) != 0)
+-        ret_cancel = hrtimer_cancel(&my_hrtimer_);*/
+ }
+ 
+ void get_clock_time(uint64_t* clock_time)
+@@ -145,4 +179,4 @@ void set_base_period(uint64_t base_period)
      min_period_allowed = base_period_ / 7;
      max_period_allowed = (base_period_ * 10) / 6;
      printk(KERN_INFO "Base period set to %lld ns\n", base_period_);
 -}
 \ No newline at end of file
 +}
-
-
