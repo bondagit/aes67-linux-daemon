@@ -1,3 +1,18 @@
+diff --git a/common/MergingRAVENNACommon.h b/common/MergingRAVENNACommon.h
+index f26368d..a21f4a7 100644
+--- a/common/MergingRAVENNACommon.h
++++ b/common/MergingRAVENNACommon.h
+@@ -78,8 +78,8 @@
+ #define DEFAULT_AUDIOMODE               MergingRAVENNACommon::AM_PCM
+ #define DEFAULT_AUDIODATAFORMAT         MergingRAVENNACommon::ADF_PCM
+ #define DEFAULT_ZONE                    MergingRAVENNACommon::Z_8_HP
+-#define DEFAULT_NUMBEROFINPUTS          8
+-#define DEFAULT_NUMBEROFOUTPUTS         8
++#define DEFAULT_NUMBEROFINPUTS          64
++#define DEFAULT_NUMBEROFOUTPUTS         64
+ #define DEFAULT_FOLLOWDOPDETECTION      true
+ 
+ #ifdef DSD256_at_705k6
 diff --git a/driver/PTP.c b/driver/PTP.c
 index 4b2242a..1bf593a 100644
 --- a/driver/PTP.c
@@ -77,5 +92,4 @@ index 3d9debd..0ff2dfc 100644
 +        //printk(KERN_WARNING "Channel %d copy ignored because it does not fit the available runtime channels (%d)", channel, runtime->channels);
         return 0;
      }
- 
 
