@@ -33,7 +33,7 @@ Before running any interoperability test configure the AES67 daemon with the fol
 
 ## Dante receivers ##
 <a name="dante_avio_receiver"></a>
-To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante AVIO receiver use the following steps. These were tested using a Dante AVIOUBS device.
+To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante receiver use the following steps. Tests were done using a Dante AVIOUBS device.
 
 * make sure [AES67 daemon basic setup](#daemon_setup) is done
 * download and install the Dante controller
@@ -54,7 +54,7 @@ To run interoperability tests using the [Dante Controller](https://www.audinate.
 
 ## Dante transmitters ##
 <a name="dante_avio_transmitter"></a>
-To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante transmitter use the followings steps. These were tested using Dante AVIOUBS and AVIOAI2 devices.
+To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante transmitter use the followings steps. Tests were done using Dante AVIOUBS and AVIOAI2 devices.
 
 * make sure [AES67 daemon basic setup](#daemon_setup) is done
 * download and install the Dante controller
