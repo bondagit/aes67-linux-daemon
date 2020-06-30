@@ -6,8 +6,8 @@ Before starting make sure that the [AES67 daemon basic setup](#daemon_setup) is 
 
 The following devices have been tested:
 
-* AVIOUSB Dante receiver, see [Audinate Dante Controller and Dante receiver](#dante_avio_receiver)
-* AVIOUSB and AVIOAI2 Dante trasmitters, see [Audinate Dante Controller and Dante transmitter](#dante_avio_transmitter)
+* AVIOUSB Dante receiver, see [Dante receivers](#dante_avio_receiver)
+* AVIOUSB and AVIOAI2 Dante trasmitters, see [Dante transmitters](#dante_avio_transmitter)
 * [Hasseb audio over Ethernet receiver](#hasseb_receiver)
 
 
@@ -31,7 +31,7 @@ Before running any interoperability test configure the AES67 daemon with the fol
   * go to Config tab and verify that the sample rate is set to 48KHz
   * go to Sources tab and add a new Source using the plus button, set Codec to L24 and press the Submit button
 
-## Audinate Dante Controller and Dante receiver ##
+## Dante receivers ##
 <a name="dante_avio_receiver"></a>
 To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante AVIO receiver use the following steps. These were tested using a Dante AVIOUBS device.
 
@@ -52,7 +52,7 @@ To run interoperability tests using the [Dante Controller](https://www.audinate.
 
 * return to the Dante Controller application, select the Routing dialog and verify that prohibition icons get replaced with green icons to indicate that the audio flow is active
 
-## Audinate Dante Controller and Dante transmitter ##
+## Dante transmitters ##
 <a name="dante_avio_transmitter"></a>
 To run interoperability tests using the [Dante Controller](https://www.audinate.com/products/software/dante-controller) and a Dante transmitter use the followings steps. These were tested using Dante AVIOUBS and AVIOAI2 devices.
 
