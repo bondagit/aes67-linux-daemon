@@ -21,8 +21,9 @@ if [ ! -d ravenna-alsa-lkm.git ]; then
   git apply ../patches/ravenna-alsa-lkm-disable-ptp-checksum.patch
   git apply ../patches/ravenna-alsa-lkm-independent-playback-capture.path
   echo "Building ravenna-alsa-lkm kernel module ..."
+  cd driver
   make
-  cd ..
+  cd ../..
 fi
 
 if [ ! -d cpp-httplib.git ]; then
