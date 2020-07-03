@@ -93,3 +93,14 @@ index 3d9debd..0ff2dfc 100644
         return 0;
      }
 
+@@ -1292,8 +1290,7 @@ static int mr_alsa_audio_pcm_playback_copy_internal( struct snd_pcm_substream *s
+     struct mr_alsa_audio_chip *chip = snd_pcm_substream_chip(substream);
+     struct snd_pcm_runtime *runtime = substream->runtime;
+     int chn = 0;
+-    //int interleaved = ((channel == -1 && runtime->channels > 1)? 1 : 0);
+-    int interleaved = runtime->access == SNDRV_PCM_ACCESS_RW_INTERLEAVED || SNDRV_PCM_ACCESS_MMAP_INTERLEAVED ? 1 : 0;
++    int interleaved = ((channel == -1 && runtime->channels > 1)? 1 : 0);
+     unsigned int nb_logical_bits = snd_pcm_format_width(runtime->format);
+     unsigned int strideIn = snd_pcm_format_physical_width(runtime->format) >> 3;
+     unsigned int strideOut = snd_pcm_format_physical_width(SNDRV_PCM_FORMAT_S32_LE) >> 3;
+
