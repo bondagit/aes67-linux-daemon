@@ -1,0 +1,35 @@
+CFLAGS += -g
+
+CC = g++
+
+ARCH = Linux
+
+SRC = wavplay_am824.cpp
+
+HEADERS = am824_framer.h
+
+EXE = bin/$(ARCH)/wavplay_am824
+
+OBJ = bin/$(ARCH)/wavplay_am824.o
+
+LIBS =  -lportaudio -lrt -lm -lsndfile -lasound -lpthread
+
+BIN = bin/$(ARCH)
+
+LD = g++
+
+LDFLAGS = -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu -pthread -g
+
+all: $(BIN) $(EXE)
+
+$(BIN) :
+	mkdir -p $(BIN)
+
+$(OBJ) : $(SRC) $(HEADERS)
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+$(EXE): $(OBJ) $(PALIB)
+	$(LD) $(LDFLAGS) $(OBJ) $(LIBS) -o $@
+
+clean:
+	rm -f bin/$(ARCH)/*
