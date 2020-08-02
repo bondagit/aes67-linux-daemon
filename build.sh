@@ -20,6 +20,7 @@ if [ ! -d ravenna-alsa-lkm.git ]; then
   git apply ../patches/ravenna-alsa-lkm-add-codec-am824.patch
   git apply ../patches/ravenna-alsa-lkm-disable-ptp-checksum.patch
   git apply ../patches/ravenna-alsa-lkm-independent-playback-capture.patch
+  git apply ../patches/ravenna-alsa-lkm-direct-pcm-transfer.patch
   echo "Building ravenna-alsa-lkm kernel module ..."
   cd driver
   make
