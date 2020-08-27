@@ -80,26 +80,3 @@ index ac65bbb..a65994f 100644
  #else
      #include <string.h>
  #endif
-diff --git a/driver/audio_driver.c b/driver/audio_driver.c
-index 3d9debd..0ff2dfc 100644
---- a/driver/audio_driver.c
-+++ b/driver/audio_driver.c
-@@ -1292,8 +1292,7 @@ static int mr_alsa_audio_pcm_playback_copy_internal( struct snd_pcm_substream *s
-     struct mr_alsa_audio_chip *chip = snd_pcm_substream_chip(substream);
-     struct snd_pcm_runtime *runtime = substream->runtime;
-     int chn = 0;
--    //int interleaved = ((channel == -1 && runtime->channels > 1)? 1 : 0);
--    int interleaved = runtime->access == SNDRV_PCM_ACCESS_RW_INTERLEAVED || SNDRV_PCM_ACCESS_MMAP_INTERLEAVED ? 1 : 0;
-+    int interleaved = ((channel == -1 && runtime->channels > 1)? 1 : 0);
-     unsigned int nb_logical_bits = snd_pcm_format_width(runtime->format);
-     unsigned int strideIn = snd_pcm_format_physical_width(runtime->format) >> 3;
-     unsigned int strideOut = snd_pcm_format_physical_width(SNDRV_PCM_FORMAT_S32_LE) >> 3;
-@@ -1310,7 +1309,7 @@ static int mr_alsa_audio_pcm_playback_copy_internal( struct snd_pcm_substream *s
-         memset(testblock, 0, sizeof(testblock));
-     #endif
-     
--    if (channel > 0 && channel >= runtime->channels)
-+    if (!interleaved && channel >= runtime->channels)
-     {
-         printk(KERN_WARNING "Channel %d copy ignored because it does not fit the available runtime channels (%d)", channel, runtime->channels);
-        return 0;
