@@ -37,28 +37,6 @@ index 5a160e4..a5c84e4 100644
  
  		i64DeltaSAC =  ui64UsedSAC - ui64GlobalSAC;
  		//MTAL_DP("i64DeltaSAC %I64u playout delay %u, frame size: %u\n", i64DeltaSAC, pRTP_stream_info->m_ui32PlayOutDelay, pManager->get_frame_size(pManager->user));
-diff --git a/driver/audio_driver.c b/driver/audio_driver.c
-index a04ec21..cb8b056 100644
---- a/driver/audio_driver.c
-+++ b/driver/audio_driver.c
-@@ -1205,8 +1205,8 @@ static int mr_alsa_audio_pcm_capture_copy_internal(  struct snd_pcm_substream *s
-     {
-         int ret_pu;
-         char val = 0xf1;
--        __put_user_x(1, val, (unsigned long __user *)src, ret_pu);
--        ret_pu = put_user(val, (unsigned long __user *)src);
-+        //__put_user_x(1, val, (unsigned long __user *)src, ret_pu);
-+        ret_pu = put_user(val, (unsigned char __user *)src);
-         //put_user(val, (unsigned long __user *)src);
-         switch(nb_logical_bits)
-         {
-@@ -2758,4 +2758,4 @@ void mr_alsa_audio_card_exit(void)
-     g_ravenna_peer = NULL;
-     g_mr_alsa_audio_ops = NULL;
-     printk(KERN_INFO "leaving mr_alsa_audio_card_exit..\n");
--}
-\ No newline at end of file
-+}
 diff --git a/driver/manager.c b/driver/manager.c
 index 5a90eca..8023708 100644
 --- a/driver/manager.c
