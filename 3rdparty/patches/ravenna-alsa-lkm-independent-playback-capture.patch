@@ -169,6 +169,19 @@ index 25b77dc..ec62624 100644
              break;
          }
          case MT_ALSA_Msg_SetSampleRate:
+@@ -1468,8 +1502,10 @@ void AudioFrameTIC(void* user)
+             frame_process_begin(&self->m_RTP_streams_manager);
+             if(self->m_pALSAChip && self->m_alsa_driver_frontend)
+             {
+-                self->m_alsa_driver_frontend->pcm_interrupt(self->m_pALSAChip, 1);
+-                self->m_alsa_driver_frontend->pcm_interrupt(self->m_pALSAChip, 0);
++                if (self->m_bIsRecordingIO)
++                  self->m_alsa_driver_frontend->pcm_interrupt(self->m_pALSAChip, 1);
++                if (self->m_bIsPlaybackIO)
++                  self->m_alsa_driver_frontend->pcm_interrupt(self->m_pALSAChip, 0);
+             }
+             frame_process_end(&self->m_RTP_streams_manager);
+         #endif
 @@ -1680,20 +1714,25 @@ int get_interrupts_frame_size(void* user, uint32_t *framesize)
      return -EINVAL;
  }

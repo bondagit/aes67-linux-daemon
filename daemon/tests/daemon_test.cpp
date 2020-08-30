@@ -854,10 +854,6 @@ BOOST_AUTO_TEST_CASE(add_remove_check_mdns_browser_update_all) {
     BOOST_REQUIRE_MESSAGE(cli.add_source(id),
                           std::string("added source ") + std::to_string(id));
   }
-  for (int id = 0; id < g_stream_num_max; id++) {
-    BOOST_REQUIRE_MESSAGE(cli.update_source(id),
-                          std::string("updated source ") + std::to_string(id));
-  }
   std::vector<std::string> sdps{g_stream_num_max};
   for (int id = 0; id < g_stream_num_max; id++) {
     auto sdp = cli.get_source_sdp(id);
