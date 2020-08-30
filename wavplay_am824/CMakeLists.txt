@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.7.0)
+project(wavplay_am824 CXX)
+set(CMAKE_CXX_FLAGS "-g -Wall")
+find_library(PORTAUDIO NAMES portaudio)
+find_library(SNDFILE NAMES sndfile)
+add_executable(wavplay_am824 wavplay_am824.cpp)
+target_link_libraries(wavplay_am824 ${PORTAUDIO})
+target_link_libraries(wavplay_am824 ${SNDFILE})
