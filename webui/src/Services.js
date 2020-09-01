@@ -44,7 +44,7 @@ const defaultParams = {
 export default class RestAPI {
 
   static getBaseUrl() {
-    return location.protocol + '//' + location.hostname + ':8080';
+    return location.protocol + '//' + location.host;
   }
 
   static doFetch(url, params = {}) {
