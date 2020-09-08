@@ -85,12 +85,12 @@ This directory contains a the daemon configuration and status files used to run 
 <a name="prerequisite"></a>
 The daemon and the demo have been tested with **Ubuntu 18.04** distro on **ARMv7** and with **Ubuntu 18.04, 19.10 and 20.04** distros on **x86** using:
 
-* Linux kernel version >= 4.14.x
-* GCC  version >= 7.4 / clang >= 6.0.0 (C++17 support required)
-* cmake version >= 3.10.2
+* Linux kernel version >= 4.10.x
+* GCC  version >= 7.x / clang >= 6.x (C++17 support required)
+* cmake version >= 3.7
 * node version >= 8.10.0
 * npm version >= 3.5.2
-* boost libraries version >= 1.65.1
+* boost libraries version >= 1.65
 * Avahi service discovery (if enabled) >= 0.7
 
 The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing on ARMv7.
@@ -144,6 +144,9 @@ The demo performs the following operations:
 
 ## Devices and interoperability tests ##
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
+
+## AES67 USB Receiver and Transmitter ##
+See [Use your board as AES67 USB Receiver and Transmitter](USB_GADGET.md)
 
 ## Notes ##
 <a name="notes"></a>
