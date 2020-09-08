@@ -17,8 +17,8 @@ For this make sure you have the following kernel config options enabled:
 In the Kernel menu config the location of these option is:
 
       -> Device Drivers 
-        -> USB support (USB\_SUPPORT [=y])
-          -> USB Gadget Support (USB\_GADGET [=y])
+        -> USB support (USB_SUPPORT [=y])
+          -> USB Gadget Support (USB_GADGET [=y])
 Transfer the new kernel and modules to the board. 
 Also make sure your board is properly configured to use the USB connector in device mode.
 
@@ -28,7 +28,7 @@ Also make sure your board is properly configured to use the USB connector in dev
 <a name="g_audio_install"></a>
 Install the Audio Gadget module with:
 
-      sudo modprobe g\_audio
+      sudo modprobe g_audio
 
 If the negotiation with the connected PC is succefull on the board a new virtual audio card shows up.
 To verify run:
@@ -63,7 +63,7 @@ You also need to configure a new stereo *Sink* on the daemon.
 
 On the board run the following command to relay the audio from AES67 Sink to the USB:
 
-      sudo nice -n -10 ./alsaloop -c 2 -r 48000 -f S16\_LE -P plughw:RAVENNA -C plughw:UAC1Gadget
+      sudo nice -n -10 ./alsaloop -c 2 -r 48000 -f S16\_LE -C plughw:RAVENNA -P plughw:UAC1Gadget
 On the PC start the audio recording on the new device.
 
 **_NOTE:_** The *ALSA RAVENNA driver* will perform the format conversion from *S16\_LE* to the *Sink* format.
