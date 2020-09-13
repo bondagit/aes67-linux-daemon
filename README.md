@@ -33,6 +33,12 @@ The daemon uses the following open source:
 * **Avahi common & client libraries** licensed under the [LGPL License](https://github.com/lathiat/avahi/blob/master/LICENSE)
 * **Boost libraries** licensed under the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt)
 
+## Devices and interoperability tests ##
+See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
+
+## AES67 USB Receiver and Transmitter ##
+See [Use your board as AES67 USB Receiver and Transmitter](USB_GADGET.md)
+
 ## Repository content ##
 
 ### [daemon](daemon) directory ###
@@ -141,12 +147,6 @@ The demo performs the following operations:
 * start recording on the configured ALSA sink for 60 seconds to the wave file in *./demo/sink_test.wav*
 * start playing a test sound on the configured ALSA source
 * wait for the recording to complete and terminate ptp4l and the AES67 daemon
-
-## Devices and interoperability tests ##
-See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
-
-## AES67 USB Receiver and Transmitter ##
-See [Use your board as AES67 USB Receiver and Transmitter](USB_GADGET.md)
 
 ## Notes ##
 <a name="notes"></a>
