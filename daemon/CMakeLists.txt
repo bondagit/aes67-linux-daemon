@@ -29,7 +29,7 @@ set(AVAHI_INCLUDE_DIRS ${AVAHI_INCLUDE_DIR})
 
 find_package(Boost COMPONENTS system thread log program_options REQUIRED)
 include_directories(aes67-daemon ${RAVENNA_ALSA_LKM_DIR}/common ${RAVENNA_ALSA_LKM_DIR}/driver ${CPP_HTTPLIB_DIR} ${Boost_INCLUDE_DIR})
-add_compile_definitions( BOOST_LOG_DYN_LINK BOOST_LOG_USE_NATIVE_SYSLOG )
+add_definitions( -DBOOST_LOG_DYN_LINK -DBOOST_LOG_USE_NATIVE_SYSLOG )
 add_compile_options( -Wall )
 add_executable(aes67-daemon error_code.cpp json.cpp main.cpp driver_handler.cpp driver_manager.cpp session_manager.cpp http_server.cpp config.cpp interface.cpp log.cpp sap.cpp browser.cpp rtsp_client.cpp mdns_client.cpp mdns_server.cpp rtsp_server.cpp utils.cpp)
 
