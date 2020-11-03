@@ -7,6 +7,8 @@
 export CC=/usr/bin/clang
 export CXX=/usr/bin/clang++
 
+TOPDIR=$(pwd)
+
 cd 3rdparty
 if [ ! -d ravenna-alsa-lkm.git ]; then
   git clone https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm.git
@@ -44,7 +46,7 @@ cd ..
 
 cd daemon
 echo "Building aes67-daemon ..."
-cmake -DWITH_AVAHI=ON .
+cmake -DCPP_HTTPLIB_DIR="$TOPDIR"/3rdparty/cpp-httplib -DRAVENNA_ALSA_LKM_DIR="$TOPDIR"/3rdparty/ravenna-alsa-lkm -DENABLE_TESTS=ON -DWITH_AVAHI=ON .
 make
 cd ..
 
