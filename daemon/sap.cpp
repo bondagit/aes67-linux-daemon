@@ -51,6 +51,14 @@ bool SAP::set_multicast_interface(const std::string& interface_ip) {
     BOOST_LOG_TRIVIAL(error) << "sap::enable_loopback option " << ec.message();
     return false;
   }
+
+  /* https://tools.ietf.org/html/rfc2974  ttl = 255 */
+  boost::asio::ip::multicast::hops ttl_option(255);
+  socket_.set_option(ttl_option, ec);
+  if (ec) {
+    BOOST_LOG_TRIVIAL(error) << "sap::hops/ttl option " << ec.message();
+    return false;
+  }
   return true;
 }
 
