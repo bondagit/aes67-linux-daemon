@@ -1031,7 +1031,11 @@ bool SessionManager::worker() {
             sample_rate != driver_->get_current_sample_rate()) {
           /* master clock id changed or sample rate changed
            * we need to update all the sources */
-          sample_rate = driver_->get_current_sample_rate();
+          if (sample_rate != driver_->get_current_sample_rate()) {
+             sample_rate = driver_->get_current_sample_rate();
+             // set driver sample rate
+             (void)driver_->set_sample_rate(sample_rate);
+	  }
           on_update_sources();
         }
       }
