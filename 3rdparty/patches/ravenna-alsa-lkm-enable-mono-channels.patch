@@ -1,0 +1,23 @@
+diff --git a/driver/audio_driver.c b/driver/audio_driver.c
+index 3d9debd..339327b 100644
+--- a/driver/audio_driver.c
++++ b/driver/audio_driver.c
+@@ -1106,7 +1130,7 @@ static struct snd_pcm_hardware mr_alsa_audio_pcm_hardware_playback =
+     .rates =    (SNDRV_PCM_RATE_KNOT|SNDRV_PCM_RATE_44100|SNDRV_PCM_RATE_48000|SNDRV_PCM_RATE_88200|SNDRV_PCM_RATE_96000|SNDRV_PCM_RATE_176400|SNDRV_PCM_RATE_192000),
+     .rate_min =         44100,
+     .rate_max =         384000,
+-    .channels_min =     2,
++    .channels_min =     1,
+     .channels_max =     MR_ALSA_NB_CHANNELS_MAX,
+     .buffer_bytes_max = MR_ALSA_RINGBUFFER_NB_FRAMES * MR_ALSA_NB_CHANNELS_MAX * 4, // 4 bytes per sample, 128 ch
+     .period_bytes_min = MR_ALSA_NB_FRAMES_PER_PERIOD_AT_1FS * 2 * 3, // amount of data in bytes for 8 channels, 24bit samples, at 1Fs
+@@ -1135,7 +1159,7 @@ static struct snd_pcm_hardware mr_alsa_audio_pcm_hardware_capture =
+     .rates =    (SNDRV_PCM_RATE_KNOT|SNDRV_PCM_RATE_44100|SNDRV_PCM_RATE_48000|SNDRV_PCM_RATE_88200|SNDRV_PCM_RATE_96000|SNDRV_PCM_RATE_176400|SNDRV_PCM_RATE_192000),
+     .rate_min =         44100,
+     .rate_max =         384000,
+-    .channels_min =     2,
++    .channels_min =     1,
+     .channels_max =     MR_ALSA_NB_CHANNELS_MAX,
+     .buffer_bytes_max = MR_ALSA_RINGBUFFER_NB_FRAMES * MR_ALSA_NB_CHANNELS_MAX * 4, // 4 bytes per sample, 128 ch
+     .period_bytes_min = MR_ALSA_NB_FRAMES_PER_PERIOD_AT_1FS * 2 * 4, // amount of data in bytes for 8 channels, 24bit samples, at 1Fs
+
