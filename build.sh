@@ -24,11 +24,14 @@ if [ ! -d ravenna-alsa-lkm.git ]; then
   git apply ../patches/ravenna-alsa-lkm-independent-playback-capture.patch
   git apply ../patches/ravenna-alsa-lkm-direct-pcm-transfer.patch
   git apply ../patches/ravenna-alsa-lkm-enable-mono-channels.patch
+  git apply ../patches/ravenna-alsa-lkm-init-play-capture-buffers.patch
   echo "Building ravenna-alsa-lkm kernel module ..."
   cd driver
   make
   cd ../..
 fi
+
+exit 1
 
 if [ ! -d cpp-httplib.git ]; then
   git clone https://github.com/yhirose/cpp-httplib.git
