@@ -31,8 +31,6 @@ if [ ! -d ravenna-alsa-lkm.git ]; then
   cd ../..
 fi
 
-exit 1
-
 if [ ! -d cpp-httplib.git ]; then
   git clone https://github.com/yhirose/cpp-httplib.git
   cd cpp-httplib
