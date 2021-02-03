@@ -1,0 +1,26 @@
+diff --git a/driver/audio_driver.c b/driver/audio_driver.c
+index 3d9debd..cc6240e 100644
+--- a/driver/audio_driver.c
++++ b/driver/audio_driver.c
+@@ -936,6 +936,8 @@
+             chip->dma_playback_offset = 0;
+             chip->dma_playback_buffer = runtime->dma_area;
+             chip->pcm_playback_buffer_size = snd_pcm_lib_buffer_bytes(chip->playback_substream);
++            // early startup to fix problem with read-write interleaved mode pre-buffering
++            chip->mr_alsa_audio_ops->start_interrupts(chip->ravenna_peer, 1);
+         }
+         else if(substream->stream == SNDRV_PCM_STREAM_CAPTURE)
+         {
+index 5a90eca..8023708 100644
+--- a/driver/manager.c
++++ b/driver/manager.c
+@@ -279,7 +279,7 @@
+     }
+     else {
+         printk(KERN_DEBUG "starting playback I/O\n");
+-        MuteOutputBuffer(self);
++        //MuteOutputBuffer(self);
+         self->m_bIsPlaybackIO = true;
+     }
+
+
