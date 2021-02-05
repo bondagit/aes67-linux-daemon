@@ -14,13 +14,14 @@ index 3d9debd..cc6240e 100644
 index 5a90eca..8023708 100644
 --- a/driver/manager.c
 +++ b/driver/manager.c
-@@ -279,7 +279,7 @@
-     }
-     else {
-         printk(KERN_DEBUG "starting playback I/O\n");
--        MuteOutputBuffer(self);
-+        //MuteOutputBuffer(self);
-         self->m_bIsPlaybackIO = true;
-     }
-
-
+@@ -271,6 +271,10 @@
+         return false;
+ 
+     MTAL_DP("MergingRAVENNAAudioDriver::startIO\n");
++    if (is_playback && self->m_bIsPlaybackIO)
++        return true;
++    if (!is_playback && self->m_bIsRecordingIO)
++        return true;
+ 
+     if (!is_playback) {
+         printk(KERN_DEBUG "starting capture I/O\n");
