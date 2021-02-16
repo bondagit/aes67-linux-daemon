@@ -83,13 +83,13 @@ The [patches](3rdparty/patches) subdirectory contains patches applied to the ALS
 
 See [ALSA RAVENNA/AES67 Driver README](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master/README.md) for additional information about the Merging Technologies module and for proper Linux Kernel configuration and tuning.
 
-### [demo](demo) directory ###
+### [test](test) directory ###
 
-This directory contains a the daemon configuration and status files used to run a short demo on the network loopback device. The [demo](#demo) is described below.
+This directory contains the files used to run the daemon platform compatibility test on the network loopback device. The [test](#test) is described below.
 
 ## Prerequisite ##
 <a name="prerequisite"></a>
-The daemon and the demo have been tested with **Ubuntu 18.04** distro on **ARMv7** and with **Ubuntu 18.04, 19.10 and 20.04** distros on **x86** using:
+The daemon and the test have been tested with **Ubuntu 18.04** distro on **ARMv7** and with **Ubuntu 18.04, 19.10 and 20.04** distros on **x86** using:
 
 * Linux kernel version >= 4.10.x
 * GCC  version >= 7.x / clang >= 6.x (C++17 support required)
@@ -99,10 +99,14 @@ The daemon and the demo have been tested with **Ubuntu 18.04** distro on **ARMv7
 * boost libraries version >= 1.65
 * Avahi service discovery (if enabled) >= 0.7
 
-The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor was used for testing on ARMv7.
+The following ARM platform have been used for testing:
+The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor.
 See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
 
-The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, the daemon tests and the [demo](#demo).    
+The NanoPi NEO2 with Allwinner H5, Quad-core 64-bit high-performance Cortex A53 processor.
+See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional information about how to setup Ubuntu on this board.
+
+The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 **_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
  
 ## How to build ##
@@ -130,29 +134,54 @@ make sure that no instances of the aes67-daemon are running, enter the [tests](d
 
 **_NOTE:_** when running regression tests make sure that no other Ravenna mDNS sources are advertised on the network because this will affect the results. Regression tests run on loopback interface but Avahi ignores the interface parameter set and will forward to the daemon the sources found on all network interfaces.
 
-## Run the demo ##
-<a name="demo"></a>
-To run a simple demo use the [run\_demo.sh](run_demo.sh) script. See [script notes](#notes).
-The demo configures and uses a loopback of 8 channels with AM824 codec (S32 format) at 48Khz and saves the output to a wav file.
+## Run the platform compatibility test ##
+<a name="test"></a>
+Before attempting to use the AES67 daemon on a specific host or board it's highly recommended to run the platform test.
+These tests can be executed using the [run\_test.sh](run_test.sh) script. See [script notes](#notes).
 
-The demo performs the following operations:
+The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the selected platform.
 
-* setup system parameters
-* stop PulseAudio (if installed). This uses and keeps busy the ALSA playback and capture devices causing instability problems. See [PulseAudio](#notes).
+      Usage run_test.sh sample_format sample_rate channels duration
+           sample_format can be one of S16_LE, S24_3LE, S32_LE
+           sample_rate can be one of 44100, 48000, 96000
+           channels can be one of 1, 2, 4
+           duration is in the range 1 to 10 minutes
+
+For example to test the typical AES67 configuration run:
+
+      ./run_test.sh S24_3LE 48000 2 5 
+
+The test performs the following operations:
+
+* check that all the required executables are available
+* stop the running daemon instances and remove the ALSA RAVENNA/AES67 module
+* compile the test tools under the test folder
+* validatesthe input parametersi, prepare the raw input file to be played *./test/test.raw* and the configuration files under the test folder
+* stop PulseAudio (if installed). This opens and keeps busy the ALSA playback and capture devices causing problems. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module
 * start the ptp4l as master clock on the network loopback device
-* start the AES67 daemon and creates a source and a sink according to the status file in the demo directory
-* open a browser on the daemon PTP status page
+* start the AES67 daemon and create a source and a sink according to the status file created in the test directory
 * wait for the Ravenna driver PTP slave to synchronize
-* start recording on the configured ALSA sink for 60 seconds to the wave file in *./demo/sink_test.wav*
-* start playing a test sound on the configured ALSA source
-* wait for the recording to complete and terminate ptp4l and the AES67 daemon
+* start recording on the configured ALSA sink for the specified period tof time to the raw file *./test/sink_test.raw*
+* start playing the test file created *./test/test.raw* on the configured ALSA source
+* wait for the recording and the playback to complete 
+* check that the recorded file contains the expected audio samples sequence
+* terminate ptp4l and the AES67 daemon
+* print the test result that can be either *OK" or *failed at {location}*
+
+If the test result is OK it means that the selected configuration can possibly run smoothly on your platform.
+
+If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
+If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
+In this case you may try to configure a difference dirver timer basic tick period in the daemon configuration file (parameter *tic\_frame\_size\_at\_1fs* in *test/daemon.conf*).
+
+By default this parameter is set to 48 (1ms latency) and the valid range is from 48 to 480 with steps of 48. Higher values of this parameter lead to higher packets processing latency and this breaks the compatibility with certain devices.
 
 ## Notes ##
 <a name="notes"></a>
 
-* All the scripts in this repository are provided as a reference to help setting up the system and run a simple demo.    
-  They have been tested on **Ubuntu 18.04 19.10 20.04** distros.    
+* All the scripts in this repository are provided as a reference to help setting up the system and run the platform compatibility test.
+  They have been tested on **Ubuntu 18.04 19.10 20.04** distros.
 * **PulseAudio** can create instability problems.    
 Before running the daemon verify that PulseAudio is not running with:  
 
@@ -162,7 +191,7 @@ Before running the daemon verify that PulseAudio is not running with:
 
       daemon/scripts/disable_pulseaudio.sh
 
-  If after this the process is still alive considering one of these two solutions and reboot the system afterwards:    
+  If after this the process is still alive consider one of these two solutions and reboot the system afterwards:    
   * Uninstall it completely with:    
 
         sudo apt-get remove pulseaudio

@@ -1,0 +1,7 @@
+sink_test.raw
+*.o
+createtest
+check
+status_.json
+daemon_.json
+
