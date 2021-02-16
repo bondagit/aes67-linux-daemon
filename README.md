@@ -100,6 +100,7 @@ The daemon and the test have been tested with **Ubuntu 18.04** distro on **ARMv7
 * Avahi service discovery (if enabled) >= 0.7
 
 The following ARM platform have been used for testing:
+
 The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor.
 See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
 
@@ -139,7 +140,7 @@ make sure that no instances of the aes67-daemon are running, enter the [tests](d
 Before attempting to use the AES67 daemon on a specific host or board it's highly recommended to run the platform test.
 These tests can be executed using the [run\_test.sh](run_test.sh) script. See [script notes](#notes).
 
-The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the selected platform.
+The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the platform.
 
       Usage run_test.sh sample_format sample_rate channels duration
            sample_format can be one of S16_LE, S24_3LE, S32_LE
