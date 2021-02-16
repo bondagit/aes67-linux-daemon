@@ -157,7 +157,7 @@ The test performs the following operations:
 * check that all the required executables are available
 * stop the running daemon instances and remove the ALSA RAVENNA/AES67 module
 * compile the test tools under the test folder
-* validatesthe input parametersi, prepare the raw input file to be played *./test/test.raw* and the configuration files under the test folder
+* validates the input parameters, prepare the raw input file to be played *./test/test.raw* and the configuration files under the test folder
 * stop PulseAudio (if installed). This opens and keeps busy the ALSA playback and capture devices causing problems. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module
 * start the ptp4l as master clock on the network loopback device
@@ -168,7 +168,8 @@ The test performs the following operations:
 * wait for the recording and the playback to complete 
 * check that the recorded file contains the expected audio samples sequence
 * terminate ptp4l and the AES67 daemon
-* print the test result that can be either *OK" or *failed at {location}*
+* print the test result that can be either *OK" or *failed at (location)*
+
 
 If the test result is OK it means that the selected configuration can possibly run smoothly on your platform.
 
