@@ -11,23 +11,8 @@ TOPDIR=$(pwd)
 
 cd 3rdparty
 if [ ! -d ravenna-alsa-lkm.git ]; then
-  git clone https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm.git
-  cd ravenna-alsa-lkm
-  git checkout 35c708f3747474130790cf508c064360a9589ac8
-  echo "Apply patches to ravenna-alsa-lkm module ..."
-  git apply ../patches/ravenna-alsa-lkm-kernel-v5.patch
-  git apply ../patches/ravenna-alsa-lkm-enable-loopback.patch
-  git apply ../patches/ravenna-alsa-lkm-fixes.patch
-  git apply ../patches/ravenna-alsa-lkm-arm-32bit.patch
-  git apply ../patches/ravenna-alsa-lkm-add-codec-am824.patch
-  git apply ../patches/ravenna-alsa-lkm-disable-ptp-checksum.patch
-  git apply ../patches/ravenna-alsa-lkm-independent-playback-capture.patch
-  git apply ../patches/ravenna-alsa-lkm-direct-pcm-transfer.patch
-  git apply ../patches/ravenna-alsa-lkm-enable-mono-channels.patch
-  git apply ../patches/ravenna-alsa-lkm-init-play-capture-buffers.patch
-  git apply ../patches/ravenna-alsa-fix-playback-rw-mode.patch
-  echo "Building ravenna-alsa-lkm kernel module ..."
-  cd driver
+  git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
+  cd ravenna-alsa-lkm/driver
   make
   cd ../..
 fi
