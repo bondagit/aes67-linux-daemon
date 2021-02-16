@@ -1,7 +1,7 @@
 sink_test.raw
+test.raw
 *.o
 createtest
 check
 status_.json
-daemon_.json
-
+daemon_.conf
