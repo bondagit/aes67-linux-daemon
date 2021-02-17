@@ -140,11 +140,7 @@ The script performs the following operations:
 Before attempting to use the AES67 daemon on a specific host or board it's highly recommended to run the platform test.
 This test can be executed using the [run\_test.sh](run_test.sh) script. See [script notes](#notes).
 
-<<<<<<< HEAD
 The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the current platform.
-=======
-The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the platform.
->>>>>>> 0ba03dda759fc1a5df175c7acafb1a3d4b140d67
 
       Usage run_test.sh sample_format sample_rate channels duration
            sample_format can be one of S16_LE, S24_3LE, S32_LE
