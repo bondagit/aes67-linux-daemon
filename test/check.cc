@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 end:
   //cout << "expected " << (int)curr << " byte " << (int)byte << endl;
   int rc = 0;
-  if (fl.tellp() != end)
+  if (first || fl.tellp() != end)
   {
      cout << "error at position: " << fl.tellp() << endl;
      rc = 1;
