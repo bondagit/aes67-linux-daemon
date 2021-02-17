@@ -115,6 +115,7 @@ The daemon and the test have been tested with **Ubuntu 18.04** distro on **ARMv7
 * Avahi service discovery (if enabled) >= 0.7
 
 The following ARM platform have been used for testing:
+
 The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor.
 See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
 
@@ -139,7 +140,11 @@ The script performs the following operations:
 Before attempting to use the AES67 daemon on a specific host or board it's highly recommended to run the platform test.
 This test can be executed using the [run\_test.sh](run_test.sh) script. See [script notes](#notes).
 
+<<<<<<< HEAD
 The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the current platform.
+=======
+The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the platform.
+>>>>>>> 0ba03dda759fc1a5df175c7acafb1a3d4b140d67
 
       Usage run_test.sh sample_format sample_rate channels duration
            sample_format can be one of S16_LE, S24_3LE, S32_LE
@@ -156,7 +161,7 @@ The test performs the following operations:
 * check that all the required executables are available
 * stop the running daemon instances and remove the ALSA RAVENNA/AES67 module
 * compile the test tools under the test folder
-* validatesthe input parametersi, prepare the raw input file to be played *./test/test.raw* and the configuration files under the test folder
+* validates the input parameters, prepare the raw input file to be played *./test/test.raw* and the configuration files under the test folder
 * stop PulseAudio (if installed). This opens and keeps busy the ALSA playback and capture devices causing problems. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module
 * start the ptp4l as master clock on the network loopback interface
@@ -167,7 +172,8 @@ The test performs the following operations:
 * wait for the recording and the playback to complete 
 * check that the recorded file contains the expected audio samples sequence
 * terminate ptp4l and the AES67 daemon
-* print the test result that can be either *OK" or *failed at {location}*
+* print the test result that can be either *OK" or *failed at (location)*
+
 
 If the test result is OK it means that the selected configuration can run smoothly on your platform.
 
