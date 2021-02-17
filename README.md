@@ -72,7 +72,7 @@ With the WebUI a user can do the following operations:
 ### [3rdparty](3rdparty) directory ###
 
 This directory is used to download the 3rdparty open source.
-The [patches](3rdparty/patches) subdirectory contains patches applied to the ALSA RAVENNA/AES67 module to compile with the Linux Kernel 5.x and on ARMv7 platforms and to enable operations on the network loopback device (for testing purposes).
+The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bondagit/ravenna-alsa-lkm/tree/aes67-daemon) contains the ALSA RAVENNA/AES67 module code plus all the patches applied to it.
 
  The ALSA RAVENNA/AES67 kernel module is responsible for:
 
@@ -81,11 +81,26 @@ The [patches](3rdparty/patches) subdirectory contains patches applied to the ALS
 * PTP slave operations and PTP driven interrupt loop
 * netlink communication between user and kernel
 
-See [ALSA RAVENNA/AES67 Driver README](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master/README.md) for additional information about the Merging Technologies module and for proper Linux Kernel configuration and tuning.
+ The following patches have been applied to the original module:
+
+* patch to rework the driver PCM interface and to simplify and unify handling of read-write interlaved and memory mapped access modes
+* patch to remove user space transfer handling from convert functions
+* patch to add support for AM824 (L32) codec
+* patch to initialize playback and capture buffers
+* patch to enable mono channel support to playback and capture ALSA devices
+* patch to enable direct PCM transfer mode instead of indirect to enable the use of ALSA plugins
+* patch to enable independent playback and capture interrupt startup
+* patch to disable UDP checksum check for PTP packets
+* patch to enable support for ARM 32bit and 64bit platforms
+* patch to remove compilation warnings
+* patch to enable the network loopback device
+* patch to compile with Linux Kernel v5
+
+See [ALSA RAVENNA/AES67 Driver README](https://github.com/bondagit/aes67-linux-daemon/blob/master/README.md) for additional information about the Merging Technologies module and for proper Linux Kernel configuration and tuning.
 
 ### [test](test) directory ###
 
-This directory contains the files used to run the daemon platform compatibility test on the network loopback device. The [test](#test) is described below.
+This directory contains the files used to run the daemon platform compatibility test on the network loopback interface. The [test](#test) is described below.
 
 ## Prerequisite ##
 <a name="prerequisite"></a>
@@ -119,27 +134,12 @@ The script performs the following operations:
 * build and deploy the WebUI
 * build the AES67 daemon
 
-## Run the regression tests ##
-To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:    
-
-      sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
-
-setup the kernel parameters with:
-
-      sudo sysctl -w net/ipv4/igmp_max_memberships=66
-
-make sure that no instances of the aes67-daemon are running, enter the [tests](daemon/tests) subdirectory and run:
-
-      ./daemon-test -p
-
-**_NOTE:_** when running regression tests make sure that no other Ravenna mDNS sources are advertised on the network because this will affect the results. Regression tests run on loopback interface but Avahi ignores the interface parameter set and will forward to the daemon the sources found on all network interfaces.
-
 ## Run the platform compatibility test ##
 <a name="test"></a>
 Before attempting to use the AES67 daemon on a specific host or board it's highly recommended to run the platform test.
-These tests can be executed using the [run\_test.sh](run_test.sh) script. See [script notes](#notes).
+This test can be executed using the [run\_test.sh](run_test.sh) script. See [script notes](#notes).
 
-The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the selected platform.
+The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the current platform.
 
       Usage run_test.sh sample_format sample_rate channels duration
            sample_format can be one of S16_LE, S24_3LE, S32_LE
@@ -159,7 +159,7 @@ The test performs the following operations:
 * validatesthe input parametersi, prepare the raw input file to be played *./test/test.raw* and the configuration files under the test folder
 * stop PulseAudio (if installed). This opens and keeps busy the ALSA playback and capture devices causing problems. See [PulseAudio](#notes).
 * install the ALSA RAVENNA/AES67 module
-* start the ptp4l as master clock on the network loopback device
+* start the ptp4l as master clock on the network loopback interface
 * start the AES67 daemon and create a source and a sink according to the status file created in the test directory
 * wait for the Ravenna driver PTP slave to synchronize
 * start recording on the configured ALSA sink for the specified period tof time to the raw file *./test/sink_test.raw*
@@ -169,13 +169,28 @@ The test performs the following operations:
 * terminate ptp4l and the AES67 daemon
 * print the test result that can be either *OK" or *failed at {location}*
 
-If the test result is OK it means that the selected configuration can possibly run smoothly on your platform.
+If the test result is OK it means that the selected configuration can run smoothly on your platform.
 
 If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
 If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
-In this case you may try to configure a difference dirver timer basic tick period in the daemon configuration file (parameter *tic\_frame\_size\_at\_1fs* in *test/daemon.conf*).
+In this case you may try to configure a different driver timer basic tick period in the daemon configuration file (parameter *tic\_frame\_size\_at\_1fs* in *test/daemon.conf*).
+By default this parameter is set to 48 (1ms latency) and the valid range is from 48 to 480 with steps of 48. 
+Note that higher values of this parameter (values above 48) lead to higher packets processing latency and this breaks the compatibility with certain devices.
 
-By default this parameter is set to 48 (1ms latency) and the valid range is from 48 to 480 with steps of 48. Higher values of this parameter lead to higher packets processing latency and this breaks the compatibility with certain devices.
+## Run the daemon regression tests ##
+To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:    
+
+      sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
+
+setup the kernel parameters with:
+
+      sudo sysctl -w net/ipv4/igmp_max_memberships=66
+
+make sure that no instances of the aes67-daemon are running, enter the [tests](daemon/tests) subdirectory and run:
+
+      ./daemon-test -p
+
+**_NOTE:_** when running regression tests make sure that no other Ravenna mDNS sources are advertised on the network because this will affect the results. Regression tests run on loopback interface but Avahi ignores the interface parameter set and will forward to the daemon the sources found on all network interfaces.
 
 ## Notes ##
 <a name="notes"></a>
