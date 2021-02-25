@@ -30,6 +30,7 @@ class Config extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      version: '',
       httpPort: '',
       rtspPort: '',
       rtspPortErr: false,
@@ -57,7 +58,8 @@ class Config extends Component {
       macAddr: '',
       ipAddr: '',
       errors: 0,
-      isConfigLoading: false
+      isConfigLoading: false,
+      isVersionLoading: false
     };
     this.onSubmit = this.onSubmit.bind(this);
     this.inputIsValid = this.inputIsValid.bind(this);
@@ -65,6 +67,16 @@ class Config extends Component {
 
   componentDidMount() {
     this.setState({isConfigLoading: true});
+    this.setState({isVersionLoading: true});
+    RestAPI.getVersion()
+      .then(response => response.json())
+      .then(
+        data => this.setState(
+          {
+            version: data.version,
+            isVersionLoading: false
+	  }))
+      .catch(err => this.setState({isVersionLoading: false}));
     RestAPI.getConfig()
       .then(response => response.json())
       .then(
@@ -105,6 +117,7 @@ class Config extends Component {
       !this.state.rtspPortErr &&
       !this.state.sapIntervalErr &&
       !this.state.syslogServerErr &&
+      !this.state.isVersionLoading &&
       !this.state.isConfigLoading;
   }
 
@@ -130,6 +143,14 @@ class Config extends Component {
   render() {
     return (
       <div className='config'>
+	{this.state.isVersionLoading ? <Loader/> : <h3>Version</h3>}
+        <table><tbody>
+          <tr>
+            <th align="left"> <label>Daemon</label> </th>
+            <th align="left"> <input value={this.state.version} disabled/> </th>
+          </tr>
+        </tbody></table>
+        <br/>
 	{this.state.isConfigLoading ? <Loader/> : <h3>Audio Config</h3>}
         <table><tbody>
           <tr>
@@ -140,10 +161,6 @@ class Config extends Component {
             <th align="left"> <label>TIC frame size @1FS (samples) </label> </th>
             <th align="left">
               <select value={this.state.ticFrameSizeAt1fs} onChange={e => this.setState({ticFrameSizeAt1fs: e.target.value})}>
-                <option value="6">6 - 125&mu;s</option>
-                <option value="12">12 - 250&mu;s</option>
-                <option value="16">16 - 333&mu;s</option>
-                <option value="24">24 - 500&mu;s</option>
                 <option value="48">48 - 1ms</option>
                 <option value="96">96 - 2ms</option>
                 <option value="192">192 - 4ms</option>

@@ -35,6 +35,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
+static std::string version("bondagit-1.0");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -47,14 +48,19 @@ bool is_terminated() {
   return terminate.load();
 }
 
+const std::string& get_version() {
+  return version;
+}
+
 int main(int argc, char* argv[]) {
   int rc = EXIT_SUCCESS;
   po::options_description desc("Options");
-  desc.add_options()(
-      "config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
-      "daemon configuration file")("http_port,p", po::value<int>(),
-                                   "HTTP server port")(
-      "help,h", "Print this help message");
+  desc.add_options()
+      ("version,v", "Print daemon version and exit")
+      ("config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
+      "daemon configuration file")
+      ("http_port,p", po::value<int>(), "HTTP server port")
+      ("help,h", "Print this help message");
   int unix_style = postyle::unix_style | postyle::short_allow_next;
 
   po::variables_map vm;
@@ -67,6 +73,10 @@ int main(int argc, char* argv[]) {
 
     po::notify(vm);
 
+    if (vm.count("version")) {
+      std::cout << version << '\n';
+      return EXIT_SUCCESS;
+    }
     if (vm.count("help")) {
       std::cout << "USAGE: " << argv[0] << '\n' << desc << '\n';
       return EXIT_SUCCESS;

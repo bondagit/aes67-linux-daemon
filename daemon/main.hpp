@@ -21,5 +21,6 @@
 #define _MAIN_HPP_
 
 bool is_terminated();
+const std::string& get_version();
 
 #endif

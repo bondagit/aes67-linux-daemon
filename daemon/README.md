@@ -30,6 +30,13 @@ All operations returns HTTP *200* status code in case of success and HTTP *4xx* 
 In case of failure the server returns a **text/plain** content type with the category and a description of the error occurred.    
 **_NOTE:_** At present the embedded HTTP server doesn't implement neither HTTPS nor user authentication.
 
+### Get Daemon Version ###
+* **URL** /api/version
+* **Method** GET
+* **URL Params** none
+* **Body Type** application/json
+* **Body** [Version params](#version)
+
 ### Get Daemon Configuration ###
 * **URL** /api/config    
 * **Method** GET    
@@ -141,6 +148,18 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body** [RTP Remote Sources params](#rtp-remote-sources)
 
 ## HTTP REST API structures ##
+
+### JSON Version<a name="version"></a> ###
+
+Example
+    {
+      "version:" "bondagit-1.0"
+    }
+
+where:
+
+> **version**
+> JSON string specifying the daemon version.
 
 ### JSON Config<a name="config"></a> ###
 

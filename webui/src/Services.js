@@ -21,6 +21,7 @@
 import { toast } from 'react-toastify'; 
 
 const API = '/api';
+const version = '/version';
 const config = '/config';
 const streams = '/streams';
 const sources = '/sources';
@@ -67,6 +68,13 @@ export default class RestAPI {
           return Promise.reject(Error(err.message));
         }
       );
+  }
+
+  static getVersion() {
+    return this.doFetch(version).catch(err => {
+      toast.error('Config get failed: ' + err.message);
+      return Promise.reject(Error(err.message));
+    });
   }
 
   static getConfig() {

@@ -23,6 +23,7 @@
 #include <iostream>
 #include <string>
 
+#include "main.hpp"
 #include "json.hpp"
 #include "log.hpp"
 #include "http_server.hpp"
@@ -96,6 +97,12 @@ bool HttpServer::init() {
   /* allows cross-origin */
   svr_.Options("/api/(.*?)", [&](const Request& /*req*/, Response& res) {
     set_headers(res);
+  });
+
+  /* get version */
+  svr_.Get("/api/version", [&](const Request& req, Response& res) {
+    set_headers(res, "application/json");
+    res.body = "{ \"version\": \"" + get_version() + "\" }";
   });
 
   /* get config */
