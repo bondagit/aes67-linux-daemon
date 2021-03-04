@@ -315,6 +315,7 @@ Example:
       "name": "ALSA Source 0",
       "io": "Audio Device",
       "codec": "L16",
+      "address": "",
       "max_samples_per_packet": 48,
       "ttl": 15,
       "payload_type": 98,
@@ -337,6 +338,11 @@ where:
 > **codec**
 > JSON string specifying codec in use.
 > Valid values are L16, L24 and AM824 (L32).
+
+> **address**
+> JSON string specifying the destination address to use.
+> If this field contains a valid address it's used instead of the default multicast address for the source.
+> In case an unicast address is provided this must be of an host currently active on the local network.
 
 > **max\_sample\_per\_packet**
 > JSON number specifying the max number of samples contained in one RTP packet.    

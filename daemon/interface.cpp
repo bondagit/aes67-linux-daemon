@@ -19,6 +19,10 @@
 //
 
 #include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+#include <fstream>
 #include <utility>
 
 #include "log.hpp"
@@ -109,4 +113,89 @@ int get_interface_index(const std::string& interface_name) {
                              << " index " << ifr.ifr_ifindex;*/
 
   return ifr.ifr_ifindex;
+}
+
+
+std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
+    const std::string& interface_name,
+    const std::string& ip) {
+  const std::string arpProcPath("/proc/net/arp");
+  std::array<uint8_t, 6> mac{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  std::ifstream stream(arpProcPath);
+
+  while (stream) {
+    std::string line;
+    std::vector<std::string> tokens;
+
+    std::getline(stream, line);
+    if (line.find(ip)) {
+      continue;
+    }
+    boost::split(tokens, line, boost::is_any_of(" "), boost::token_compress_on);
+    /* check that IP is on the correct interface */
+    if (tokens.size() >= 6 && tokens[5] == interface_name) {
+      std::vector<std::string> vec;
+      /* parse MAC */
+      boost::split(vec, tokens[3], boost::is_any_of(":"));
+      int j = 0;
+      bool check = false;
+      for (auto const& item : vec) {
+        mac[j] = strtol(item.c_str(), NULL, 16);
+        check |= mac[j];
+        j++;
+      }
+      if (check) {
+        return {mac, tokens[3]};
+      }
+    }
+  }
+  BOOST_LOG_TRIVIAL(debug)
+      << "get_mac_from_arp_cache:: cannot retrieve MAC for IP " << ip
+      << " on interface " << interface_name;
+  return {mac, ""};
+}
+
+
+bool ping(const std::string& ip) {
+  static uint16_t sequence_number(0);
+  uint16_t identifier(0xABAB);
+  uint8_t buffer[10];
+
+  // Create an ICMP header for an echo request.
+  buffer[0] = 0x8;                          // echo request
+  buffer[1] = 0x0;                          // code
+  memcpy(buffer + 2, &identifier, 2);       // identifier
+  memcpy(buffer + 4, &sequence_number, 2);  // sequence number
+  memcpy(buffer + 6, "ping", 4);            // body
+
+  // this requires root priv
+  try {
+    io_service io_service;
+    icmp::socket socket{io_service, icmp::v4()};
+    ip::icmp::endpoint destination(ip::icmp::v4(),
+                                   ip::address_v4::from_string(ip).to_ulong());
+    socket.send_to(boost::asio::buffer(buffer, sizeof buffer), destination);
+  } catch (...) {
+    BOOST_LOG_TRIVIAL(error) << "ping:: send_to() failed";
+    return false;
+  }
+  return true;
+}
+
+
+bool echo_try_connect(const std::string& ip) {
+  ip::tcp::iostream s;
+  BOOST_LOG_TRIVIAL(debug) << "echo_connect:: connecting to " << ip;
+#if BOOST_VERSION < 106600
+  s.expires_from_now(boost::posix_time::seconds(1));
+#else
+  s.expires_after(boost::asio::chrono::seconds(1));
+#endif
+  s.connect(ip, "7");
+  if (!s || s.error()) {
+    BOOST_LOG_TRIVIAL(debug) << "echo_connect:: unable to connect to " << ip;
+    return false;
+  }
+  s.close();
+  return true;
 }

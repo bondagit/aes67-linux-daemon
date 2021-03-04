@@ -52,6 +52,7 @@ enum class DaemonErrc {
   cannot_retrieve_sdp = 44,   // daemon cannot retrieve SDP
   cannot_parse_sdp = 45,      // daemon cannot parse SDP
   stream_name_in_use = 46,    // daemon source or sink name in use
+  cannot_retrieve_mac = 47,   // daemon cannot retrieve MAC for IP
   send_invalid_size = 50,     // daemon data size too big for buffer
   send_u2k_failed = 51,       // daemon failed to send command to driver
   send_k2u_failed = 52,       // daemon failed to send event response to driver

@@ -61,6 +61,8 @@ class SourceEdit extends Component {
       nameErr: false,
       io: this.props.source.io,
       codec: this.props.source.codec,
+      address: this.props.source.address,
+      addressErr: false,
       ttl: this.props.source.ttl,
       ttlErr: false,
       payloadType: this.props.source.payload_type,
@@ -105,6 +107,7 @@ class SourceEdit extends Component {
       this.state.io,
       this.state.maxSamplesPerPacket,
       this.state.codec,
+      this.state.address ? this.state.address : "",
       this.state.ttl,
       this.state.payloadType,
       this.state.dscp,
@@ -212,7 +215,8 @@ class SourceEdit extends Component {
     return !this.state.nameErr &&
       !this.state.ttlErr &&
       !this.state.channelsErr &&
-      !this.state.payloadTypeErr;
+      !this.state.payloadTypeErr &&
+      !this.state.addressErr;
   }
 
   render()  {
@@ -259,6 +263,10 @@ class SourceEdit extends Component {
                   <option value="AM824">AM824</option>
                 </select>
               </th>
+            </tr>
+            <tr>
+              <th align="left"> <label>RTP address</label> </th>
+              <th align="left"> <input type="text" minLength="7" maxLength="15" size="15" pattern="^$|^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" value={this.state.address} onChange={e => this.setState({address: e.target.value, addressErr: !e.currentTarget.checkValidity()})} optional/> </th>
             </tr>
             <tr>
               <th align="left"> <label>Payload Type</label> </th>

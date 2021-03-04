@@ -117,6 +117,7 @@ std::string source_to_json(const StreamSource& source) {
      << ",\n    \"io\": \"" << escape_json(source.io) << "\""
      << ",\n    \"max_samples_per_packet\": " << source.max_samples_per_packet
      << ",\n    \"codec\": \"" << escape_json(source.codec) << "\""
+     << ",\n    \"address\": \"" << escape_json(source.address) << "\""
      << ",\n    \"ttl\": " << unsigned(source.ttl)
      << ",\n    \"payload_type\": " << unsigned(source.payload_type)
      << ",\n    \"dscp\": " << +unsigned(source.dscp)
@@ -363,6 +364,7 @@ StreamSource json_to_source(const std::string& id, const std::string& json) {
     "map": [ 0, 1, 2, 3, 4, 5, 6, 7 ],
     "max_samples_per_packet": 48,
     "codec": "L24",
+    "address": "",
     "ttl": 15,
     "payload_type": 98,
     "dscp": 34,
@@ -386,6 +388,7 @@ StreamSource json_to_source(const std::string& id, const std::string& json) {
     }
     source.max_samples_per_packet = pt.get<uint32_t>("max_samples_per_packet");
     source.codec = remove_undesired_chars(pt.get<std::string>("codec"));
+    source.address = remove_undesired_chars(pt.get<std::string>("address"));
     source.ttl = pt.get<uint8_t>("ttl");
     source.payload_type = pt.get<uint8_t>("payload_type");
     source.dscp = pt.get<uint8_t>("dscp");
@@ -472,6 +475,7 @@ static void parse_json_sources(boost::property_tree::ptree& pt,
     source.max_samples_per_packet =
         v.second.get<uint32_t>("max_samples_per_packet");
     source.codec = v.second.get<std::string>("codec");
+    source.address = v.second.get<std::string>("address");
     source.ttl = v.second.get<uint8_t>("ttl");
     source.payload_type = v.second.get<uint8_t>("payload_type");
     source.dscp = v.second.get<uint8_t>("dscp");

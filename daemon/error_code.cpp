@@ -95,6 +95,8 @@ std::string DaemonErrCategory::message(int ev) const {
       return "stream id is in use";
     case DaemonErrc::stream_name_in_use:
       return "stream name is in use";
+    case DaemonErrc::cannot_retrieve_mac:
+      return "cannot retrieve MAC address for IP";
     case DaemonErrc::stream_id_not_in_use:
       return "stream not in use";
     case DaemonErrc::invalid_url:

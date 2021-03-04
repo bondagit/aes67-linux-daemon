@@ -38,6 +38,7 @@ struct StreamSource {
   std::string io;
   uint32_t max_samples_per_packet{0};
   std::string codec;
+  std::string address;
   uint8_t ttl{0};
   uint8_t payload_type{0};
   uint8_t dscp{0};

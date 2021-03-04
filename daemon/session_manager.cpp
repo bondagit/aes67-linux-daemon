@@ -36,6 +36,7 @@
 #include "rtsp_client.hpp"
 #include "utils.hpp"
 #include "session_manager.hpp"
+#include "interface.hpp"
 
 static uint8_t get_codec_word_lenght(const std::string& codec) {
   if (codec == "L16") {
@@ -219,6 +220,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
         }
         case 'c':
           /* c=IN IP4 239.1.0.12/15 */
+          /* c=IN IP4 10.0.0.1 */
           /* connection info of audio media */
           if (status == sdp_parser_status::media ||
               /* generic connection info */
@@ -226,7 +228,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
             std::vector<std::string> fields;
             boost::split(fields, val,
                          [line](char c) { return c == ' ' || c == '/'; });
-            if (fields.size() != 4) {
+            if (fields.size() < 3) {
               BOOST_LOG_TRIVIAL(error)
                   << "session_manager:: invalid connection in SDP at line "
                   << num;
@@ -246,10 +248,19 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
                                        << num;
               return false;
             }
-            info.stream.m_byTTL = std::stoi(fields[3]);
+            if (fields.size() > 3) {
+              info.stream.m_byTTL = std::stoi(fields[3]);
+            } else {
+              info.stream.m_byTTL = 64;
+            }
           }
           break;
         default:
+          if (line[0] < 'a' || line[0] > 'z') {
+            BOOST_LOG_TRIVIAL(fatal)
+                << "session_manager:: invalid SDP at line " << num;
+            return false;
+          }
           break;
       }
     }
@@ -329,6 +340,7 @@ StreamSource SessionManager::get_source_(uint8_t id,
           info.io,
           info.stream.m_ui32MaxSamplesPerPacket,
           info.stream.m_cCodec,
+          ip::address_v4(info.stream.m_ui32DestIP).to_string(),
           info.stream.m_byTTL,
           info.stream.m_byPayloadType,
           info.stream.m_ucDSCP,
@@ -436,8 +448,10 @@ void SessionManager::on_add_source(const StreamSource& source,
   for (auto cb : add_source_observers) {
     cb(source.id, source.name, get_source_sdp_(source.id, info));
   }
-  igmp_.join(config_->get_ip_addr_str(),
-             ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    igmp_.join(config_->get_ip_addr_str(),
+               ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  }
   source_names_[source.name] = source.id;
 }
 
@@ -445,8 +459,10 @@ void SessionManager::on_remove_source(const StreamInfo& info) {
   for (auto cb : remove_source_observers) {
     cb(info.stream.m_uiId, info.stream.m_cName, {});
   }
-  igmp_.leave(config_->get_ip_addr_str(),
-              ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    igmp_.leave(config_->get_ip_addr_str(),
+                ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  }
   source_names_.erase(info.stream.m_cName);
 }
 
@@ -463,8 +479,7 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_ui32CRTP_stream_info_sizeof = sizeof(info.stream);
   strncpy(info.stream.m_cName, source.name.c_str(),
           sizeof(info.stream.m_cName) - 1);
-  info.stream.m_ucDSCP = source.dscp;  // IPv4 DSCP
-  info.stream.m_byTTL = source.ttl;
+  info.stream.m_ucDSCP = source.dscp;  // IPv4 DSCP  
   info.stream.m_byPayloadType = source.payload_type;
   info.stream.m_byWordLength = get_codec_word_lenght(source.codec);
   info.stream.m_byNbOfChannels = source.map.size();
@@ -476,17 +491,47 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_uiId = source.id;
   info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();
   info.stream.m_ui32SrcIP = config_->get_ip_addr();  // only for Source
-  info.stream.m_ui32DestIP =
-      ip::address_v4::from_string(config_->get_rtp_mcast_base().c_str())
-          .to_ulong() +
-      source.id;
+  boost::system::error_code ec;
+  ip::address_v4::from_string(source.address, ec);
+  if (!ec) {
+    info.stream.m_ui32DestIP =
+        ip::address_v4::from_string(source.address).to_ulong();
+  } else {
+    info.stream.m_ui32DestIP =
+        ip::address_v4::from_string(config_->get_rtp_mcast_base().c_str())
+            .to_ulong() +
+        source.id;
+  }
   info.stream.m_usSrcPort = config_->get_rtp_port();
   info.stream.m_usDestPort = config_->get_rtp_port();
   info.stream.m_ui32SSRC = rand() % 65536;  // use random number
   std::copy(source.map.begin(), source.map.end(), info.stream.m_aui32Routing);
-  auto mcast_mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
-  std::copy(std::begin(mcast_mac_addr), std::end(mcast_mac_addr),
-            info.stream.m_ui8DestMAC);
+
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    auto mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
+    std::copy(std::begin(mac_addr), std::end(mac_addr),
+              info.stream.m_ui8DestMAC);
+    info.stream.m_byTTL = source.ttl;
+  } else {
+    auto mac_addr = get_mac_from_arp_cache(config_->get_interface_name(),
+        ip::address_v4(info.stream.m_ui32DestIP).to_string());
+    int retry = 3;
+    while (!mac_addr.second.length() && retry--) {
+      // if not in cache already try to populate the MAC cache
+      (void)echo_try_connect(ip::address_v4(info.stream.m_ui32DestIP).to_string());
+      mac_addr = get_mac_from_arp_cache(config_->get_interface_name(),
+          ip::address_v4(info.stream.m_ui32DestIP).to_string());
+    }
+    if (!mac_addr.second.length()) {
+      BOOST_LOG_TRIVIAL(error)
+          << "session_manager:: cannot retrieve MAC address for IP "
+          << config_->get_rtp_mcast_base();
+      return DaemonErrc::cannot_retrieve_mac;
+    }
+    std::copy(std::begin(mac_addr.first), std::end(mac_addr.first),
+              info.stream.m_ui8DestMAC);
+    info.stream.m_byTTL = 64;
+  }
 
   info.refclk_ptp_traceable = source.refclk_ptp_traceable;
   info.enabled = source.enabled;
@@ -567,16 +612,20 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
      << ip::address_v4(info.stream.m_ui32SrcIP).to_string() << "\n"
      << "s=" << get_node_id(config_->get_ip_addr()) << " "
      << info.stream.m_cName << "\n"
-     << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string()
-     << "/" << static_cast<unsigned>(info.stream.m_byTTL) << "\n"
-     << "t=0 0\n"
+     << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string();
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    ss << "/" << static_cast<unsigned>(info.stream.m_byTTL);
+  }
+  ss << "\nt=0 0\n"
      << "a=clock-domain:PTPv2 " << static_cast<unsigned>(ptp_config_.domain)
      << "\n"
      << "m=audio " << info.stream.m_usSrcPort << " RTP/AVP "
      << static_cast<unsigned>(info.stream.m_byPayloadType) << "\n"
-     << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string()
-     << "/" << static_cast<unsigned>(info.stream.m_byTTL) << "\n"
-     << "a=rtpmap:" << static_cast<unsigned>(info.stream.m_byPayloadType) << " "
+     << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string();
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    ss << "/" << static_cast<unsigned>(info.stream.m_byTTL);
+  }
+  ss << "\na=rtpmap:" << static_cast<unsigned>(info.stream.m_byPayloadType) << " "
      << info.stream.m_cCodec << "/" << sample_rate << "/"
      << static_cast<unsigned>(info.stream.m_byNbOfChannels) << "\n"
      << "a=sync-time:0\n"
@@ -645,14 +694,18 @@ uint8_t SessionManager::get_sink_id(const std::string& name) const {
 
 void SessionManager::on_add_sink(const StreamSink& sink,
                                  const StreamInfo& info) {
-  igmp_.join(config_->get_ip_addr_str(),
-             ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    igmp_.join(config_->get_ip_addr_str(),
+               ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  }
   sink_names_[sink.name] = sink.id;
 }
 
 void SessionManager::on_remove_sink(const StreamInfo& info) {
-  igmp_.leave(config_->get_ip_addr_str(),
-              ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    igmp_.leave(config_->get_ip_addr_str(),
+                ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  }
   sink_names_.erase(info.stream.m_cName);
 }
 

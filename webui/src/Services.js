@@ -128,13 +128,14 @@ export default class RestAPI {
     });
   }
 
-  static addSource(id, enabled, name, io, max_samples_per_packet, codec, ttl, payload_type, dscp, refclk_ptp_traceable, map, is_edit) {
+  static addSource(id, enabled, name, io, max_samples_per_packet, codec, address, ttl, payload_type, dscp, refclk_ptp_traceable, map, is_edit) {
     return this.doFetch(source + '/' + id, {
       body: JSON.stringify({
         enabled: enabled,
         name: name,
         io: io,
         codec: codec,
+        address: address,
         map: map,
         max_samples_per_packet: parseInt(max_samples_per_packet, 10),
         ttl: parseInt(ttl, 10),
