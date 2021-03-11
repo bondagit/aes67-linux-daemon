@@ -47,7 +47,7 @@ This directory contains the AES67 daemon source code.
 The daemon can be cross-compiled for multiple platforms and implements the following functionalities:
 
 * communication and configuration of the ALSA RAVENNA/AES67 device driver
-* control and configuration of up to 64 sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
+* control and configuration of up to 64 multicast and unicast sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
 * HTTP REST API for the daemon control and configuration
 * SAP sources discovery and advertisement compatible with AES67 standard
@@ -83,6 +83,7 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
+* patch to enable the usage of a PTP master clock on the daemon host (from driver version v1.1)
 * patch to rework the driver PCM interface and to simplify and unify handling of read-write interlaved and memory mapped access modes
 * patch to remove user space transfer handling from convert functions
 * patch to add support for AM824 (L32) codec
