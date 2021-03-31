@@ -8,8 +8,8 @@ See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) f
 The daemon is a Linux process that uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handle PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.     
 
 The **ALSA AES67 Driver** implements a virtual ALSA audio device that can be configured using _Sources_ and _Sinks_ and it's clocked using the PTP clock.    
-A _Source_ reads audio samples from the ALSA playback device and sends RTP packets to a configured multicast address.    
-A _Sink_ receives RTP packets from a specific multicast address and writes them to the ALSA capture device.    
+A _Source_ reads audio samples from the ALSA playback device and sends RTP packets to a configured multicast or unicast address.    
+A _Sink_ receives RTP packets from a specific multicast or unicast address and writes them to the ALSA capture device.    
 
 A user can use the ALSA capture device to receive synchronized incoming audio samples from an RTP stream and the ALSA playback device to send synchronized audio samples to an RTP stream.    
 The binding between a _Source_ and the ALSA playback device is determined by the channels used during the playback and the configured _Source_ channels map. The binding between a _Sink_ and the ALSA capture device is determined by the channels used while recoding and the configured _Sink_ channels map.    
@@ -93,7 +93,6 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 * patch to enable independent playback and capture interrupt startup
 * patch to disable UDP checksum check for PTP packets
 * patch to enable support for ARM 32bit and 64bit platforms
-* patch to remove compilation warnings
 * patch to enable the network loopback device
 * patch to compile with Linux Kernel v5
 
@@ -139,6 +138,7 @@ The script performs the following operations:
 ## Run the platform compatibility test ##
 <a name="test"></a>
 Before attempting to use the AES67 daemon on a specific host or board it's highly recommended to run the platform test.
+The platform test runs a playback and recording of an RTP session on the loopback network device using the ALSA RAVENNA/AES67 modules and checks that no audio samples get corrupted or lost.
 This test can be executed using the [run\_test.sh](run_test.sh) script. See [script notes](#notes).
 
 The script allows a user to test a specific configuration and it can be used to ensure that the daemon will be able to operate smoothly with such config on the current platform.
