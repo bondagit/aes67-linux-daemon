@@ -83,6 +83,7 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
+* patch to remove unsupported non-interleved access from driver capabilities. This enables compatibility with JACK audio (from driver version v1.3)
 * patch to enable the usage of a PTP master clock on the daemon host (from driver version v1.1)
 * patch to rework the driver PCM interface and to simplify and unify handling of read-write interlaved and memory mapped access modes
 * patch to remove user space transfer handling from convert functions

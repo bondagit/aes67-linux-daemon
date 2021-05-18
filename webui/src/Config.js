@@ -162,7 +162,9 @@ class Config extends Component {
             <th align="left">
               <select value={this.state.ticFrameSizeAt1fs} onChange={e => this.setState({ticFrameSizeAt1fs: e.target.value})}>
                 <option value="48">48 - 1ms</option>
+                <option value="64">64 - 1.3ms</option>
                 <option value="96">96 - 2ms</option>
+                <option value="128">128 - 2.7ms</option>
                 <option value="192">192 - 4ms</option>
               </select>
             </th>

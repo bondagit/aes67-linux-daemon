@@ -239,7 +239,7 @@ where:
 > JSON number specifying the default safety playout delay at 1FS in samples.
 
 > **tic\_frame\_size\_at\_1fs**
-> JSON number specifying the TIC frame size at 1FS in samples, valid range is from 6 to 192 samples.
+> JSON number specifying the TIC frame size at 1FS in samples, valid range is from 32 to 192 samples.
 > This global setting is used to determine the driver base timer period. For example with a value of 192 samples this period is set to 4ms and the outgoing RTP packets are scheduled for being sent every 4ms resulting on an average latency greater than 4ms.
 
 > **max\_tic\_frame\_size**
