@@ -1,5 +1,5 @@
 //
-//  PTP.js
+//  PTP.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -24,8 +24,6 @@ import {toast} from 'react-toastify';
 
 import RestAPI from './Services';
 import Loader from './Loader';
-
-require('./styles.css');
 
 
 class PTPConfig extends Component {
@@ -141,9 +139,9 @@ class PTP extends Component {
       .then(response => response.json())
       .then(
         data => this.setState({
-           status: data.status, 
-           gmid: data.gmid, 
-           jitter: parseInt(data.jitter, 10), 
+           status: data.status,
+           gmid: data.gmid,
+           jitter: parseInt(data.jitter, 10),
            isStatusLoading: false
         }))
       .catch(err => this.setState({isStatusLoading: false}));
@@ -155,19 +153,19 @@ class PTP extends Component {
       .then(response => response.json())
       .then(
         data => this.setState({
-          domain: parseInt(data.domain, 10), 
-          dscp: parseInt(data.dscp, 10), 
+          domain: parseInt(data.domain, 10),
+          dscp: parseInt(data.dscp, 10),
           isConfigLoading: false
         }))
       .catch(err => this.setState({isConfigLoading: false}));
   }
-  
+
   componentDidMount() {
     this.fetchStatus();
     this.fetchConfig();
     this.interval = setInterval(() => { this.fetchStatus() }, 10000)
   }
-  
+
   componentWillUnmount() {
     clearInterval(this.interval);
   }
@@ -175,10 +173,10 @@ class PTP extends Component {
   render() {
     return (
       <div className='ptp'>
-        { this.state.isConfigLoading ? <Loader/> : 
+        { this.state.isConfigLoading ? <Loader/> :
            <PTPConfig domain={this.state.domain} dscp={this.state.dscp}/> }
         <br/>
-        { this.state.isStatusLoading ? <Loader/> : 
+        { this.state.isStatusLoading ? <Loader/> :
            <PTPStatus status={this.state.status} gmid={this.state.gmid} jitter={this.state.jitter}/> }
       </div>
     )

@@ -1,5 +1,5 @@
 //
-//  SinkRemove.js
+//  SinkRemove.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -24,8 +24,6 @@ import {toast} from 'react-toastify';
 import Modal from 'react-modal';
 
 import RestAPI from './Services';
-
-require('./styles.css');
 
 const removeCustomStyles = {
   content : {
@@ -58,7 +56,7 @@ class SinkRemove extends Component {
   }
 
   removeSink(message) {
-    RestAPI.removeSink(this.props.sink.id).then(function(response) { 
+    RestAPI.removeSink(this.props.sink.id).then(function(response) {
       toast.success(message);
       this.props.applyEdit();
     }.bind(this));
@@ -75,7 +73,7 @@ class SinkRemove extends Component {
   render()  {
     return (
       <div id='sink-remove'>
-        <Modal ariaHideApp={false} 
+        <Modal ariaHideApp={false}
           isOpen={this.props.removeIsOpen}
           onRequestClose={this.props.closeEdit}
           style={removeCustomStyles}

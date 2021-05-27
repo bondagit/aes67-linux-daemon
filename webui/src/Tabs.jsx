@@ -1,5 +1,5 @@
 //
-//  Tabs.js
+//  Tabs.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -46,11 +46,11 @@ class Tabs extends Component {
       state: { activeTab, }
     } = this;
 
-    return ( 
+    return (
       <div className="tabs">
-        <ol className="tab-list"> { children.map((child) => { 
+        <ol className="tab-list"> { children.map((child) => {
           const { label } = child.props;
-          return ( 
+          return (
             <Tab activeTab={ activeTab }
                  key={ label }
                  label={ label }
@@ -58,11 +58,11 @@ class Tabs extends Component {
             />
           ); })
         }
-        </ol> 
+        </ol>
         <div className="tab-content"> { children.map((child) => {
           if (child.props.label !== activeTab) return undefined;
           return child.props.children;
-        }) } 
+        }) }
         </div>
       </div>
     );

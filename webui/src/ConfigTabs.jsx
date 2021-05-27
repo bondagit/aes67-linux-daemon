@@ -1,5 +1,5 @@
 //
-//  ConfigTabs.js
+//  ConfigTabs.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -28,15 +28,13 @@ import Sources from './Sources';
 import Sinks from './Sinks';
 import RemoteSources from './RemoteSources';
 
-require('./styles.css');
-
 class ConfigTabs extends Component {
   static propTypes = {
     currentTab: PropTypes.string.isRequired
   };
 
   render() {
-    return ( 
+    return (
       <div>
         <h1>AES67 Daemon</h1>
         <Tabs currentTab={this.props.currentTab}>

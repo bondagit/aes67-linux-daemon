@@ -1,5 +1,5 @@
 //
-//  Sinks.js
+//  Sinks.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -26,8 +26,6 @@ import Loader from './Loader';
 import SinkEdit from './SinkEdit';
 import SinkRemove from './SinkRemove';
 
-require('./styles.css');
-
 class SinkEntry extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
@@ -39,10 +37,10 @@ class SinkEntry extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       min_time: 'n/a',
       flags: 'n/a',
-      errors: 'n/a' 
+      errors: 'n/a'
     };
   }
 
@@ -76,8 +74,8 @@ class SinkEntry extends Component {
           flags += (flags ? ',' : '') + 'all muted';
         if (status.sink_flags._muted)
           flags += (flags ? ',' : '') + 'muted';
-        this.setState({ 
-          min_time: status.sink_min_time + ' ms', 
+        this.setState({
+          min_time: status.sink_min_time + ' ms',
           flags: flags ? flags : 'idle',
           errors: errors ? errors : 'none'
         });
@@ -119,7 +117,7 @@ class SinkList extends Component {
     return (
       <div id='sinks-table'>
         <table className="table-stream"><tbody>
-          {this.props.sinks.length > 0 ? 
+          {this.props.sinks.length > 0 ?
             <tr className='tr-stream'>
               <th>ID</th>
               <th>Name</th>
@@ -137,7 +135,7 @@ class SinkList extends Component {
         <span className='pointer-area' onClick={this.handleReloadClick}> <img width='30' height='30' src='/reload.png' alt=''/> </span>
          &nbsp;&nbsp;
         {this.props.sinks.length < 64 ?
-	  <span className='pointer-area' onClick={this.handleAddClick}> <img width='30' height='30' src='/plus.png' alt=''/> </span> 
+	  <span className='pointer-area' onClick={this.handleAddClick}> <img width='30' height='30' src='/plus.png' alt=''/> </span>
           : undefined}
       </div>
     );
@@ -147,14 +145,14 @@ class SinkList extends Component {
 class Sinks extends Component {
   constructor(props) {
     super(props);
-    this.state = { 
-      sinks: [], 
-      sink: {}, 
-      isLoading: false, 
-      isEdit: false, 
-      editIsOpen: false, 
-      removeIsOpen: false, 
-      editTitle: '' 
+    this.state = {
+      sinks: [],
+      sink: {},
+      isLoading: false,
+      isEdit: false,
+      editIsOpen: false,
+      removeIsOpen: false,
+      editTitle: ''
     };
     this.onEditClick = this.onEditClick.bind(this);
     this.onTrashClick = this.onTrashClick.bind(this);
@@ -191,13 +189,13 @@ class Sinks extends Component {
   onReloadClick() {
     this.fetchSinks();
   }
- 
+
   closeEdit() {
     this.setState({editIsOpen: false});
     this.setState({removeIsOpen: false});
     this.fetchSinks();
   }
-  
+
   onEditClick(id) {
     const sink = this.state.sinks.find(s => s.id === id);
     this.openEdit("Edit Sink " + id, sink, true);
@@ -209,15 +207,15 @@ class Sinks extends Component {
   }
 
   onAddClick() {
-    let id; 
+    let id;
     /* find first free id */
     for (id = 0; id < 63; id++) {
-      if (this.state.sinks[id] === undefined || 
+      if (this.state.sinks[id] === undefined ||
           this.state.sinks[id].id !== id) {
         break;
       }
     }
-    const defaultSink = { 
+    const defaultSink = {
       'id': id,
       'name': 'ALSA Sink ' + id,
       'io': 'Audio Device',
@@ -230,7 +228,7 @@ class Sinks extends Component {
     };
     this.openEdit('Add Sink ' + id, defaultSink, false);
   }
-  
+
   render() {
     this.state.sinks.sort((a, b) => (a.id > b.id) ? 1 : -1);
     const sinks = this.state.sinks.map((sink) => (
@@ -244,15 +242,15 @@ class Sinks extends Component {
     ));
     return (
       <div id='sinks'>
-       { this.state.isLoading ? <Loader/> 
-	   : <SinkList onAddClick={this.onAddClick} 
+       { this.state.isLoading ? <Loader/>
+	   : <SinkList onAddClick={this.onAddClick}
                onReloadClick={this.onReloadClick}
                sinks={sinks} /> }
        { this.state.editIsOpen ?
         <SinkEdit editIsOpen={this.state.editIsOpen}
           closeEdit={this.closeEdit}
           applyEdit={this.applyEdit}
-          editTitle={this.state.editTitle} 
+          editTitle={this.state.editTitle}
 	  isEdit={this.state.isEdit}
 	  sink={this.state.sink} />
            : undefined }
@@ -260,7 +258,7 @@ class Sinks extends Component {
         <SinkRemove removeIsOpen={this.state.removeIsOpen}
           closeEdit={this.closeEdit}
           applyEdit={this.applyEdit}
-	  sink={this.state.sink} 
+	  sink={this.state.sink}
 	  key={this.state.sink.id} />
            : undefined }
       </div>
