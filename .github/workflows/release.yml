@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: |
+          cd webui/
+          npm install
+
+      - name: Build webui
+        run: |
+          cd webui/
+          npm run build
+
+      - name: Bundle webui release
+        run: |
+          cd webui/
+          tar -czvf ../webui.tar.gz build/
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            webui.tar.gz
+            LICENSE

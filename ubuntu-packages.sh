@@ -9,7 +9,7 @@ sudo apt-get install -y build-essential
 sudo apt-get install -y clang
 sudo apt-get install -y git
 sudo apt-get install -y cmake
-sudo apt-get install -y npm
+# sudo apt-get install -y npm
 sudo apt-get install -y libboost-all-dev
 sudo apt-get install -y valgrind
 sudo apt-get install -y linux-sound-base alsa-base alsa-utils

@@ -1,24 +1,24 @@
-# AES67 Linux Daemon 
+# AES67 Linux Daemon
 
-AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.    
-See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) for additional info.    
+AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.
+See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) for additional info.
 
 # Introduction
 
-The daemon is a Linux process that uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handle PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.     
+The daemon is a Linux process that uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handle PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.
 
-The **ALSA AES67 Driver** implements a virtual ALSA audio device that can be configured using _Sources_ and _Sinks_ and it's clocked using the PTP clock.    
-A _Source_ reads audio samples from the ALSA playback device and sends RTP packets to a configured multicast or unicast address.    
-A _Sink_ receives RTP packets from a specific multicast or unicast address and writes them to the ALSA capture device.    
+The **ALSA AES67 Driver** implements a virtual ALSA audio device that can be configured using _Sources_ and _Sinks_ and it's clocked using the PTP clock.
+A _Source_ reads audio samples from the ALSA playback device and sends RTP packets to a configured multicast or unicast address.
+A _Sink_ receives RTP packets from a specific multicast or unicast address and writes them to the ALSA capture device.
 
-A user can use the ALSA capture device to receive synchronized incoming audio samples from an RTP stream and the ALSA playback device to send synchronized audio samples to an RTP stream.    
-The binding between a _Source_ and the ALSA playback device is determined by the channels used during the playback and the configured _Source_ channels map. The binding between a _Sink_ and the ALSA capture device is determined by the channels used while recoding and the configured _Sink_ channels map.    
+A user can use the ALSA capture device to receive synchronized incoming audio samples from an RTP stream and the ALSA playback device to send synchronized audio samples to an RTP stream.
+The binding between a _Source_ and the ALSA playback device is determined by the channels used during the playback and the configured _Source_ channels map. The binding between a _Sink_ and the ALSA capture device is determined by the channels used while recoding and the configured _Sink_ channels map.
 
-The driver handles the PTP and RTP packets processing and acts as a PTP clock slave to synchronize with a master clock on the specified PTP domain.  All the configured _Sources_ and _Sinks_ are synchronized using the same PTP clock.    
+The driver handles the PTP and RTP packets processing and acts as a PTP clock slave to synchronize with a master clock on the specified PTP domain.  All the configured _Sources_ and _Sinks_ are synchronized using the same PTP clock.
 
-The daemon communicates with the driver for control, configuration and status monitoring only by using _netlink_ sockets.    
+The daemon communicates with the driver for control, configuration and status monitoring only by using _netlink_ sockets.
 The daemon implements a REST interface to configure and monitor the _Sources_, the _Sinks_ and PTP slave. See [README](daemon/README.md) for additional info.
-It also implements SAP sources discovery and advertisement compatible with AES67 standard and mDNS sources discovery and advertisement compatible with Ravenna standard.    
+It also implements SAP sources discovery and advertisement compatible with AES67 standard and mDNS sources discovery and advertisement compatible with Ravenna standard.
 
 A WebUI is provided to allow daemon and driver configuration and monitoring. The WebUI uses the daemon REST API and exposes all the supported configuration paramaters for the daemon, the PTP slave clock, the _Sources_ and the _Sinks_. The WebUI can also be used to monitor the PTP slave status and the _Sinks_ status and to browse the remote SAP and mDNS sources.
 
@@ -43,7 +43,7 @@ See [Use your board as AES67 USB Receiver and Transmitter](USB_GADGET.md)
 
 ### [daemon](daemon) directory ###
 
-This directory contains the AES67 daemon source code.     
+This directory contains the AES67 daemon source code.
 The daemon can be cross-compiled for multiple platforms and implements the following functionalities:
 
 * communication and configuration of the ALSA RAVENNA/AES67 device driver
@@ -55,12 +55,12 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * RTSP client and server to retrieve, return and update SDP files via DESCRIBE and ANNOUNCE methods according to Ravenna standard
 * IGMP handling for SAP, PTP and RTP sessions
 
-The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.  
+The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.
 See the [README](daemon/README.md) file in this directory for additional information about the AES67 daemon configuration and the HTTP REST API.
 
 ### [webui](webui) directory ###
 
-This directory contains the AES67 daemon WebUI configuration implemented using React.    
+This directory contains the AES67 daemon WebUI configuration implemented using React.
 With the WebUI a user can do the following operations:
 
 * change the daemon configuration, this causes a daemon restart
@@ -110,8 +110,6 @@ The daemon and the test have been tested with **Ubuntu 18.04** distro on **ARMv7
 * Linux kernel version >= 4.10.x
 * GCC  version >= 7.x / clang >= 6.x (C++17 support required)
 * cmake version >= 3.7
-* node version >= 8.10.0
-* npm version >= 3.5.2
 * boost libraries version >= 1.65
 * Avahi service discovery (if enabled) >= 0.7
 
@@ -125,11 +123,11 @@ See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional
 
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 **_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
- 
+
 ## How to build ##
-Make sure you have all the required packages installed, see [prerequisite](#prerequisite).    
-To compile the AES67 daemon and the WebUI you can use the [build.sh](build.sh) script, see [script notes](#notes).        
-The script performs the following operations:    
+Make sure you have all the required packages installed, see [prerequisite](#prerequisite).
+To compile the AES67 daemon and the WebUI you can use the [build.sh](build.sh) script, see [script notes](#notes).
+The script performs the following operations:
 
 * checkout, patch and build the Merging Technologies ALSA RAVENNA/AES67 module
 * checkout the cpp-httplib
@@ -152,7 +150,7 @@ The script allows a user to test a specific configuration and it can be used to 
 
 For example to test the typical AES67 configuration run:
 
-      ./run_test.sh S24_3LE 48000 2 5 
+      ./run_test.sh S24_3LE 48000 2 5
 
 The test performs the following operations:
 
@@ -167,7 +165,7 @@ The test performs the following operations:
 * wait for the Ravenna driver PTP slave to synchronize
 * start recording on the configured ALSA sink for the specified period tof time to the raw file *./test/sink_test.raw*
 * start playing the test file created *./test/test.raw* on the configured ALSA source
-* wait for the recording and the playback to complete 
+* wait for the recording and the playback to complete
 * check that the recorded file contains the expected audio samples sequence
 * terminate ptp4l and the AES67 daemon
 * print the test result that can be either *OK" or *failed at (location)*
@@ -178,11 +176,11 @@ If the test result is OK it means that the selected configuration can run smooth
 If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
 If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
 In this case you may try to configure a different driver timer basic tick period in the daemon configuration file (parameter *tic\_frame\_size\_at\_1fs* in *test/daemon.conf*).
-By default this parameter is set to 48 (1ms latency) and the valid range is from 48 to 480 with steps of 48. 
+By default this parameter is set to 48 (1ms latency) and the valid range is from 48 to 480 with steps of 48.
 Note that higher values of this parameter (values above 48) lead to higher packets processing latency and this breaks the compatibility with certain devices.
 
 ## Run the daemon regression tests ##
-To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:    
+To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:
 
       sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
 
@@ -201,8 +199,8 @@ make sure that no instances of the aes67-daemon are running, enter the [tests](d
 
 * All the scripts in this repository are provided as a reference to help setting up the system and run the platform compatibility test.
   They have been tested on **Ubuntu 18.04 19.10 20.04** distros.
-* **PulseAudio** can create instability problems.    
-Before running the daemon verify that PulseAudio is not running with:  
+* **PulseAudio** can create instability problems.
+Before running the daemon verify that PulseAudio is not running with:
 
       ps ax | grep pulseaudio
 
@@ -210,13 +208,13 @@ Before running the daemon verify that PulseAudio is not running with:
 
       daemon/scripts/disable_pulseaudio.sh
 
-  If after this the process is still alive consider one of these two solutions and reboot the system afterwards:    
-  * Uninstall it completely with:    
+  If after this the process is still alive consider one of these two solutions and reboot the system afterwards:
+  * Uninstall it completely with:
 
         sudo apt-get remove pulseaudio
 
-  * Disable it by renaming the executable with:    
-    
+  * Disable it by renaming the executable with:
+
          sudo mv /usr/bin/pulseaudio /usr/bin/_pulseaudio
 
   Other methods to disable PulseAudio may fail and just killing it is not enough since it gets immediately re-spawned.
