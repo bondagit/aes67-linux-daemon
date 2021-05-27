@@ -26,10 +26,13 @@ fi
 cd ..
 
 cd webui
-echo "Building and installing webui ..."
-#npm install react-modal react-toastify react-router-dom
-npm install
-npm run build
+# echo "Building and installing webui ..."
+# npm install react-modal react-toastify react-router-dom
+# npm install
+# npm run build
+echo "Downloading current webui release ..."
+wget https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
+tar -xzvf webui.tar.gz
 cd ..
 
 cd daemon

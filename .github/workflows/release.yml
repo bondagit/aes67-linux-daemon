@@ -29,10 +29,10 @@ jobs:
           cd webui/
           npm run build
 
-      - name: Zip webui release
+      - name: Bundle webui release
         run: |
-          cd webui/build/
-          zip -r ../../webui.zip .
+          cd webui/
+          tar -czvf ../webui.tar.gz build/
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -40,5 +40,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            webui.zip
+            webui.tar.gz
             LICENSE
