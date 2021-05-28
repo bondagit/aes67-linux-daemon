@@ -23,7 +23,6 @@ rm -f demo/sink-test.wav
 
 rm -rf webui/build
 rm -rf webui/node_modules
-rm -f webui/webui.tar.gz
 rm -f webui/*.log
 rm -f webui/package-lock.json
 

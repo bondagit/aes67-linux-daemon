@@ -26,19 +26,13 @@ fi
 cd ..
 
 cd webui
+# echo "Building and installing webui ..."
+# npm install react-modal react-toastify react-router-dom
+# npm install
+# npm run build
 echo "Downloading current webui release ..."
-if  [ -f webui.tar.gz ]; then
-  rm -f webui.tar.gz
-fi
 wget https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
-if  [ ! -f webui.tar.gz ]; then
-  echo "Building locally and installing webui ..."
-  npm install react-modal react-toastify react-router-dom
-  npm install
-  npm run build
-else
-  tar -xzvf webui.tar.gz
-fi
+tar -xzvf webui.tar.gz
 cd ..
 
 cd daemon
