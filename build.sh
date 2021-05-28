@@ -36,6 +36,8 @@ if  [ ! -f webui.tar.gz ]; then
   npm install react-modal react-toastify react-router-dom
   npm install
   npm run build
+else
+  tar -xzvf webui.tar.gz
 fi
 cd ..
 
