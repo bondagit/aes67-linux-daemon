@@ -1,5 +1,5 @@
 //
-//  Sources.js
+//  Sources.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -27,8 +27,6 @@ import SourceEdit from './SourceEdit';
 import SourceRemove from './SourceRemove';
 import SourceInfo from './SourceInfo';
 
-require('./styles.css');
-
 class SourceEntry extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
@@ -41,10 +39,10 @@ class SourceEntry extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       address: 'n/a',
       port: 'n/a',
-      sdp: '' 
+      sdp: ''
     };
   }
 
@@ -108,7 +106,7 @@ class SourceList extends Component {
     return (
       <div id='sources-table'>
         <table className="table-stream"><tbody>
-          {this.props.sources.length > 0 ? 
+          {this.props.sources.length > 0 ?
             <tr className='tr-stream'>
               <th>ID</th>
               <th>Name</th>
@@ -125,7 +123,7 @@ class SourceList extends Component {
         <span className='pointer-area' onClick={this.handleReloadClick}> <img width='30' height='30' src='/reload.png' alt=''/> </span>
          &nbsp;&nbsp;
         {this.props.sources.length < 64 ?
-	  <span className='pointer-area' onClick={this.handleAddClick}> <img width='30' height='30' src='/plus.png' alt=''/> </span> 
+	  <span className='pointer-area' onClick={this.handleAddClick}> <img width='30' height='30' src='/plus.png' alt=''/> </span>
           : undefined}
       </div>
     );
@@ -135,19 +133,19 @@ class SourceList extends Component {
 class Sources extends Component {
   constructor(props) {
     super(props);
-    this.state = { 
-      sources: [], 
-      source: {}, 
-      isLoading: false, 
-      isConfigLoading: false, 
-      isEdit: false, 
-      isInfo: false, 
-      editIsOpen: false, 
-      infoIsOpen: false, 
+    this.state = {
+      sources: [],
+      source: {},
+      isLoading: false,
+      isConfigLoading: false,
+      isEdit: false,
+      isInfo: false,
+      editIsOpen: false,
+      infoIsOpen: false,
       removeIsOpen: false,
       ticFrameSizeAt1fs: '',
       sampleRate: '',
-      editTitle: '' 
+      editTitle: ''
     };
     this.onInfoClick = this.onInfoClick.bind(this);
     this.onEditClick = this.onEditClick.bind(this);
@@ -192,7 +190,7 @@ class Sources extends Component {
     this.closeEdit();
     this.fetchSources();
   }
- 
+
   closeEdit() {
     this.setState({editIsOpen: false});
     this.setState({removeIsOpen: false});
@@ -202,7 +200,7 @@ class Sources extends Component {
   closeInfo() {
     this.setState({infoIsOpen: false});
   }
-  
+
   onInfoClick(id, sdp) {
     const source = this.state.sources.find(s => s.id === id);
     this.openInfo("Local Source Info", source, sdp, true);
@@ -223,15 +221,15 @@ class Sources extends Component {
   }
 
   onAddClick() {
-    let id; 
+    let id;
     /* find first free id */
     for (id = 0; id < 63; id++) {
-      if (this.state.sources[id] === undefined || 
+      if (this.state.sources[id] === undefined ||
           this.state.sources[id].id !== id) {
         break;
       }
     }
-    const defaultSource = { 
+    const defaultSource = {
       'id': id,
       'enabled': true,
       'name': 'ALSA Source ' + id,
@@ -246,7 +244,7 @@ class Sources extends Component {
     };
     this.openEdit('Add Source ' + id, defaultSource, false);
   }
-  
+
   render() {
     this.state.sources.sort((a, b) => (a.id > b.id) ? 1 : -1);
     const sources = this.state.sources.map((source) => (
@@ -261,14 +259,14 @@ class Sources extends Component {
     ));
     return (
       <div id='sources'>
-       { this.state.isLoading || this.state.isConfigLoading ? <Loader/> 
-	   : <SourceList onAddClick={this.onAddClick} 
+       { this.state.isLoading || this.state.isConfigLoading ? <Loader/>
+	   : <SourceList onAddClick={this.onAddClick}
                onReloadClick={this.onReloadClick}
                sources={sources} /> }
        { this.state.infoIsOpen ?
         <SourceInfo infoIsOpen={this.state.infoIsOpen}
           closeInfo={this.closeInfo}
-          infoTitle={this.state.infoTitle} 
+          infoTitle={this.state.infoTitle}
 	  isInfo={this.state.isInfo}
 	  id={this.state.source.id.toString()}
 	  name={this.state.source.name}
@@ -279,7 +277,7 @@ class Sources extends Component {
         <SourceEdit editIsOpen={this.state.editIsOpen}
           closeEdit={this.closeEdit}
           applyEdit={this.applyEdit}
-          editTitle={this.state.editTitle} 
+          editTitle={this.state.editTitle}
 	  isEdit={this.state.isEdit}
           ticFrameSizeAt1fs={this.state.ticFrameSizeAt1fs}
           sampleRate={this.state.sampleRate}
@@ -289,7 +287,7 @@ class Sources extends Component {
         <SourceRemove removeIsOpen={this.state.removeIsOpen}
           closeEdit={this.closeEdit}
           applyEdit={this.applyEdit}
-	  source={this.state.source} 
+	  source={this.state.source}
 	  key={this.state.source.id} />
            : undefined }
       </div>

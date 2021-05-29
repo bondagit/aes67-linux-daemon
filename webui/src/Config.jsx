@@ -1,5 +1,5 @@
 //
-//  Config.js
+//  Config.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -19,12 +19,10 @@
 //
 
 import React, {Component} from 'react';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 
 import RestAPI from './Services';
 import Loader from './Loader';
-
-require('./styles.css');
 
 class Config extends Component {
   constructor(props) {
@@ -107,7 +105,7 @@ class Config extends Component {
 	  }))
       .catch(err => this.setState({isConfigLoading: false}));
   }
-  
+
   inputIsValid() {
     return !this.state.playoutDelayErr &&
       !this.state.maxTicFrameSizeErr &&
@@ -124,22 +122,22 @@ class Config extends Component {
   onSubmit(event) {
     event.preventDefault();
     RestAPI.setConfig(
-      this.state.logSeverity, 
-      this.state.syslogProto, 
-      this.state.syslogServer, 
-      this.state.rtpMcastBase, 
-      this.state.rtpPort, 
-      this.state.rtspPort, 
-      this.state.playoutDelay, 
-      this.state.ticFrameSizeAt1fs, 
-      this.state.sampleRate, 
-      this.state.maxTicFrameSize, 
+      this.state.logSeverity,
+      this.state.syslogProto,
+      this.state.syslogServer,
+      this.state.rtpMcastBase,
+      this.state.rtpPort,
+      this.state.rtspPort,
+      this.state.playoutDelay,
+      this.state.ticFrameSizeAt1fs,
+      this.state.sampleRate,
+      this.state.maxTicFrameSize,
       this.state.sapMcastAddr,
       this.state.sapInterval,
       this.state.mdnsEnabled)
     .then(response => toast.success('Config updated, daemon restart ...'));
   }
-  
+
   render() {
     return (
       <div className='config'>
@@ -175,7 +173,7 @@ class Config extends Component {
           </tr>
           <tr>
             <th align="left"> <label>Initial Sample rate</label> </th>
-            <th align="left"> 
+            <th align="left">
 	      <select value={this.state.sampleRate} onChange={e => this.setState({sampleRate: e.target.value})}>
                 <option value="44100">44.1 kHz</option>
                 <option value="48000">48 kHz</option>
@@ -237,7 +235,7 @@ class Config extends Component {
         <table><tbody>
           <tr>
             <th align="left"> <label>Syslog protocol</label> </th>
-            <th align="left"> 
+            <th align="left">
 	      <select value={this.state.syslogProto} onChange={e => this.setState({syslogProto: e.target.value})}>
                 <option value="none">none</option>
                 <option value="">local</option>
@@ -251,7 +249,7 @@ class Config extends Component {
           </tr>
           <tr>
             <th align="left"> <label>Log severity</label> </th>
-            <th align="left"> 
+            <th align="left">
 	      <select value={this.state.logSeverity} onChange={e => this.setState({logSeverity: e.target.value})}>
                 <option value="1">debug</option>
                 <option value="2">info</option>

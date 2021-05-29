@@ -1,5 +1,5 @@
 //
-//  SourceEdit.js
+//  SourceEdit.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -25,8 +25,6 @@ import Modal from 'react-modal';
 
 import RestAPI from './Services';
 
-require('./styles.css');
-
 const editCustomStyles = {
   content : {
     top:  '50%',
@@ -38,7 +36,7 @@ const editCustomStyles = {
   }
 };
 
-const max_packet_size = 1440; //bytes 
+const max_packet_size = 1440; //bytes
 
 class SourceEdit extends Component {
   static propTypes = {
@@ -114,7 +112,7 @@ class SourceEdit extends Component {
       this.state.refclkPtpTraceable,
       this.state.map,
       this.props.isEdit)
-    .then(function(response) { 
+    .then(function(response) {
       toast.success(message);
       this.props.applyEdit();
     }.bind(this));
@@ -127,7 +125,7 @@ class SourceEdit extends Component {
   onCancel() {
     this.props.closeEdit();
   }
-  
+
   getMaxChannels(codec, samples) {
     let maxChannels = Math.floor(max_packet_size / (samples * (codec === 'L16' ? 2 : 3)));
     return maxChannels > 64 ? 64 : maxChannels;
@@ -144,7 +142,7 @@ class SourceEdit extends Component {
     let maxChannels = this.getMaxChannels(this.state.codec, this.state.maxSamplesPerPacket);
     this.setState({ codec: codec, maxChannels: maxChannels, channelsErr: this.state.channels > maxChannels });
   }
- 
+
   onChangeChannels(e) {
     if (e.currentTarget.checkValidity()) {
       let channels = parseInt(e.target.value, 10);
@@ -194,7 +192,7 @@ class SourceEdit extends Component {
   }
 
   getMaxSamplesPerPacket() {
-    return (this.props.source.max_samples_per_packet > (this.props.ticFrameSizeAt1fs * this.getnFS())) ? 
+    return (this.props.source.max_samples_per_packet > (this.props.ticFrameSizeAt1fs * this.getnFS())) ?
             (this.props.ticFrameSizeAt1fs * this.getnFS()) : this.props.source.max_samples_per_packet;
   }
 
@@ -202,7 +200,7 @@ class SourceEdit extends Component {
     let duration = (samples * 1000000) / this.props.sampleRate;
     if (duration >= 1000) {
       duration /= 1000;
-      if (duration == Math.round(duration)) 
+      if (duration == Math.round(duration))
         return Math.round(duration).toString() + 'ms';
       else
         return (Math.round(duration * 1000) / 1000).toString() + 'ms';
@@ -222,7 +220,7 @@ class SourceEdit extends Component {
   render()  {
     return (
       <div id='source-edit'>
-        <Modal ariaHideApp={false} 
+        <Modal ariaHideApp={false}
           isOpen={this.props.editIsOpen}
           onRequestClose={this.props.closeEdit}
           style={editCustomStyles}
@@ -243,7 +241,7 @@ class SourceEdit extends Component {
             </tr>
             <tr>
               <th align="left"> <label>Max samples per packet </label> </th>
-              <th align="left"> 
+              <th align="left">
 	        <select value={this.state.maxSamplesPerPacket} onChange={this.onChangeMaxSamplesPerPacket}>
                   <option value="6" disabled={this.checkMaxSamplesPerPacket(6) ? undefined : true}>6 - {this.getPacketDuration(6)}</option>
                   <option value="12" disabled={this.checkMaxSamplesPerPacket(12) ? undefined : true}>12 - {this.getPacketDuration(12)}</option>
@@ -256,7 +254,7 @@ class SourceEdit extends Component {
             </tr>
             <tr>
               <th align="left"> <label>Codec</label> </th>
-              <th align="left"> 
+              <th align="left">
 	        <select value={this.state.codec} onChange={this.onChangeCodec}>
                   <option value="L16">L16</option>
                   <option value="L24">L24</option>
@@ -299,8 +297,8 @@ class SourceEdit extends Component {
               <th align="left">Audio Channels map</th>
               <th align="left">
                 <select value={this.state.map[0]} onChange={this.onChangeChannelsMap}>
-                  { this.state.channels > 1 ? 
-                      this.state.audioMap.map((v) => <option key={v} value={v}>{'ALSA Output ' + parseInt(v + 1, 10) + ' -> ALSA Output ' +  parseInt(v + this.state.channels, 10)}</option>) : 
+                  { this.state.channels > 1 ?
+                      this.state.audioMap.map((v) => <option key={v} value={v}>{'ALSA Output ' + parseInt(v + 1, 10) + ' -> ALSA Output ' +  parseInt(v + this.state.channels, 10)}</option>) :
                       this.state.audioMap.map((v) => <option key={v} value={v}>{'ALSA Output ' + parseInt(v + 1, 10)}</option>)
 		  }
                 </select>

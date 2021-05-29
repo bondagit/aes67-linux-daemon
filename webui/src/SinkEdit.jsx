@@ -1,5 +1,5 @@
 //
-//  SinkEdit.js
+//  SinkEdit.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -24,8 +24,6 @@ import {toast} from 'react-toastify';
 import Modal from 'react-modal';
 
 import RestAPI from './Services';
-
-require('./styles.css');
 
 const editCustomStyles = {
   content : {
@@ -102,9 +100,9 @@ class SinkEdit extends Component {
       this.state.source ? this.state.source : '',
       this.state.sdp ? this.state.sdp : '',
       this.state.ignoreRefclkGmid,
-      this.state.map, 
+      this.state.map,
       this.props.isEdit)
-    .then(function(response) { 
+    .then(function(response) {
       this.props.applyEdit();
       toast.success(message);
     }.bind(this));
@@ -148,8 +146,8 @@ class SinkEdit extends Component {
   }
 
   inputIsValid() {
-    return !this.state.nameErr && 
-      !this.state.sourceErr && 
+    return !this.state.nameErr &&
+      !this.state.sourceErr &&
       (this.state.useSdp || this.state.source) &&
       (!this.state.useSdp || this.state.sdp);
   }
@@ -157,7 +155,7 @@ class SinkEdit extends Component {
   render()  {
     return (
       <div id='sink-edit'>
-        <Modal ariaHideApp={false} 
+        <Modal ariaHideApp={false}
           isOpen={this.props.editIsOpen}
           onRequestClose={this.props.closeEdit}
           style={editCustomStyles}
@@ -185,7 +183,7 @@ class SinkEdit extends Component {
               <th align="left">
                 <select value={this.state.sdp} onChange={this.onChangeRemoteSourceSDP} disabled={this.state.useSdp ? undefined : true}>
                   <option key='' value=''> -- select a remote source SDP -- </option>
-                  { 
+                  {
                     this.state.sources.map((v) => <option key={v.id} value={v.sdp}>{v.source + ' from ' + v.address + ' - ' + v.name}</option>)
 		  }
                 </select>
@@ -197,7 +195,7 @@ class SinkEdit extends Component {
             </tr>
             <tr>
               <th align="left"> <label>Delay (samples) </label> </th>
-              <th align="left"> 
+              <th align="left">
 	        <select value={this.state.delay} onChange={e => this.setState({delay: e.target.value})}>
                   <option value="192">192 - 4ms@48KHz</option>
                   <option value="384">384 - 8ms@48KHz</option>
@@ -219,8 +217,8 @@ class SinkEdit extends Component {
               <th align="left">Audio Channels map</th>
               <th align="left">
                 <select value={this.state.map[0]} onChange={this.onChangeChannelsMap}>
-                  { this.state.channels > 1 ? 
-                      this.state.audioMap.map((v) => <option key={v} value={v}>{'ALSA Input ' + parseInt(v + 1, 10) + ' -> ALSA Input ' +  parseInt(v + this.state.channels, 10)}</option>) : 
+                  { this.state.channels > 1 ?
+                      this.state.audioMap.map((v) => <option key={v} value={v}>{'ALSA Input ' + parseInt(v + 1, 10) + ' -> ALSA Input ' +  parseInt(v + this.state.channels, 10)}</option>) :
                       this.state.audioMap.map((v) => <option key={v} value={v}>{'ALSA Input ' + parseInt(v + 1, 10)}</option>)
 		  }
                 </select>

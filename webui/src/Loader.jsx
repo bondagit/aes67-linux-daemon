@@ -1,5 +1,5 @@
 //
-//  Loader.js
+//  Loader.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //

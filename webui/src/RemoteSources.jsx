@@ -1,5 +1,5 @@
 //
-//  RemoteSource.js
+//  RemoteSource.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -25,8 +25,6 @@ import RestAPI from './Services';
 import Loader from './Loader';
 import SourceInfo from './SourceInfo';
 
-require('./styles.css');
-
 class RemoteSourceEntry extends Component {
   static propTypes = {
     source: PropTypes.string.isRequired,
@@ -42,9 +40,9 @@ class RemoteSourceEntry extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       rtp_address: 'n/a',
-      port: 'n/a' 
+      port: 'n/a'
     };
   }
 
@@ -91,7 +89,7 @@ class RemoteSourceList extends Component {
     return (
       <div id='remote-sources-table'>
         <table className="table-stream"><tbody>
-          {this.props.sources.length > 0 ? 
+          {this.props.sources.length > 0 ?
             <tr className='tr-stream'>
               <th>Source</th>
               <th>Address</th>
@@ -118,11 +116,11 @@ class RemoteSourceList extends Component {
 class RemoteSources extends Component {
   constructor(props) {
     super(props);
-    this.state = { 
-      sources: [], 
-      isLoading: false, 
-      infoIsOpen: false, 
-      infoTitle: '' 
+    this.state = {
+      sources: [],
+      isLoading: false,
+      infoIsOpen: false,
+      infoTitle: ''
     };
     this.onInfoClick = this.onInfoClick.bind(this);
     this.onReloadClick = this.onReloadClick.bind(this);
@@ -152,7 +150,7 @@ class RemoteSources extends Component {
     this.setState({infoIsOpen: false});
     this.fetchRemoteSources();
   }
-  
+
   onInfoClick(id) {
     const source = this.state.sources.find(s => s.id === id);
     this.openInfo("Announced Source Info", source, true);
@@ -179,14 +177,14 @@ class RemoteSources extends Component {
     ));
     return (
       <div id='sources'>
-       { this.state.isLoading ? <Loader/> 
+       { this.state.isLoading ? <Loader/>
 	   : <RemoteSourceList
                onReloadClick={this.onReloadClick}
                sources={sources} /> }
        { this.state.infoIsOpen ?
         <SourceInfo infoIsOpen={this.state.infoIsOpen}
           closeInfo={this.closeInfo}
-          infoTitle={this.state.infoTitle} 
+          infoTitle={this.state.infoTitle}
 	  id={this.state.source.id}
 	  source={this.state.source.source}
 	  name={this.state.source.name}

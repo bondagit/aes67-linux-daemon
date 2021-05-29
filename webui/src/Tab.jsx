@@ -1,5 +1,5 @@
 //
-//  Tab.js
+//  Tab.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -51,7 +51,7 @@ class Tab extends Component {
       className += ' tab-list-active';
     }
 
-    return ( 
+    return (
       <li className={className} onClick={onClick}>{label}</li>
     );
   }

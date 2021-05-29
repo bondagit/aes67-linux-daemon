@@ -1,5 +1,5 @@
 //
-//  SourceRemove.js
+//  SourceRemove.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -24,8 +24,6 @@ import {toast} from 'react-toastify';
 import Modal from 'react-modal';
 
 import RestAPI from './Services';
-
-require('./styles.css');
 
 const removeCustomStyles = {
   content : {
@@ -58,7 +56,7 @@ class SourceRemove extends Component {
   }
 
   removeSource(message) {
-    RestAPI.removeSource(this.props.source.id).then(function(response) { 
+    RestAPI.removeSource(this.props.source.id).then(function(response) {
       toast.success(message);
       this.props.applyEdit();
     }.bind(this));
@@ -75,7 +73,7 @@ class SourceRemove extends Component {
   render()  {
     return (
       <div id='source-remove'>
-        <Modal ariaHideApp={false} 
+        <Modal ariaHideApp={false}
           isOpen={this.props.removeIsOpen}
           onRequestClose={this.props.closeEdit}
           style={removeCustomStyles}

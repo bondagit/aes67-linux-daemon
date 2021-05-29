@@ -1,5 +1,5 @@
 //
-//  SourceInfo.js
+//  SourceInfo.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -21,8 +21,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
-
-require('./styles.css');
 
 const infoCustomStyles = {
   content : {
@@ -59,11 +57,11 @@ class SourceInfo extends Component {
   onClose() {
     this.props.closeInfo();
   }
- 
+
   render()  {
     return (
       <div id='source-info'>
-        <Modal ariaHideApp={false} 
+        <Modal ariaHideApp={false}
           isOpen={this.props.infoIsOpen}
           onRequestClose={this.props.closeInfo}
           style={infoCustomStyles}

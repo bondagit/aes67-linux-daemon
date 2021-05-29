@@ -1,5 +1,5 @@
 //
-//  index.js
+//  App.jsx
 //
 //  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
 //
@@ -26,6 +26,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import ConfigTabs from './ConfigTabs';
 
+import './styles.css';
+
 toast.configure()
 
 function App() {
@@ -45,6 +47,4 @@ function App() {
   );
 }
 
-const container = document.createElement('div');
-document.body.appendChild(container);
-render( <App/>, container);
+export default App
