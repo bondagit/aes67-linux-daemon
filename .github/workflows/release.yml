@@ -32,7 +32,7 @@ jobs:
       - name: Bundle webui release
         run: |
           cd webui/
-          tar -czvf ../webui.tar.gz build/
+          tar -czvf ../webui.tar.gz dist/
 
       - name: Release
         uses: softprops/action-gh-release@v1

@@ -8,8 +8,10 @@
 
 # production
 /build
+/dist
 
 # misc
+webui.tar.gz
 .DS_Store
 .env
 npm-debug.log*

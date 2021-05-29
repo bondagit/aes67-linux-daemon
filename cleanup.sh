@@ -21,6 +21,7 @@ rm -f daemon/tests/daemon-test
 
 rm -f demo/sink-test.wav
 
+rm -rf webui/dist
 rm -rf webui/build
 rm -rf webui/node_modules
 rm -f webui/*.log

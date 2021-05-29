@@ -114,7 +114,7 @@ class Config {
   /* from json */
   uint16_t http_port_{8080};
   uint16_t rtsp_port_{8854};
-  std::string http_base_dir_{"../webui/build"};
+  std::string http_base_dir_{"../webui/dist"};
   int log_severity_{2};
   uint32_t playout_delay_{0};
   uint32_t tic_frame_size_at_1fs_{48};
