@@ -25,4 +25,5 @@ rm -rf webui/build
 rm -rf webui/node_modules
 rm -f webui/*.log
 rm -f webui/package-lock.json
+rm -f webui/webui.tar.gz
 
