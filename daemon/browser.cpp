@@ -102,9 +102,9 @@ bool Browser::worker() {
           auto upd_source{*it};
           if ((last_seen - upd_source.last_seen) != 0) {
               upd_source.announce_period = last_seen - upd_source.last_seen;
+              upd_source.last_seen = last_seen;
+              sources_.replace(it, upd_source);
           }
-          upd_source.last_seen = last_seen;
-          sources_.replace(it, upd_source);
         } else {
           BOOST_LOG_TRIVIAL(info) << "browser:: removing SAP source " << it->id
                                   << " name " << it->name;
