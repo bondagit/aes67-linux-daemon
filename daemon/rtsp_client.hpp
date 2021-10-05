@@ -22,6 +22,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 #include <mutex>
+#include <map>
 
 struct RtspSource {
   std::string id;
