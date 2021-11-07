@@ -10,14 +10,14 @@ export CXX=/usr/bin/clang++
 TOPDIR=$(pwd)
 
 cd 3rdparty
-if [ ! -d ravenna-alsa-lkm.git ]; then
+if [ ! -d ravenna-alsa-lkm ]; then
   git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
   cd ravenna-alsa-lkm/driver
   make
   cd ../..
 fi
 
-if [ ! -d cpp-httplib.git ]; then
+if [ ! -d cpp-httplib ]; then
   git clone https://github.com/yhirose/cpp-httplib.git
   cd cpp-httplib
   git checkout 42f9f9107f87ad2ee04be117dbbadd621c449552
