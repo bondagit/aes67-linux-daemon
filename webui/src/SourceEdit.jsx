@@ -278,10 +278,12 @@ class SourceEdit extends Component {
               <th align="left"> <label>DSCP</label> </th>
               <th align="left">
                 <select value={this.state.dscp} onChange={e => this.setState({dscp: e.target.value})}>
+                  <option value="56">56 (CS7)</option>
+                  <option value="48">48 (CS6)</option>
                   <option value="46">46 (EF)</option>
+                  <option value="36">36 (AF42)</option>
                   <option value="34">34 (AF41)</option>
-                  <option value="36">26 (AF31)</option>
-                  <option value="48">0 (BE)</option>
+                  <option value="0">0 (BE)</option>
                 </select>
               </th>
             </tr>
