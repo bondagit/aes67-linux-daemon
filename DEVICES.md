@@ -65,7 +65,8 @@ To run interoperability tests using a Dante transmitter follow these steps. Test
 * connect the Dante transmitter to the network
 * open the Dante Controller application, select the Routing dialog and wait for the Dante transmitter to show up. Make sure this device or another on the network is acting as PTP clock master
 * in the Dante Controller wait for a daemon Source to show up in the Routing dialog
-* in the Dante Controller go to Device view and select Dante transmitter, go to the AES67 Config tab and select "AES67 Mode" to Enabled. This may require a reboot of the Dante device
+* in the Dante Controller go to Device view and select Dante device, go to the AES67 Config tab and select "AES67 Mode" to Enabled. This may require a reboot of the Dante device
+* in the Dante Controller go to Device view and select Dante device. Under Device menu select "Create Multicast Flow", then select the channels and finally select AES67 in "Audio Flow Config" section.
 * go to the daemon WebUI, click on the Browser tab and wait for the Dante transmitter to show up as remote SAP source
 * on the daemon WebUI select the Sinks tab, click on the plus icon to add a new Sink, mark the "Use SDP" flag and select the Dante transmitter SAP source
 * open a shell on the Linux host and start the recording on the RAVENA ALSA device. For example:
