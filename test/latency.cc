@@ -734,7 +734,10 @@ int main(int argc, char *argv[])
     snd_pcm_hw_free(chandle);
   }
 
-  printf("End to end latency: %lu ms\n", end_to_end_latency / end_to_end_samples);
+  if (end_to_end_samples)
+    printf("End to end latency: %lu ms\n", end_to_end_latency / end_to_end_samples);
+  else
+    printf("End to end latency: no samples collected\n");
   snd_pcm_close(phandle);
   snd_pcm_close(chandle);
   return 0;
