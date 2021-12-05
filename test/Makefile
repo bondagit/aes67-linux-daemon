@@ -1,8 +1,11 @@
 CXX=g++
 CC=g++
-all: check createtest
+LIBS=-lpthread -lasound
+all: check createtest latency
 createtest: createtest.o
 check: check.o
+latency: latency.o
+	$(CXX) $< -o latency  $(LIBS)
 clean:
 	rm *.o
-	rm check createtest
+	rm check createtest latency
