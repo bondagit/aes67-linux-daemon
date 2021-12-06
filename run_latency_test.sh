@@ -131,7 +131,7 @@ sleep 30
 
 echo "Running 10 secs latency test"
 cd test
-./latency -P hw:RAVENNA -C hw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS -M 128 -m 128 -s $DURATION
+sudo nice -n -10 ./latency -P hw:RAVENNA -C hw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS -M 128 -m 128 -s $DURATION
 cd ..
 
 echo "Terminating processes ..."
