@@ -36,7 +36,7 @@
 #include <alsa/asoundlib.h>
 #include <sys/time.h>
 #include <math.h>
-#include <chrono>
+
 
 static unsigned char header[4] = { 0xff, 0xff, 0xff, 0xff };
 const char *pdevice = "hw:0,0";
@@ -53,7 +53,7 @@ int block = 0;      /* block mode */
 int use_poll = 0;
 int resample = 1;
 unsigned long loop_limit;
-uint64_t end_to_end_latency = 0;
+double end_to_end_latency = 0;
 uint64_t end_to_end_samples = 0;
 
 snd_output_t *output = NULL;
@@ -381,17 +381,20 @@ long readbuf(snd_pcm_t *handle, char *buf, long len, size_t *frames, size_t *max
   }
 
 
-  uint64_t sentMs, recvMs =
-    std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::system_clock::now().time_since_epoch()).count();
+  timespec tp;
+  if (clock_gettime(CLOCK_MONOTONIC, &tp) != 0) {
+    printf("Cannot read monotonic clock\n");
+    exit(1);
+  }
 
+  uint64_t sentMs, recvMs = tp.tv_sec * 1000000 + tp.tv_nsec / 1000;
   for (int i = 0; i < (r - 12); i++) {
     if (!memcmp(buf + i, header, 4)) {
       memcpy(&sentMs, buf + i + 4, 8);
       //printf("elpased %lu ms\n",  recvMs - sentMs);
 
-      if ((recvMs - sentMs) < 1000) {
-        end_to_end_latency += recvMs - sentMs;
+      if ((recvMs - sentMs) < 1000000) {
+        end_to_end_latency += ((double)recvMs - (double)sentMs) / 1000;
         end_to_end_samples++;
       }
     }
@@ -401,17 +404,22 @@ long readbuf(snd_pcm_t *handle, char *buf, long len, size_t *frames, size_t *max
   return r;
 }
 
-long writebuf(snd_pcm_t *handle, char *buf, long len, size_t *frames)
+long writebuf(snd_pcm_t *handle, char *buf, long len, size_t *frames, bool add_ts)
 {
   long r;
   int frame_bytes = (snd_pcm_format_width(format) / 8) * channels;
 
-  uint64_t ms =
-    std::chrono::duration_cast<std::chrono::milliseconds>(
-       std::chrono::system_clock::now().time_since_epoch()).count();
+  if (add_ts) {
+    timespec tp;
+    if (clock_gettime(CLOCK_MONOTONIC, &tp) != 0) {
+      printf("Cannot read monotonic clock\n");
+      exit(1);
+    }
 
-  memcpy(buf, header, 4);
-  memcpy(buf + 4, &ms, sizeof(ms));
+    uint64_t ms = tp.tv_sec * 1000000 + tp.tv_nsec / 1000;
+    memcpy(buf, header, 4);
+    memcpy(buf + 4, &ms, sizeof(ms));
+  }
 
   while (len > 0) {
     r = snd_pcm_writei(handle, buf, len);
@@ -664,11 +672,11 @@ int main(int argc, char *argv[])
       fprintf(stderr, "silence error\n");
       break;
     }
-    if (writebuf(phandle, buffer, latency, &frames_out) < 0) {
+    if (writebuf(phandle, buffer, latency, &frames_out, false) < 0) {
       fprintf(stderr, "write error\n");
       break;
     }
-    if (writebuf(phandle, buffer, latency, &frames_out) < 0) {
+    if (writebuf(phandle, buffer, latency, &frames_out, false) < 0) {
       fprintf(stderr, "write error\n");
       break;
     }
@@ -698,7 +706,7 @@ int main(int argc, char *argv[])
       else {
         if (effect)
           applyeffect(buffer,r);
-         if (writebuf(phandle, buffer, r, &frames_out) < 0)
+         if (writebuf(phandle, buffer, r, &frames_out, true) < 0)
           ok = 0;
       }
     }
@@ -735,7 +743,7 @@ int main(int argc, char *argv[])
   }
 
   if (end_to_end_samples)
-    printf("End to end latency: %lu ms\n", end_to_end_latency / end_to_end_samples);
+    printf("End to end latency: %.3f msecs\n", end_to_end_latency / end_to_end_samples);
   else
     printf("End to end latency: no samples collected\n");
   snd_pcm_close(phandle);
