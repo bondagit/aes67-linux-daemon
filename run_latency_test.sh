@@ -18,11 +18,12 @@ function usage {
   echo '  sample_rate can be one of 44100, 48000, 96000' >&2
   echo '  channels can be one of 1, 2, 4' >&2
   echo '  duration in seconds' >&2
+  echo '  buffer size in frames' >&2
   exit 1
 }
 
 
-if [ "$#" -ne 4 ]; then
+if [ "$#" -lt 4 ]; then
   usage 
 fi
 
@@ -60,6 +61,13 @@ SAMPLE_FORMAT=$1
 SAMPLE_RATE=$2
 CHANNELS=$3
 DURATION=$4
+if [ "$#" -gt 4 ]; then
+  FRAMES=$5
+else
+  FRAMES=128
+fi
+
+echo 'Using buffer size of '$FRAMES' frames'
 
 if [ $SAMPLE_FORMAT == "S16_LE" ]; then
   CODEC="L16"
@@ -131,7 +139,7 @@ sleep 30
 
 echo "Running 10 secs latency test"
 cd test
-sudo nice -n -10 ./latency -P hw:RAVENNA -C hw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS -M 128 -m 128 -s $DURATION
+sudo nice -n -10 ./latency -P hw:RAVENNA -C hw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS -M $FRAMES -m $FRAMES -s $DURATION
 cd ..
 
 echo "Terminating processes ..."
