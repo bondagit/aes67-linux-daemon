@@ -168,7 +168,7 @@ The test performs the following operations:
 * wait for the recording and the playback to complete
 * check that the recorded file contains the expected audio samples sequence
 * terminate ptp4l and the AES67 daemon
-* print the test result that can be either *OK" or *failed at (location)*
+* print the test result that can be either *OK* or *failed at (location)*
 
 
 If the test result is OK it means that the selected configuration can run smoothly on your platform.
@@ -178,6 +178,71 @@ If after this the test fails systematically it means you cannot achieve a good r
 In this case you may try to configure a different driver timer basic tick period in the daemon configuration file (parameter *tic\_frame\_size\_at\_1fs* in *test/daemon.conf*).
 By default this parameter is set to 48 (1ms latency) and the valid range is from 48 to 480 with steps of 48.
 Note that higher values of this parameter (values above 48) lead to higher packets processing latency and this breaks the compatibility with certain devices.
+
+## Run the platform latency test ##
+<a name="latency"></a>
+The platform latency test can be used to measure the minimum end-to-end latency that can be achieved on a specific platform.
+
+The test is based on the same setup used for the platform compatibility test where a _Sink_ is configured to receive audio samples from a _Source_
+ both running on the same device using the network loopback interface.
+ 
+A test application plays audio samples on the RAVENNA playback device and measures the time till the samples are received on the RAVENNA capture device.
+
+The test setup and the end-to-end latency measured are shown in the picture below:
+
+![image](https://user-images.githubusercontent.com/56439183/144990290-c5c94697-b631-4af0-981a-dfea5fc21e9a.png)
+
+The test can be executed using the [run\_latency\_test.sh](run_latency_test.sh) script. See [script notes](#notes).
+
+The script allows a user to test the latency on a specific configuration and it can be used to ensure that a specific ALSA buffer size can be used:
+
+      Usage run_latency_test.sh sample_format sample_rate channels duration frames
+           sample_format can be one of S16_LE, S24_3LE, S32_LE
+           sample_rate can be one of 44100, 48000, 96000
+           channels can be one of 1, 2, 4
+           duration of the test in seconds
+           frames buffer size in frames
+
+The specified buffer size in frames starts from _tic_frame_size_at_1fs_ * 2 (128 by default) in steps of _tic_frame_size_at_1fs_.
+
+For example, to test the typical AES67 configuration for 1 minute and a buffer size of 128 frames run:
+
+      ./run_test.sh S24_3LE 48000 2 60 128
+      
+If no underrun errors occurred during the test the requested buffer size can be used and the end-to-end latency measured is printed at the end:
+
+       Trying latency 128 frames, 2666.667us, 2.666667ms (375.0000Hz)
+       Success
+       Playback:
+       *** frames = 2880128 ***
+         state       : RUNNING
+         trigger_time: 157745.455411
+         tstamp      : 0.000000
+         delay       : 128
+         avail       : 0
+         avail_max   : 64
+       Capture:
+       *** frames = 2880000 ***
+         state       : RUNNING
+         trigger_time: 157745.455415
+         tstamp      : 0.000000
+         delay       : 0
+         avail       : 0
+         avail_max   : 64
+       Maximum read: 64 frames
+       Maximum read latency: 1333.333us, 1.333333ms (750.0000Hz)
+       Playback time = 157745.455411, Record time = 157745.455415, diff = -4
+       End to end latency: 7.997 msecs
+       Terminating processes ...
+       daemon exiting with code: 0
+
+The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
+
+In case underrun happened the status reported is:
+
+         state       : XRUN
+      
+and the specified buffer size cannot be used.
 
 ## Run the daemon regression tests ##
 To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:
