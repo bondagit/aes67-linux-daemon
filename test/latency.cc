@@ -239,20 +239,20 @@ int setparams(snd_pcm_t *phandle, snd_pcm_t *chandle, int *bufsize)
 
   snd_pcm_hw_params_get_buffer_size(p_params, &p_size);
   if (p_psize * 2 < p_size) {
-                snd_pcm_hw_params_get_periods_min(p_params, &val, NULL);
-      //printf("p period_min = %u\n", val);
-                if (val > 2) {
-      printf("playback device does not support 2 periods per buffer\n");
+    snd_pcm_hw_params_get_periods_min(p_params, &val, NULL);
+    //printf("p period_min = %u\n", val);
+    if (val > 2) {
+      //printf("playback device does not support 2 periods per buffer\n");
       //exit(0);
     }
     //goto __again;
   }
   snd_pcm_hw_params_get_buffer_size(c_params, &c_size);
   if (c_psize * 2 < c_size) {
-                snd_pcm_hw_params_get_periods_min(c_params, &val, NULL);
+    snd_pcm_hw_params_get_periods_min(c_params, &val, NULL);
     //printf("c period_min = %u\n", val);
     if (val > 2 ) {
-      printf("capture device does not support 2 periods per buffer\n");
+      //printf("capture device does not support 2 periods per buffer\n");
       //exit(0);
     }
     //goto __again;
@@ -355,13 +355,14 @@ long timediff(snd_timestamp_t t1, snd_timestamp_t t2)
 long readbuf(snd_pcm_t *handle, char *buf, long len, size_t *frames, size_t *max)
 {
   long r;
+  long nread = 0;
 
   if (!block) {
     do {
       r = snd_pcm_readi(handle, buf, len);
     } while (r == -EAGAIN);
     if (r > 0) {
-      *frames += r;
+      nread += r;
       if ((long)*max < r)
         *max = r;
     }
@@ -373,14 +374,14 @@ long readbuf(snd_pcm_t *handle, char *buf, long len, size_t *frames, size_t *max
       if (r > 0) {
         buf += r * frame_bytes;
         len -= r;
-        *frames += r;
+        nread += r;
         if ((long)*max < r)
           *max = r;
       }
       // printf("r = %li, len = %li\n", r, len);
     } while (r >= 1 && len > 0);
   }
-
+  *frames += nread;
 
   timespec tp;
   if (clock_gettime(CLOCK_MONOTONIC, &tp) != 0) {
@@ -389,11 +390,9 @@ long readbuf(snd_pcm_t *handle, char *buf, long len, size_t *frames, size_t *max
   }
 
   uint64_t sentMs, recvMs = tp.tv_sec * 1000000 + tp.tv_nsec / 1000;
-  for (int i = 0; i < (r - 12); i++) {
+  for (int i = 0; i < (nread - 12); i++) {
     if (!memcmp(buf + i, header, 4)) {
       memcpy(&sentMs, buf + i + 4, 8);
-      //printf("elpased %lu ms\n",  recvMs - sentMs);
-
       if ((recvMs - sentMs) < 1000000) {
         end_to_end_latency += ((double)recvMs - (double)sentMs) / 1000;
         end_to_end_samples++;
