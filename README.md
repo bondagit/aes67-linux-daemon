@@ -83,8 +83,8 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
-* patch to fix issue causing the usage of wrong Sources and Sinks buffer offsets in case of reconfiguration or daemon restart. See #55
-* patch to enable the configuration of smaller ALSA buffer sizes to reduce end-to-end latency up to 8ms (from driver version v1.4). See [platform latency test](#latency) and #53
+* patch to fix issue causing the usage of wrong Sources and Sinks buffer offsets in case of reconfiguration or daemon restart. See [issue 55](https://github.com/bondagit/aes67-linux-daemon/issues/55).
+* patch to enable the configuration of smaller ALSA buffer sizes to reduce end-to-end latency up to 8ms (from driver version v1.4). See [platform latency test](#latency) and See [issue 53](https://github.com/bondagit/aes67-linux-daemon/issues/53)
 * patch to remove unsupported non-interleved access from driver capabilities. This enables compatibility with JACK audio (from driver version v1.3)
 * patch to enable the usage of a PTP master clock on the daemon host (from driver version v1.1)
 * patch to rework the driver PCM interface and to simplify and unify handling of read-write interlaved and memory mapped access modes
