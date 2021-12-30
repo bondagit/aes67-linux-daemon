@@ -102,7 +102,7 @@ int get_interface_index(const std::string& interface_name) {
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
   strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ - 1);
-  if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
+  if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) {
     close(fd);
     BOOST_LOG_TRIVIAL(warning)
         << "Cannot retrieve index for interface " << interface_name;
