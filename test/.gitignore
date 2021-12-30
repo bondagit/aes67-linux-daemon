@@ -3,5 +3,6 @@ test.raw
 *.o
 createtest
 check
+latency
 status_.json
 daemon_.conf
