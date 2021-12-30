@@ -68,7 +68,7 @@ bool Browser::worker() {
 
     if (sap_.receive(is_announce, msg_id_hash, addr, sdp)) {
       std::stringstream ss;
-      ss << "sap:" << msg_id_hash;
+      ss << "sap:" << addr << "-" << msg_id_hash;
       std::string id(ss.str());
       BOOST_LOG_TRIVIAL(debug) << "browser:: received SAP message for " << id;
 
