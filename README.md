@@ -209,7 +209,7 @@ The specified buffer size in frames starts from _tic_frame_size_at_1fs_ * 2 (128
 
 For example, to test the typical AES67 configuration for 1 minute and a buffer size of 128 frames run:
 
-      ./run_test.sh S24_3LE 48000 2 60 128
+      ./run_latency_test.sh S24_3LE 48000 2 60 128
       
 If no underrun errors occurred during the test the requested buffer size can be used and the end-to-end latency measured is printed at the end:
 
