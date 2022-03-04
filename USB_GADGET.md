@@ -54,7 +54,7 @@ To proceed disable the automatic load of these modules and configure *g_audio* i
 
 ## AES67 USB Transmitter ##
 <a name="usb_transmitter"></a>
-Before starting make sure that the [AES67 daemon basic setup](DEVICES.ms#daemon_setup) is done.
+Before starting make sure that the [AES67 daemon basic setup](DEVICES.md#daemon_setup) is done.
 
 On the board run the following command to relay the audio from the USB to the AES67 Source:
 
@@ -65,7 +65,7 @@ On the PC start the audio playback on the new device.
 
 ## AES67 USB Receiver ##
 <a name="usb_receiver"></a>
-Before starting make sure that the [AES67 daemon basic setup](DEVICES.ms#daemon_setup) is done. 
+Before starting make sure that the [AES67 daemon basic setup](DEVICES.md#daemon_setup) is done. 
 You also need to configure a new stereo *Sink* on the daemon.
 
 On the board run the following command to relay the audio from AES67 Sink to the USB:
