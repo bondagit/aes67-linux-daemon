@@ -115,6 +115,30 @@ bool HttpServer::init() {
   svr_.Post("/api/config", [this](const Request& req, Response& res) {
     try {
       Config config = json_to_config(req.body, *config_);
+
+      if (config_->get_syslog_proto() != config.get_syslog_proto() ||
+          config_->get_syslog_server() != config.get_syslog_server() ||
+          config_->get_log_severity() != config.get_log_severity()) {
+        log_init(config);
+      }
+      std::error_code ret;
+      if (config_->get_playout_delay() != config.get_playout_delay()) {
+        ret = session_manager_->set_driver_config("playout_delay",
+                                                  config.get_playout_delay());
+      }
+      if (config_->get_sample_rate() != config.get_sample_rate()) {
+        ret = session_manager_->set_driver_config("sample_rate",
+                                                  config.get_sample_rate());
+      }
+      if (config_->get_ptp_domain() != config.get_ptp_domain() ||
+          config_->get_ptp_dscp() != config.get_ptp_dscp()) {
+        PTPConfig ptpConfig{config.get_ptp_domain(), config.get_ptp_dscp()};
+        ret = session_manager_->set_ptp_config(ptpConfig);
+      }
+      if (ret) {
+        set_error(ret, "failed to set config", res);
+        return;
+      }
       if (!config_->save(config)) {
         set_error(500, "failed to save config", res);
         return;
@@ -153,7 +177,7 @@ bool HttpServer::init() {
       Config config(*config_);
       config.set_ptp_domain(ptpConfig.domain);
       config.set_ptp_dscp(ptpConfig.dscp);
-      if (!config_->save(config, false)) {
+      if (!config_->save(config)) {
         set_error(500, "failed to save config", res);
         return;
       }

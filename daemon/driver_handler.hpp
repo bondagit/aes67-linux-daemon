@@ -40,10 +40,10 @@ class DriverHandler {
   DriverHandler(){};
   DriverHandler(const DriverHandler&) = delete;
   DriverHandler& operator=(const DriverHandler&) = delete;
-  virtual ~DriverHandler() { terminate(); };
+  virtual ~DriverHandler(){};
 
   virtual bool init(const Config& config);
-  virtual bool terminate();
+  virtual bool terminate(const Config& config);
 
  protected:
   virtual void send_command(enum MT_ALSA_msg_id id,

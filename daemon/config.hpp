@@ -27,9 +27,10 @@
 class Config {
  public:
   /* save new config to json file */
-  bool save(const Config& config, bool need_restart = true);
+  bool save(const Config& config);
   /* build config from json file */
-  static std::shared_ptr<Config> parse(const std::string& filename);
+  static std::shared_ptr<Config> parse(const std::string& filename,
+                                       bool driver_restart);
 
   /* attributes retrieved from config json */
   uint16_t get_http_port() const { return http_port_; };
@@ -57,9 +58,13 @@ class Config {
   const std::string& get_mac_addr_str() const { return mac_str_; };
   uint32_t get_ip_addr() const { return ip_addr_; };
   const std::string& get_ip_addr_str() const { return ip_str_; };
-  bool get_need_restart() const { return need_restart_; };
+  bool get_daemon_restart() const { return daemon_restart_; };
+  bool get_driver_restart() const { return driver_restart_; };
   bool get_mdns_enabled() const { return mdns_enabled_; };
   int get_interface_idx() { return interface_idx_; };
+  const std::string& get_ptp_status_script() const {
+    return ptp_status_script_;
+  }
 
   void set_http_port(uint16_t http_port) { http_port_ = http_port; };
   void set_rtsp_port(uint16_t rtsp_port) { rtsp_port_ = rtsp_port; };
@@ -109,6 +114,35 @@ class Config {
   };
   void set_mdns_enabled(bool enabled) { mdns_enabled_ = enabled; };
   void set_interface_idx(int index) { interface_idx_ = index; };
+  void set_ptp_status_script(const std::string& script) {
+    ptp_status_script_ = script;
+  };
+  void set_driver_restart(bool restart) { driver_restart_ = restart; }
+
+  friend bool operator!=(const Config& lhs, const Config& rhs) {
+    return lhs.get_http_port() != rhs.get_http_port() ||
+           lhs.get_rtsp_port() != rhs.get_rtsp_port() ||
+           lhs.get_http_base_dir() != rhs.get_http_base_dir() ||
+           lhs.get_log_severity() != rhs.get_log_severity() ||
+           lhs.get_playout_delay() != rhs.get_playout_delay() ||
+           lhs.get_tic_frame_size_at_1fs() != rhs.get_tic_frame_size_at_1fs() ||
+           lhs.get_max_tic_frame_size() != rhs.get_max_tic_frame_size() ||
+           lhs.get_sample_rate() != rhs.get_sample_rate() ||
+           lhs.get_rtp_mcast_base() != rhs.get_rtp_mcast_base() ||
+           lhs.get_sap_mcast_addr() != rhs.get_sap_mcast_addr() ||
+           lhs.get_rtp_port() != rhs.get_rtp_port() ||
+           lhs.get_ptp_domain() != rhs.get_ptp_domain() ||
+           lhs.get_ptp_dscp() != rhs.get_ptp_dscp() ||
+           lhs.get_sap_interval() != rhs.get_sap_interval() ||
+           lhs.get_syslog_proto() != rhs.get_syslog_proto() ||
+           lhs.get_syslog_server() != rhs.get_syslog_server() ||
+           lhs.get_status_file() != rhs.get_status_file() ||
+           lhs.get_interface_name() != rhs.get_interface_name() ||
+           lhs.get_mdns_enabled() != rhs.get_mdns_enabled();
+  };
+  friend bool operator==(const Config& lhs, const Config& rhs) {
+    return !(lhs != rhs);
+  };
 
  private:
   /* from json */
@@ -131,6 +165,7 @@ class Config {
   std::string status_file_{"./status.json"};
   std::string interface_name_{"eth0"};
   bool mdns_enabled_{true};
+  std::string ptp_status_script_;
 
   /* set during init */
   std::array<uint8_t, 6> mac_addr_{0, 0, 0, 0, 0, 0};
@@ -140,8 +175,10 @@ class Config {
   int interface_idx_;
   std::string config_filename_;
 
+  /* reconfig needs driver restart */
+  bool driver_restart_{true};
   /* reconfig needs daemon restart */
-  bool need_restart_{false};
+  bool daemon_restart_{false};
 };
 
 #endif

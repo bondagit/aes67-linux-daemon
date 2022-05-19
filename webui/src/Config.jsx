@@ -135,7 +135,7 @@ class Config extends Component {
       this.state.sapMcastAddr,
       this.state.sapInterval,
       this.state.mdnsEnabled)
-    .then(response => toast.success('Config updated, daemon restart ...'));
+    .then(response => toast.success('Applying new configuration ...'));
   }
 
   render() {

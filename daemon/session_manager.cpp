@@ -19,6 +19,7 @@
 
 #define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096  // max for SDP file
 
+#include <stdlib.h>
 #include <httplib.h>
 
 #include <boost/algorithm/string.hpp>
@@ -479,7 +480,7 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_ui32CRTP_stream_info_sizeof = sizeof(info.stream);
   strncpy(info.stream.m_cName, source.name.c_str(),
           sizeof(info.stream.m_cName) - 1);
-  info.stream.m_ucDSCP = source.dscp;  // IPv4 DSCP  
+  info.stream.m_ucDSCP = source.dscp;  // IPv4 DSCP
   info.stream.m_byPayloadType = source.payload_type;
   info.stream.m_byWordLength = get_codec_word_lenght(source.codec);
   info.stream.m_byNbOfChannels = source.map.size();
@@ -513,13 +514,16 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
               info.stream.m_ui8DestMAC);
     info.stream.m_byTTL = source.ttl;
   } else {
-    auto mac_addr = get_mac_from_arp_cache(config_->get_interface_name(),
+    auto mac_addr = get_mac_from_arp_cache(
+        config_->get_interface_name(),
         ip::address_v4(info.stream.m_ui32DestIP).to_string());
     int retry = 3;
     while (!mac_addr.second.length() && retry--) {
       // if not in cache already try to populate the MAC cache
-      (void)echo_try_connect(ip::address_v4(info.stream.m_ui32DestIP).to_string());
-      mac_addr = get_mac_from_arp_cache(config_->get_interface_name(),
+      (void)echo_try_connect(
+          ip::address_v4(info.stream.m_ui32DestIP).to_string());
+      mac_addr = get_mac_from_arp_cache(
+          config_->get_interface_name(),
           ip::address_v4(info.stream.m_ui32DestIP).to_string());
     }
     if (!mac_addr.second.length()) {
@@ -625,8 +629,8 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
     ss << "/" << static_cast<unsigned>(info.stream.m_byTTL);
   }
-  ss << "\na=rtpmap:" << static_cast<unsigned>(info.stream.m_byPayloadType) << " "
-     << info.stream.m_cCodec << "/" << sample_rate << "/"
+  ss << "\na=rtpmap:" << static_cast<unsigned>(info.stream.m_byPayloadType)
+     << " " << info.stream.m_cCodec << "/" << sample_rate << "/"
      << static_cast<unsigned>(info.stream.m_byNbOfChannels) << "\n"
      << "a=sync-time:0\n"
      << "a=framecount:" << info.stream.m_ui32MaxSamplesPerPacket << "\n"
@@ -902,6 +906,19 @@ std::error_code SessionManager::get_sink_status(
   return ret;
 }
 
+std::error_code SessionManager::set_driver_config(const std::string& name,
+                                                  uint32_t value) const {
+  if (name == "sample_rate")
+    return driver_->set_sample_rate(value);
+  else if (name == "tic_frame_size_at_1fs")
+    return driver_->set_tic_frame_size_at_1fs(value);
+  else if (name == "set_max_tic_frame_size")
+    return driver_->set_max_tic_frame_size(value);
+  else if (name == "playout_delay")
+    return driver_->set_playout_delay(value);
+  return DriverErrc::unknown;
+}
+
 std::error_code SessionManager::set_ptp_config(const PTPConfig& config) {
   TPTPConfig ptp_config;
   ptp_config.ui8Domain = config.domain;
@@ -1002,9 +1019,31 @@ void SessionManager::on_update_sources() {
   g_session_version++;
 }
 
-void SessionManager::on_ptp_status_locked() const {
-  // set sample rate, this may require seconds
-  (void)driver_->set_sample_rate(driver_->get_current_sample_rate());
+void SessionManager::on_ptp_status_changed(const std::string& status) const {
+  if (status == "locked") {
+    // set sample rate, this may require seconds
+    (void)driver_->set_sample_rate(driver_->get_current_sample_rate());
+  }
+
+  static std::string g_ptp_status;
+
+  if (g_ptp_status != status && !config_->get_ptp_status_script().empty()) {
+    pid_t pid = fork();
+    if (pid == 0) {
+      /* child */
+      int fdlimit = (int)sysconf(_SC_OPEN_MAX);
+      /* close all partent's fds */
+      for (int i = STDERR_FILENO + 1; i < fdlimit; i++)
+        close(i);
+
+      char* argv_list[] = {const_cast<char*>(config_->get_ptp_status_script().c_str()),
+                           const_cast<char*>(status.c_str()), NULL};
+
+      execv(config_->get_ptp_status_script().c_str(), argv_list);
+      exit(0);
+    }
+    g_ptp_status = status;
+  }
 }
 
 using namespace std::chrono;
@@ -1043,7 +1082,7 @@ bool SessionManager::worker() {
                  pui64GMID[5], pui64GMID[6], pui64GMID[7]);
 
         bool ptp_changed_gmid = false;
-        bool ptp_changed_to_locked = false;
+        std::string ptp_status_changed_to;
         // update PTP clock status
         ptp_mutex_.lock();
         // update status
@@ -1069,15 +1108,13 @@ bool SessionManager::worker() {
           BOOST_LOG_TRIVIAL(info)
               << "session_manager:: new PTP clock status " << new_ptp_status;
           ptp_status_.status = new_ptp_status;
-          if (new_ptp_status == "locked") {
-            ptp_changed_to_locked = true;
-          }
+          ptp_status_changed_to = new_ptp_status;
         }
         // end update PTP clock status
         ptp_mutex_.unlock();
 
-        if (ptp_changed_to_locked) {
-          on_ptp_status_locked();
+        if (!ptp_status_changed_to.empty()) {
+          on_ptp_status_changed(ptp_status_changed_to);
         }
 
         if (ptp_changed_gmid ||
@@ -1085,10 +1122,10 @@ bool SessionManager::worker() {
           /* master clock id changed or sample rate changed
            * we need to update all the sources */
           if (sample_rate != driver_->get_current_sample_rate()) {
-             sample_rate = driver_->get_current_sample_rate();
-             // set driver sample rate
-             (void)driver_->set_sample_rate(sample_rate);
-	  }
+            sample_rate = driver_->get_current_sample_rate();
+            // set driver sample rate
+            (void)driver_->set_sample_rate(sample_rate);
+          }
           on_update_sources();
         }
       }

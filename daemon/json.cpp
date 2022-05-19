@@ -104,6 +104,8 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
      << ",\n  \"node_id\": \"" << escape_json(get_node_id(config.get_ip_addr()))
      << "\""
+     << ",\n  \"ptp_status_script\": \""
+     << escape_json(config.get_ptp_status_script()) << "\""
      << "\n}\n";
   return ss.str();
 }
@@ -158,8 +160,8 @@ std::string sink_to_json(const StreamSink& sink) {
 std::string sink_status_to_json(const SinkStreamStatus& status) {
   std::stringstream ss;
   ss << "{";
-  ss << "   \n  \"sink_flags\":\n  {" << std::boolalpha
-     << " \n    \"rtp_seq_id_error\": " << status.is_rtp_seq_id_error
+  ss << "\n  \"sink_flags\":\n  {" << std::boolalpha
+     << "  \n    \"rtp_seq_id_error\": " << status.is_rtp_seq_id_error
      << ", \n    \"rtp_ssrc_error\": " << status.is_rtp_ssrc_error
      << ", \n    \"rtp_payload_type_error\": "
      << status.is_rtp_payload_type_error
@@ -319,6 +321,9 @@ Config json_to_config_(std::istream& js, Config& config) {
             remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "syslog_server") {
         config.set_syslog_server(
+            remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "ptp_status_script") {
+        config.set_ptp_status_script(
             remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "mac_addr" || key == "ip_addr" || key == "node_id") {
         /* ignored */

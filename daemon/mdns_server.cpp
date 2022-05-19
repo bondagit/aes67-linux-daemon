@@ -25,7 +25,6 @@
 #include "utils.hpp"
 #include "mdns_server.hpp"
 
-
 #ifdef _USE_AVAHI_
 struct AvahiLockGuard {
   AvahiLockGuard() = delete;

@@ -185,7 +185,8 @@ Example
       "sap_interval": 30,
       "mac_addr": "01:00:5e:01:00:01",
       "ip_addr": "127.0.0.1",
-      "node_id": "AES67 daemon ubuntu-d9aca383"
+      "node_id": "AES67 daemon ubuntu-d9aca383",
+      "ptp_status_script": "./scripts/ptp_status.sh"
     }
 
 where:
@@ -221,7 +222,7 @@ where:
 > The specific multicast RTP address is the base address plus the source id number.    
 > For example if the base address is 239.2.0.1 and source id is 1 the RTP source address used is 239.2.0.2.
 
-> **rtp_port**
+> **rtp\_port**
 > JSON number specifying the RTP port used by the sources.
 
 > **ptp\_domain**
@@ -266,6 +267,10 @@ where:
 > **node\_id**
 > JSON string specifying the unique node identifier used to identify mDNS, SAP and SDP services announced by the daemon.
 > **_NOTE:_** This parameter is read-only and cannot be set. The server will determine the node id at startup time.
+
+> **ptp\_status\_script**
+> JSON string specifying the path to the script executed in background when the PTP slave clock status changes.
+> The PTP clock status is passed as first parameter to the script and it can be *unlocked*, *locking* or *locked*.
 
 ### JSON PTP Config<a name="ptp-config"></a> ###
 

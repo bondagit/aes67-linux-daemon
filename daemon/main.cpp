@@ -35,7 +35,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static std::string version("bondagit-1.4");
+static std::string version("bondagit-1.5");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -53,15 +53,16 @@ const std::string& get_version() {
 }
 
 int main(int argc, char* argv[]) {
-  int rc = EXIT_SUCCESS;
+  int rc(EXIT_SUCCESS);
   po::options_description desc("Options");
-  desc.add_options()
-      ("version,v", "Print daemon version and exit")
-      ("config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
-      "daemon configuration file")
-      ("http_port,p", po::value<int>(), "HTTP server port")
-      ("help,h", "Print this help message");
+  desc.add_options()("version,v", "Print daemon version and exit")(
+      "config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
+      "daemon configuration file")("http_port,p", po::value<int>(),
+                                   "HTTP server port")("help,h",
+                                                       "Print this help "
+                                                       "message");
   int unix_style = postyle::unix_style | postyle::short_allow_next;
+  bool driver_restart(true);
 
   po::variables_map vm;
   try {
@@ -98,7 +99,7 @@ int main(int argc, char* argv[]) {
 
   while (!is_terminated() && rc == EXIT_SUCCESS) {
     /* load configuration from file */
-    auto config = Config::parse(filename);
+    auto config = Config::parse(filename, driver_restart);
     if (config == nullptr) {
       return EXIT_FAILURE;
     }
@@ -165,7 +166,8 @@ int main(int argc, char* argv[]) {
           break;
         }
 
-        if (config->get_need_restart()) {
+        driver_restart = config->get_driver_restart();
+        if (config->get_daemon_restart()) {
           BOOST_LOG_TRIVIAL(warning) << "main:: config changed, restarting ...";
           break;
         }
@@ -205,7 +207,7 @@ int main(int argc, char* argv[]) {
       }
 
       /* stop driver manager */
-      if (!driver->terminate()) {
+      if (!driver->terminate(*config)) {
         throw std::runtime_error(
             std::string("DriverManager:: terminate failed"));
       }

@@ -130,7 +130,7 @@ bool DriverHandler::event_receiver() {
   return true;
 }
 
-bool DriverHandler::terminate() {
+bool DriverHandler::terminate(const Config& /* config */) {
   if (running_) {
     running_ = false;
     client_u2k_.terminate();

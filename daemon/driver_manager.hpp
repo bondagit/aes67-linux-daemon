@@ -33,7 +33,7 @@ class DriverManager : public DriverHandler {
 
   // driver interface
   bool init(const Config& config) override;
-  bool terminate() override;
+  bool terminate(const Config& config) override;
 
   std::error_code ping();  // unused, return error
   std::error_code set_ptp_config(const TPTPConfig& config);

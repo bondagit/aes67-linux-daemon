@@ -151,6 +151,8 @@ class SessionManager {
   uint8_t get_sink_id(const std::string& name) const;
 
   std::error_code set_ptp_config(const PTPConfig& config);
+  std::error_code set_driver_config(const std::string& name,
+                                    uint32_t value) const;
   void get_ptp_config(PTPConfig& config) const;
   void get_ptp_status(PTPStatus& status) const;
 
@@ -169,7 +171,7 @@ class SessionManager {
   void on_add_sink(const StreamSink& sink, const StreamInfo& info);
   void on_remove_sink(const StreamInfo& info);
 
-  void on_ptp_status_locked() const;
+  void on_ptp_status_changed(const std::string& status) const;
 
   void on_update_sources();
 

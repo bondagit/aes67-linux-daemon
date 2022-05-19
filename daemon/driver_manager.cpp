@@ -81,20 +81,28 @@ bool DriverManager::init(const Config& config) {
   ptp_config.ui8Domain = config.get_ptp_domain();
   ptp_config.ui8DSCP = config.get_ptp_dscp();
 
-  bool res = hello() || start() || reset() ||
-             set_interface_name(config.get_interface_name()) ||
-             set_ptp_config(ptp_config) ||
-             set_tic_frame_size_at_1fs(config.get_tic_frame_size_at_1fs()) ||
-             set_playout_delay(config.get_playout_delay()) ||
-             set_max_tic_frame_size(config.get_max_tic_frame_size());
+  if (hello())
+    return false;
+
+  bool res(false);
+  if (config.get_driver_restart()) {
+    res = start() || reset() ||
+          set_interface_name(config.get_interface_name()) ||
+          set_ptp_config(ptp_config) ||
+          set_tic_frame_size_at_1fs(config.get_tic_frame_size_at_1fs()) ||
+          set_playout_delay(config.get_playout_delay()) ||
+          set_max_tic_frame_size(config.get_max_tic_frame_size());
+  }
 
   return !res;
 }
 
-bool DriverManager::terminate() {
-  stop();
+bool DriverManager::terminate(const Config& config) {
+  if (config.get_driver_restart()) {
+    stop();
+  }
   bye();
-  return DriverHandler::terminate();
+  return DriverHandler::terminate(config);
 }
 
 std::error_code DriverManager::hello() {

@@ -25,7 +25,6 @@
 #include "rtsp_client.hpp"
 #include "mdns_client.hpp"
 
-
 #ifdef _USE_AVAHI_
 void MDNSClient::resolve_callback(AvahiServiceResolver* r,
                                   AvahiIfIndex interface,

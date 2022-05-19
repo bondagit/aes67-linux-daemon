@@ -36,7 +36,8 @@
 
 using namespace boost::asio;
 
-std::shared_ptr<Config> Config::parse(const std::string& filename) {
+std::shared_ptr<Config> Config::parse(const std::string& filename,
+                                      bool driver_restart) {
   Config config;
 
   std::ifstream jsonstream(filename);
@@ -104,20 +105,43 @@ std::shared_ptr<Config> Config::parse(const std::string& filename) {
   }
 
   config.config_filename_ = filename;
-  config.need_restart_ = false;
+  config.daemon_restart_ = false;
+  config.driver_restart_ = driver_restart;
 
   return std::make_shared<Config>(config);
 }
 
-bool Config::save(const Config& config, bool need_restart) {
-  std::ofstream js(config_filename_);
-  if (!js) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "Config:: cannot save to file " << config_filename_;
-    return false;
+bool Config::save(const Config& config) {
+  if (*this != config) {
+    std::ofstream js(config_filename_);
+    if (!js) {
+      BOOST_LOG_TRIVIAL(fatal)
+          << "Config:: cannot save to file " << config_filename_;
+      return false;
+    }
+    js << config_to_json(config);
+
+    driver_restart_ =
+        get_tic_frame_size_at_1fs() != config.get_tic_frame_size_at_1fs() ||
+        get_max_tic_frame_size() != config.get_max_tic_frame_size() ||
+        get_interface_name() != config.get_interface_name();
+
+    daemon_restart_ = driver_restart_ ||
+                      get_http_port() != config.get_http_port() ||
+                      get_rtsp_port() != config.get_rtsp_port() ||
+                      get_http_base_dir() != config.get_http_base_dir() ||
+                      get_rtp_mcast_base() != config.get_rtp_mcast_base() ||
+                      get_sap_mcast_addr() != config.get_sap_mcast_addr() ||
+                      get_rtp_port() != config.get_rtp_port() ||
+                      get_status_file() != config.get_status_file() ||
+                      get_mdns_enabled() != config.get_mdns_enabled();
+
+    if (!daemon_restart_)
+      *this = config;
+
+    BOOST_LOG_TRIVIAL(info) << "Config:: file saved";
+  } else {
+    BOOST_LOG_TRIVIAL(info) << "Config:: unchanged";
   }
-  js << config_to_json(config);
-  BOOST_LOG_TRIVIAL(info) << "Config:: file saved";
-  need_restart_ = need_restart;
   return true;
 }

@@ -115,7 +115,6 @@ int get_interface_index(const std::string& interface_name) {
   return ifr.ifr_ifindex;
 }
 
-
 std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
     const std::string& interface_name,
     const std::string& ip) {
@@ -155,7 +154,6 @@ std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
   return {mac, ""};
 }
 
-
 bool ping(const std::string& ip) {
   static uint16_t sequence_number(0);
   uint16_t identifier(0xABAB);
@@ -181,7 +179,6 @@ bool ping(const std::string& ip) {
   }
   return true;
 }
-
 
 bool echo_try_connect(const std::string& ip) {
   ip::tcp::iostream s;
