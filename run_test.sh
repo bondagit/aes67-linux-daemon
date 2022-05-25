@@ -102,7 +102,7 @@ if [ -x /usr/bin/pulseaudio ]; then
   rm $HOME/.config/pulse/client.conf
   #disable pulseaudio
   systemctl --user stop pulseaudio.socket > /dev/null 2>&1
-  systemctl --user stop pulseaudio.sservice > /dev/null 2>&1
+  systemctl --user stop pulseaudio.service > /dev/null 2>&1
 fi
 
 #uninstall kernel module
