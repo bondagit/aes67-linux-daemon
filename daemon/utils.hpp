@@ -34,7 +34,7 @@ std::tuple<bool /* res */,
            std::string /* path */>
 parse_url(const std::string& _url);
 
-std::string get_node_id(uint32_t ip_addr);
+std::string get_host_node_id(uint32_t ip_addr);
 
 std::string sdp_get_subject(const std::string& sdp);
 

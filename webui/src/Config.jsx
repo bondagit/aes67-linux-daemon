@@ -53,6 +53,8 @@ class Config extends Component {
       syslogServerErr: false,
       statusFile: '',
       interfaceName: '',
+      customNodeId: '',
+      customNodeIdErr: false,
       macAddr: '',
       ipAddr: '',
       errors: 0,
@@ -98,6 +100,7 @@ class Config extends Component {
             syslogServer: data.syslog_server,
             statusFile: data.status_file,
             interfaceName: data.interface_name,
+            customNodeId: data.custom_node_id,
             macAddr: data.mac_addr,
             ipAddr: data.ip_addr,
             nodeId: data.node_id,
@@ -115,6 +118,7 @@ class Config extends Component {
       !this.state.rtspPortErr &&
       !this.state.sapIntervalErr &&
       !this.state.syslogServerErr &&
+      (!this.state.customNodeIdErr || this.state.customNodeId  === '') &&
       !this.state.isVersionLoading &&
       !this.state.isConfigLoading;
   }
@@ -134,7 +138,8 @@ class Config extends Component {
       this.state.maxTicFrameSize,
       this.state.sapMcastAddr,
       this.state.sapInterval,
-      this.state.mdnsEnabled)
+      this.state.mdnsEnabled,
+      this.state.customNodeId)
     .then(response => toast.success('Applying new configuration ...'));
   }
 
@@ -186,8 +191,12 @@ class Config extends Component {
 	{this.state.isConfigLoading ? <Loader/> : <h3>Network Config</h3>}
         <table><tbody>
           <tr>
-            <th align="left"> <label>Node ID</label> </th>
-            <th align="left"> <input value={this.state.nodeId} disabled/> </th>
+            <th align="left"> <label>Current Node ID</label> </th>
+            <th align="left"> <input value={this.state.nodeId} size="32" disabled/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Custom Node ID</label> </th>
+            <th align="left"> <input input type="text" minLength="5" maxLength="48" size="32" pattern="[A-Za-z0-9 _]*" value={this.state.customNodeId} onChange={e => this.setState({customNodeId: e.target.value, customNodeIdErr: !e.currentTarget.checkValidity()})} required/> </th>
           </tr>
           <tr>
             <th align="left"> <label>HTTP port</label> </th>

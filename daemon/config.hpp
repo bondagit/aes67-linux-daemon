@@ -52,6 +52,8 @@ class Config {
   const std::string& get_status_file() const { return status_file_; };
   const std::string& get_interface_name() const { return interface_name_; };
   const std::string& get_config_filename() const { return config_filename_; };
+  const std::string& get_custom_node_id() const { return custom_node_id_; };
+  std::string get_node_id() const;
 
   /* attributes set during init */
   const std::array<uint8_t, 6>& get_mac_addr() const { return mac_addr_; };
@@ -117,6 +119,9 @@ class Config {
   void set_ptp_status_script(const std::string& script) {
     ptp_status_script_ = script;
   };
+  void set_custom_node_id(const std::string& node_id) {
+    custom_node_id_ = node_id;
+  };
   void set_driver_restart(bool restart) { driver_restart_ = restart; }
 
   friend bool operator!=(const Config& lhs, const Config& rhs) {
@@ -138,7 +143,8 @@ class Config {
            lhs.get_syslog_server() != rhs.get_syslog_server() ||
            lhs.get_status_file() != rhs.get_status_file() ||
            lhs.get_interface_name() != rhs.get_interface_name() ||
-           lhs.get_mdns_enabled() != rhs.get_mdns_enabled();
+           lhs.get_mdns_enabled() != rhs.get_mdns_enabled() ||
+           lhs.get_custom_node_id() != rhs.get_custom_node_id();
   };
   friend bool operator==(const Config& lhs, const Config& rhs) {
     return !(lhs != rhs);
@@ -166,6 +172,8 @@ class Config {
   std::string interface_name_{"eth0"};
   bool mdns_enabled_{true};
   std::string ptp_status_script_;
+  std::string custom_node_id_;
+  std::string node_id_;
 
   /* set during init */
   std::array<uint8_t, 6> mac_addr_{0, 0, 0, 0, 0, 0};

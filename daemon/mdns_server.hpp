@@ -58,7 +58,7 @@ class MDNSServer {
   std::atomic_bool running_{false};
   std::shared_ptr<SessionManager> session_manager_;
   std::shared_ptr<Config> config_;
-  std::string node_id_{get_node_id(config_->get_ip_addr())};
+  std::string node_id_{config_->get_node_id()};
 
 #ifdef _USE_AVAHI_
   using entry_group_bimap_t =

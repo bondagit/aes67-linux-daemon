@@ -99,13 +99,12 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"interface_name\": \""
      << escape_json(config.get_interface_name()) << "\""
      << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
-     << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str())
-     << "\""
-     << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
-     << ",\n  \"node_id\": \"" << escape_json(get_node_id(config.get_ip_addr()))
-     << "\""
+     << ",\n  \"custom_node_id\": \"" << escape_json(config.get_custom_node_id()) << "\""
+     << ",\n  \"node_id\": \"" << escape_json(config.get_node_id()) << "\""
      << ",\n  \"ptp_status_script\": \""
      << escape_json(config.get_ptp_status_script()) << "\""
+     << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str()) << "\""
+     << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
      << "\n}\n";
   return ss.str();
 }
@@ -324,6 +323,9 @@ Config json_to_config_(std::istream& js, Config& config) {
             remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "ptp_status_script") {
         config.set_ptp_status_script(
+            remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "custom_node_id") {
+        config.set_custom_node_id(
             remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "mac_addr" || key == "ip_addr" || key == "node_id") {
         /* ignored */

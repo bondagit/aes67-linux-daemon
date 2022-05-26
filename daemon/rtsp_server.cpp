@@ -74,7 +74,7 @@ bool RtspSession::announce(uint8_t id,
    */
   if (cseq_ < 0 && source_ids_.find(id) != source_ids_.end()) {
     std::string path(std::string("/by-name/") +
-                     get_node_id(config_->get_ip_addr()) + " " + name);
+                     config_->get_node_id() + " " + name);
     std::stringstream ss;
     ss << "ANNOUNCE rtsp://" << address << ":" << std::to_string(port)
        << httplib::detail::encode_url(path) << " RTSP/1.0\r\n"
@@ -172,7 +172,7 @@ void RtspSession::build_response(const std::string& url) {
   }
   auto path = std::get<4>(res);
   auto base_path =
-      std::string("/by-name/") + get_node_id(config_->get_ip_addr()) + " ";
+      std::string("/by-name/") + config_->get_node_id() + " ";
   uint8_t id = SessionManager::stream_id_max + 1;
   if (path.rfind(base_path) != std::string::npos) {
     /* extract the source name from path and retrive the id */

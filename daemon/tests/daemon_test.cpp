@@ -393,6 +393,8 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto syslog_server = pt.get<std::string>("syslog_server");
   auto status_file = pt.get<std::string>("status_file");
   auto ptp_status_script = pt.get<std::string>("ptp_status_script");
+  auto custom_node_id = pt.get<std::string>("custom_node_id");
+  auto node_id = pt.get<std::string>("node_id");
   auto interface_name = pt.get<std::string>("interface_name");
   auto mac_addr = pt.get<std::string>("mac_addr");
   auto ip_addr = pt.get<std::string>("ip_addr");
@@ -415,6 +417,8 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(mac_addr == "00:00:00:00:00:00", "config as excepcted");
   BOOST_CHECK_MESSAGE(ip_addr == "127.0.0.1", "config as excepcted");
   BOOST_CHECK_MESSAGE(ptp_status_script == "", "config as excepcted");
+  BOOST_CHECK_MESSAGE(node_id == "test node", "config as excepcted");
+  BOOST_CHECK_MESSAGE(custom_node_id == "test node", "config as excepcted");
 }
 
 BOOST_AUTO_TEST_CASE(get_ptp_status) {

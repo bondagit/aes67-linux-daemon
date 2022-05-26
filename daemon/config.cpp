@@ -33,6 +33,7 @@
 #include "interface.hpp"
 #include "json.hpp"
 #include "config.hpp"
+#include "utils.hpp"
 
 using namespace boost::asio;
 
@@ -134,7 +135,8 @@ bool Config::save(const Config& config) {
                       get_sap_mcast_addr() != config.get_sap_mcast_addr() ||
                       get_rtp_port() != config.get_rtp_port() ||
                       get_status_file() != config.get_status_file() ||
-                      get_mdns_enabled() != config.get_mdns_enabled();
+                      get_mdns_enabled() != config.get_mdns_enabled() ||
+                      get_custom_node_id() != config.get_custom_node_id();
 
     if (!daemon_restart_)
       *this = config;
@@ -144,4 +146,12 @@ bool Config::save(const Config& config) {
     BOOST_LOG_TRIVIAL(info) << "Config:: unchanged";
   }
   return true;
+}
+
+std::string Config::get_node_id() const {
+  if (custom_node_id_.empty()) {
+    return get_host_node_id(get_ip_addr());
+  } else {
+    return custom_node_id_;
+  }
 }

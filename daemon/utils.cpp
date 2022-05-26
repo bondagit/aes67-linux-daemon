@@ -76,7 +76,7 @@ parse_url(const std::string& _url) {
   return {host.length() > 0, protocol, host, port, path};
 }
 
-std::string get_node_id(uint32_t ip_addr) {
+std::string get_host_node_id(uint32_t ip_addr) {
   std::stringstream ss;
   ip_addr = htonl(ip_addr);
   /* we create an host ID based on the current IP */
