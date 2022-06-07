@@ -38,7 +38,7 @@ The expected output is:
 
        0 [UAC1Gadget     ]: UAC1_Gadget - UAC1_Gadget
                             UAC1_Gadget 0
-By default this new audio codec works with a sample rate of 48Khz, 2 channels and sample format *S16_LE*.
+By default this new audio codec works with a sample rate of 48kHz, 2 channels and sample format *S16_LE*.
 
 On the PC new audio input and output devices show up. 
 The name assigned to these depend on the OS.
