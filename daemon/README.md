@@ -359,7 +359,7 @@ where:
 > JSON number specifying the max number of samples contained in one RTP packet.    
 > Valid values are 12, 16, 48, 96, 192.        
 > See the table below for correspondent max RTP packet duration: 
-> |     | 44.1Khz  | 48Khz   | 96Khz   |
+> |     | 44.1kHz  | 48kHz   | 96kHz   |
 > |-----|----------|---------|---------|
 > | 12  | 272µs    | 250µs   | 125µs   |
 > | 16  | 363µs    | 333µs   | 166µs   |

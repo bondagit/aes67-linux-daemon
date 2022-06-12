@@ -197,11 +197,11 @@ class SinkEdit extends Component {
               <th align="left"> <label>Delay (samples) </label> </th>
               <th align="left">
 	        <select value={this.state.delay} onChange={e => this.setState({delay: e.target.value})}>
-                  <option value="192">192 - 4ms@48KHz</option>
-                  <option value="384">384 - 8ms@48KHz</option>
-                  <option value="576">576 - 12ms@48KHz</option>
-                  <option value="768">768 - 16ms@48KHz</option>
-                  <option value="960">960 - 20ms@48KHz</option>
+                  <option value="192">192 - 4ms@48kHz</option>
+                  <option value="384">384 - 8ms@48kHz</option>
+                  <option value="576">576 - 12ms@48kHz</option>
+                  <option value="768">768 - 16ms@48kHz</option>
+                  <option value="960">960 - 20ms@48kHz</option>
                 </select>
               </th>
             </tr>

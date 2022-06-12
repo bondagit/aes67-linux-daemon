@@ -17,7 +17,7 @@ Before running any interoperability test configure the AES67 daemon with the fol
 
 * open the daemon configuration file *daemon.conf* and change the following parameters:
   * set network interface name to your Ethernet card: *"interface\_name": "eth0"*
-  * set default sample rate to 48Khz: *"sample\_rate": 48000*
+  * set default sample rate to 48kHz: *"sample\_rate": 48000*
   * set TIC frame size @1FS (samples) to 48 samples: *"tic\_frame\_size\_at\_1fs": 48*
 * verify that PulseAdio is not running. See [PulseAudio](README.md#notes).
 * install the ALSA RAVENNA/AES67 module with:     
@@ -29,7 +29,7 @@ Before running any interoperability test configure the AES67 daemon with the fol
       aes67-daemon -c daemon.conf
 
 * open the Daemon WebUI *http://[address:8080]* and do the following:
-  * go to Config tab and verify that the sample rate is set to 48KHz and the TIC frame size @1FS is set to 48 samples
+  * go to Config tab and verify that the sample rate is set to 48kHz and the TIC frame size @1FS is set to 48 samples
   * go to Sources tab and add a new Source using the plus button
     * set Codec to L24 
     * set Max samples per packet to 48 samples
