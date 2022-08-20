@@ -133,6 +133,11 @@ std::pair<bool, RtspSource> RtspClient::process(RtspClient::Observer callback,
   try {
     BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: connecting to "
                              << "rtsp://" << address << ":" << port << path;
+#if BOOST_VERSION < 106600
+  s.expires_from_now(boost::posix_time::seconds(1));
+#else
+  s.expires_after(boost::asio::chrono::seconds(1));
+#endif
     s.connect(address, port.length() ? port : dft_port);
     if (!s || s.error()) {
       BOOST_LOG_TRIVIAL(warning)
