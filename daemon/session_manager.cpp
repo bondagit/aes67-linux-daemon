@@ -620,6 +620,9 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
     ss << "/" << static_cast<unsigned>(info.stream.m_byTTL);
   }
+  /*ss << "\na=source-filter: incl IN IP4 "
+     << ip::address_v4(info.stream.m_ui32DestIP).to_string() << " "
+     << config_->get_ip_addr_str();*/
   ss << "\nt=0 0\n"
      << "a=clock-domain:PTPv2 " << static_cast<unsigned>(ptp_config_.domain)
      << "\n"
@@ -636,10 +639,11 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
      << "a=framecount:" << info.stream.m_ui32MaxSamplesPerPacket << "\n"
      << "a=ptime:" << ptime << "\n"
      << "a=mediaclk:direct=0\n";
+  ss << "a=ts-refclk:ptp=IEEE1588-2008:";
   if (info.refclk_ptp_traceable) {
-    ss << "a=ts-refclk:ptp=traceable\n";
+    ss << "traceable\n";
   } else {
-    ss << "a=ts-refclk:ptp=IEEE1588-2008:" << ptp_status_.gmid << ":"
+    ss << ptp_status_.gmid << ":"
        << static_cast<unsigned>(ptp_config_.domain) << "\n";
   }
   ss << "a=recvonly\n";
