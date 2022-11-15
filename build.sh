@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 #
 # Tested on Ubuntu 18.04
 #
