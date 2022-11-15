@@ -23,7 +23,7 @@
 
 #include "browser.hpp"
 #include "config.hpp"
-#include "driver_manager.hpp"
+#include "driver_interface.hpp"
 #include "http_server.hpp"
 #include "interface.hpp"
 #include "log.hpp"
@@ -35,7 +35,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static std::string version("bondagit-1.5.2");
+static std::string version("bondagit-1.5.3");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {

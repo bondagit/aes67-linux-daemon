@@ -612,7 +612,7 @@ BOOST_AUTO_TEST_CASE(sink_check_status) {
   auto is_sink_some_muted = pt.get<bool>("sink_flags.some_muted");
   auto is_sink_all_muted = pt.get<bool>("sink_flags.all_muted");
   // BOOST_REQUIRE_MESSAGE(is_sink_muted, "sink is muted");
-  BOOST_REQUIRE_MESSAGE(!is_sink_all_muted, "all sinks are mutes");
+  BOOST_REQUIRE_MESSAGE(!is_sink_all_muted, "all sinks are muted");
   BOOST_REQUIRE_MESSAGE(!is_sink_some_muted, "some sinks are muted");
   BOOST_REQUIRE_MESSAGE(cli.remove_sink(0), "removed sink 0");
 }
