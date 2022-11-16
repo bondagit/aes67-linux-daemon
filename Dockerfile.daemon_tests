@@ -8,4 +8,4 @@ RUN DEBIAN_FRONTEND=noninteractive \
 COPY . .
 RUN ./buildfake.sh
 WORKDIR ./daemon/tests
-RUN ./daemon-test -p
+CMD ./daemon-test -p
