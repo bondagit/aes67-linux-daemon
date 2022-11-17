@@ -125,7 +125,9 @@ The NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
 See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional information about how to setup Ubuntu on this board.
 
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
-**_Important_** CPU scale events could affect daemon streams adding unexpected distortions, see [CPU scale events and scripts notes](#notes).
+
+**_Important_** CPU scale events could affect daemon streams causing unexpected distortions, see [CPU scale events and scripts notes](#notes).
+
 **_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
 
 ## How to build ##
@@ -273,15 +275,15 @@ Before running the daemon make sure you disable CPU scaling events:
 
   Check if CPU scaling is enabled with:
 
-    cat /proc/sys/kernel/perf_cpu_time_max_percent
+      cat /proc/sys/kernel/perf_cpu_time_max_percent
 
   If result is not 0, (it's usually set to 25) set it to 0 with:
 
-    sudo sysctl -w kernel.perf_cpu_time_max_percent=0
+      sudo sysctl -w kernel.perf_cpu_time_max_percent=0
 
   You may also want to review the current CPU scaling governor with (cpu0 in this case):
 
-    cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+      cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
   See https://www.kernel.org/doc/Documentation/cpu-freq/governors.txt for dditional info.
 * **PulseAudio** can create instability problems.
