@@ -1,0 +1,19 @@
+name: Daemon regression Tests
+
+on: [push]
+
+jobs:
+  daemon_tests_job:
+    runs-on: ubuntu-latest
+    name: A job to run AES67 daemon regression tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build daemon tests docker image
+        run: docker build --progress=plain -f ./Dockerfile.daemon_tests -t aes67-daemon-tests  .
+
+      - name: Run daemon regression tests
+        run: docker run aes67-daemon-tests
