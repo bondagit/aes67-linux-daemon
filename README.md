@@ -58,6 +58,17 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.
 See the [README](daemon/README.md) file in this directory for additional information about the AES67 daemon configuration and the HTTP REST API.
 
+Daemon regression tests can be executed via a Docker container by using a fake version of the daemon driver manager.
+This was implmented to perfom automated execution of the regression tests via a GitHub workflow.
+To build the Docker image for the daemon regression tests run:
+
+      docker build --progress=plain -f ./Dockerfile.daemon_tests -t aes67-daemon-tests  .
+
+To run the tests:
+      
+      docker run aes67-daemon-tests
+      
+
 ### [webui](webui) directory ###
 
 This directory contains the AES67 daemon WebUI configuration implemented using React.
