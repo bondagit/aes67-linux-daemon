@@ -281,7 +281,7 @@ make sure that no instances of the aes67-daemon are running, enter the [tests](d
 
 * All the scripts in this repository are provided as a reference to help setting up the system and run the platform compatibility test.
   They have been tested on **Ubuntu 18.04 19.10 20.04** distros.
-* CPU scaling events could have an impact on daemon streams causing unexpected distortion for a few seconds, see #96.
+* CPU scaling events could have an impact on daemon streams causing unexpected distortion for a few seconds, see [issue 96](https://github.com/bondagit/aes67-linux-daemon/issues/96).
 Before running the daemon make sure you disable CPU scaling events:
 
   Check if CPU scaling is enabled with:
