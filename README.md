@@ -119,7 +119,7 @@ This directory contains the files used to run the daemon platform compatibility 
 
 ## Prerequisite ##
 <a name="prerequisite"></a>
-The daemon and the test have been tested with **Ubuntu 18.04** distro on **ARMv7** and with **Ubuntu 18.04, 19.10 and 20.04** distros on **x86** using:
+The daemon and the test have been verified starting from **Ubuntu 18.04** distro onwards for **ARMv7** and **x86** platforms using:
 
 * Linux kernel version >= 4.10.x
 * GCC  version >= 7.x / clang >= 6.x (C++17 support required)
@@ -138,7 +138,7 @@ See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 
 **_Important_** CPU scaling events could affect daemon streams causing unexpected distortions, see [CPU scaling events and scripts notes](#notes).
-
+**_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
 **_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
 
 ## How to build ##
@@ -261,6 +261,8 @@ In case underrun happened the status reported is:
       
 and the specified buffer size cannot be used.
 
+**_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
+
 ## Run the daemon regression tests ##
 To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:
 
@@ -280,7 +282,15 @@ make sure that no instances of the aes67-daemon are running, enter the [tests](d
 <a name="notes"></a>
 
 * All the scripts in this repository are provided as a reference to help setting up the system and run the platform compatibility test.
-  They have been tested on **Ubuntu 18.04 19.10 20.04** distros.
+  They have been tested starting from **Ubuntu 18.04** distros onwards.
+* Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [issue 79](https://github.com/bondagit/aes67-linux-daemon/issues/96) and alsa-lib [issue-285](https://github.com/alsa-project/alsa-lib/issues/285).
+
+  Set the total bandwidth available to all real-time tasks to 100% of the CPU with:
+
+      sysctl -w kernel.sched_rt_runtime_us=1000000
+
+  By default this value is set to 95%.
+
 * CPU scaling events could have an impact on daemon streams causing unexpected distortion for a few seconds, see [issue 96](https://github.com/bondagit/aes67-linux-daemon/issues/96).
 Before running the daemon make sure you disable CPU scaling events:
 
