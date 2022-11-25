@@ -138,7 +138,9 @@ See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 
 **_Important_** CPU scaling events could affect daemon streams causing unexpected distortions, see [CPU scaling events and scripts notes](#notes).
+
 **_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
+
 **_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
 
 ## How to build ##
