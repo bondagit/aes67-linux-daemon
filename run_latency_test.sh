@@ -108,6 +108,7 @@ trap cleanup EXIT
 #configure system parms
 sudo sysctl -w net/ipv4/igmp_max_memberships=66
 sudo sysctl -w kernel/perf_cpu_time_max_percent=0
+sudo sysctl -w kernel/sched_rt_runtime_us=1000000
 
 if [ -x /usr/bin/pulseaudio ]; then
   #stop pulseaudio, this seems to open/close ALSA continuosly
