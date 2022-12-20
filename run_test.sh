@@ -46,7 +46,7 @@ if ! ./createtest $1 $2 $3 $4 ; then
   echo 'Usage run_test.sh sample_format sample_rate channels duration' >&2
   echo '  sample_format can be one of S16_LE, S24_3LE, S32_LE' >&2
   echo '  sample_rate can be one of 44100, 48000, 96000' >&2
-  echo '  channels can be one of 1, 2, 4' >&2
+  echo '  channels can be one of 2, 4, 6, up to 64' >&2
   echo '  duration is in the range 1 to 10 minutes' >&2
   exit 1
 else
@@ -76,19 +76,66 @@ elif  [ $SAMPLE_RATE == "96000" ]; then
   PTIME="0.5"
 fi
 
-MAP="[ "
-for (( ch=0; ch<$CHANNELS; ch++ ))
+SOURCE=$(cat <<-END
+{
+    "id": ID,
+    "enabled": true,
+    "name": "ALSA Source ID",
+    "io": "Audio Device",
+    "max_samples_per_packet": 48,
+    "codec": "CODEC",
+    "address": "",
+    "ttl": 15,
+    "payload_type": 98,
+    "dscp": 34,
+    "refclk_ptp_traceable": false,
+    "map": [ MS, ME ]
+}
+END
+)
+
+SOURCES='{ "sources": [ '
+for (( ch=0; ch<$(( $CHANNELS / 2 )); ch++ ))
 do
-   MAP+=$ch
-   if (( ch != ($CHANNELS - 1) )); then
-     MAP+=","
+   CSOURCE=$(echo $SOURCE | sed "s/ID/$ch/g;s/CODEC/$CODEC/g;s/MS/$(( 2*$ch ))/g;s/ME/$(( 2*$ch + 1 ))/g;")
+   SOURCES+=$CSOURCE
+   if (( ch != ($(( $CHANNELS / 2 )) - 1) )); then
+     SOURCES+=","
    fi
 done
-MAP+=" ]"
+SOURCES+=" ],"
+
+SINK=$(cat <<-END
+  {
+    "id": ID,
+    "name": "ALSA Sink ID",
+    "io": "Audio Device",
+    "use_sdp": true,
+    "source": "http://127.0.0.1:8080/api/source/sdp/0",
+    "sdp": "v=0\no=- 657152 657153 IN IP4 127.0.0.1\ns=ALSA Source ID\nc=IN IP4 239.1.0.ADDR/15\nt=0 0\na=clock-domain:PTPv2 0\nm=audio 5004 RTP/AVP 98\nc=IN IP4 239.1.0.ADDR/15\na=rtpmap:98 CODEC/SR/2\na=sync-time:0\na=framecount:48\na=ptime:PTIME\na=mediaclk:direct=0\na=ts-refclk:ptp=IEEE1588-2008:00-00-00-00-00-00-00-00:0\na=recvonly\n",
+    "delay": 576,
+    "ignore_refclk_gmid": true,
+    "map": [ MS, ME ]
+  }
+END
+)
+
+SINKS='"sinks": [ '
+for (( ch=0; ch<$(( $CHANNELS / 2 )); ch++ ))
+do
+   CSINK=$(echo $SINK | sed "s/ID/$ch/g;s/ADDR/$(( $ch+1 ))/g;s/CODEC/$CODEC/g;s/SR/$SAMPLE_RATE/g;s/PTIME/$PTIME/g;s/MS/$(( 2*$ch ))/g;s/ME/$(( 2*$ch + 1 ))/g;")
+   SINKS+=$CSINK
+   if (( ch != ($(( $CHANNELS / 2 )) - 1) )); then
+     SINKS+=","
+   fi
+done
+SINKS+=" ] }"
 
 echo 'Creating configuration files ..' >&2
 sed 's/48000/'"$SAMPLE_RATE"'/g;s/status.json/status_.json/g;' test/daemon.conf > test/daemon_.conf
-sed 's/\/2/\/'"$CHANNELS"'/g;s/48000/'"$SAMPLE_RATE"'/g;s/L24/'"$CODEC"'/g;s/ptime:1/ptime:'"$PTIME"'/;s/\[ 0, 1 \]/'"$MAP"'/g' test/status.json > test/status_.json
+#sed 's/48000/'"$SAMPLE_RATE"'/g;s/L24/'"$CODEC"'/g;s/ptime:1/ptime:'"$PTIME"'/g;' test/status.json > test/status_.json
+echo $SOURCES > test/status_.json
+echo $SINKS >> test/status_.json
 
 trap cleanup EXIT
 

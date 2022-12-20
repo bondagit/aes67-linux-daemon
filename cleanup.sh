@@ -18,6 +18,11 @@ rm -f daemon/tests/cmake_install.cmake
 rm -f daemon/tests/CTestTestfile.cmake
 rm -f daemon/tests/Testing
 rm -f daemon/tests/daemon-test
+rm -f test/*.o
+rm -f test/latency
+rm -f test/createtest
+rm -f test/check
+rm -f test/*.raw
 
 rm -f demo/sink-test.wav
 

@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
   }
 
   int channels = atoi(argv[2]);
-  if (channels != 1 && channels != 2 && channels != 4 && channels != 8) {
+  if (channels % 2 != 0 || channels <= 0 || channels > 64) {
     cerr << "Unsupported channels " << channels << endl;
     exit(1);
   }

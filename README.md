@@ -138,9 +138,7 @@ See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 
 **_Important_** CPU scaling events could affect daemon streams causing unexpected distortions, see [CPU scaling events and scripts notes](#notes).
-
 **_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
-
 **_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
 
 ## How to build ##
@@ -164,7 +162,7 @@ The script allows a user to test a specific configuration and it can be used to 
       Usage run_test.sh sample_format sample_rate channels duration
            sample_format can be one of S16_LE, S24_3LE, S32_LE
            sample_rate can be one of 44100, 48000, 96000
-           channels can be one of 1, 2, 4
+           channels can be one of 2, 4, 6, up to 64
            duration is in the range 1 to 10 minutes
 
 For example to test the typical AES67 configuration run:
@@ -192,6 +190,10 @@ The test performs the following operations:
 
 If the test result is OK it means that the selected configuration can run smoothly on your platform.
 
+A 64 channels configuration was succesfully tested on the following platforms:
+
+* Mini PC with Intel Celeron N4000
+
 If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
 If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
 In this case you may try to configure a different driver timer basic tick period in the daemon configuration file (parameter *tic\_frame\_size\_at\_1fs* in *test/daemon.conf*).
@@ -218,7 +220,7 @@ The script allows a user to test the latency on a specific configuration and it 
       Usage run_latency_test.sh sample_format sample_rate channels duration frames
            sample_format can be one of S16_LE, S24_3LE, S32_LE
            sample_rate can be one of 44100, 48000, 96000
-           channels can be one of 1, 2, 4
+           channels can be one of 2, 4, 6, up to 64
            duration of the test in seconds
            frames buffer size in frames
 
@@ -256,6 +258,10 @@ If no underrun errors occurred during the test the requested buffer size can be 
        daemon exiting with code: 0
 
 The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
+
+A 64 channels was succesfully tested on the following platforms:
+
+* Mini PC with Intel Celeron N4000
 
 In case underrun happened the status reported is:
 
