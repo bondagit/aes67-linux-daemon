@@ -127,18 +127,20 @@ The daemon and the test have been verified starting from **Ubuntu 18.04** distro
 * boost libraries version >= 1.65
 * Avahi service discovery (if enabled) >= 0.7
 
-The following ARM platform have been used for testing:
+The following platforms have been used for testing:
 
-The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor.
-See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
-
-The NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
+A NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
 See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional information about how to setup Ubuntu on this board.
+
+A Mini PC N40 with Intel Celeron N4000 processor.
+See [Minisforum N40 Mini PC](https://store.minisforum.com/products/minisforum-n40-mini-pc) and [how to Install Ubuntu on a fanless Mini PC](https://www.youtube.com/watch?v=2djTPJ02xK0).
 
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 
 **_Important_** CPU scaling events could affect daemon streams causing unexpected distortions, see [CPU scaling events and scripts notes](#notes).
+
 **_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
+
 **_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
 
 ## How to build ##
@@ -192,7 +194,7 @@ If the test result is OK it means that the selected configuration can run smooth
 
 A 64 channels configuration was succesfully tested on the following platforms:
 
-* Mini PC with Intel Celeron N4000
+* Mini PC with Intel Celeron N4000 processor
 
 If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
 If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
@@ -261,7 +263,7 @@ The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
 
 A 64 channels was succesfully tested on the following platforms:
 
-* Mini PC with Intel Celeron N4000
+* Mini PC with Intel Celeron N4000 processor
 
 In case underrun happened the status reported is:
 
