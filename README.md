@@ -132,7 +132,7 @@ The following platforms have been used for testing:
 A NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
 See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional information about how to setup Ubuntu on this board.
 
-A Mini PC N40 with Intel Celeron N4000 processor.
+A Mini PC N40 with Intel® Celeron® Processor N4020 , 2 Cores/2 Threads (4M Cache, up to 2.80 GHz).
 See [Minisforum N40 Mini PC](https://store.minisforum.com/products/minisforum-n40-mini-pc) and [how to Install Ubuntu on a fanless Mini PC](https://www.youtube.com/watch?v=2djTPJ02xK0).
 
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
@@ -194,7 +194,7 @@ If the test result is OK it means that the selected configuration can run smooth
 
 A 64 channels configuration was succesfully tested on the following platforms:
 
-* Mini PC with Intel Celeron N4000 processor
+* Mini PC with Intel Celeron N4020 processor
 
 If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
 If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
@@ -263,7 +263,7 @@ The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
 
 A 64 channels was succesfully tested on the following platforms:
 
-* Mini PC with Intel Celeron N4000 processor
+* Mini PC with Intel Celeron N4020 processor
 
 In case underrun happened the status reported is:
 
