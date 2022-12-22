@@ -192,9 +192,8 @@ The test performs the following operations:
 
 If the test result is OK it means that the selected configuration can run smoothly on your platform.
 
-A 64 channels configuration was succesfully tested on the following platforms:
-
-* Mini PC with Intel Celeron N4020 processor
+A 64 channels configuration was succesfully tested on the _Mini PC_ with Intel Celeron N4020 processor.
+A 24 channels configuration was succesfully tested on the _NanoPi NEO2 board_.
 
 If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
 If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
@@ -261,9 +260,8 @@ If no underrun errors occurred during the test the requested buffer size can be 
 
 The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
 
-A 64 channels was succesfully tested on the following platforms:
-
-* Mini PC with Intel Celeron N4020 processor
+A 64 channels configuration was succesfully tested on the _Mini PC_ with Intel Celeron N4020 processor.
+A 24 channels configuration was succesfully tested on the _NanoPi NEO2 board_.
 
 In case underrun happened the status reported is:
 
