@@ -624,7 +624,7 @@ int main(int argc, char *argv[])
 
   loop_limit = loop_sec * rate;
   latency = latency_min - 4;
-  buffer = (char*)malloc((latency_max * snd_pcm_format_width(format) / 8) * 2);
+  buffer = (char*)malloc((latency_max * 2 * snd_pcm_format_width(format) / 8) * channels);
 
   setscheduler();
 

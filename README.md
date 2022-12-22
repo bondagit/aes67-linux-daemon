@@ -127,13 +127,13 @@ The daemon and the test have been verified starting from **Ubuntu 18.04** distro
 * boost libraries version >= 1.65
 * Avahi service discovery (if enabled) >= 0.7
 
-The following ARM platform have been used for testing:
+The following platforms have been used for testing:
 
-The BeagleBone® Black board with ARM Cortex-A8 32-Bit processor.
-See [Ubuntu 18.04 on BeagleBone® Black](https://elinux.org/BeagleBoardUbuntu) for additional information about how to setup Ubuntu on this board.
-
-The NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
+A NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
 See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional information about how to setup Ubuntu on this board.
+
+A Mini PC N40 with Intel® Celeron® Processor N4020 , 2 Cores/2 Threads (4M Cache, up to 2.80 GHz).
+See [Minisforum N40 Mini PC](https://store.minisforum.com/products/minisforum-n40-mini-pc) and [how to Install Ubuntu on a fanless Mini PC](https://www.youtube.com/watch?v=2djTPJ02xK0).
 
 The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 
@@ -164,7 +164,7 @@ The script allows a user to test a specific configuration and it can be used to 
       Usage run_test.sh sample_format sample_rate channels duration
            sample_format can be one of S16_LE, S24_3LE, S32_LE
            sample_rate can be one of 44100, 48000, 96000
-           channels can be one of 1, 2, 4
+           channels can be one of 2, 4, 6, up to 64
            duration is in the range 1 to 10 minutes
 
 For example to test the typical AES67 configuration run:
@@ -192,6 +192,10 @@ The test performs the following operations:
 
 If the test result is OK it means that the selected configuration can run smoothly on your platform.
 
+A 64 channels configuration was succesfully tested on the _Mini PC_ with Intel Celeron N4020 processor.
+
+A 24 channels configuration was succesfully tested on the _NanoPi NEO2 board_.
+
 If the test reports a failure you may try to stop all the possible additional loads running on the host and repeat it.
 If after this the test fails systematically it means you cannot achieve a good reliability with the specified configuration.
 In this case you may try to configure a different driver timer basic tick period in the daemon configuration file (parameter *tic\_frame\_size\_at\_1fs* in *test/daemon.conf*).
@@ -218,7 +222,7 @@ The script allows a user to test the latency on a specific configuration and it 
       Usage run_latency_test.sh sample_format sample_rate channels duration frames
            sample_format can be one of S16_LE, S24_3LE, S32_LE
            sample_rate can be one of 44100, 48000, 96000
-           channels can be one of 1, 2, 4
+           channels can be one of 2, 4, 6, up to 64
            duration of the test in seconds
            frames buffer size in frames
 
@@ -256,6 +260,10 @@ If no underrun errors occurred during the test the requested buffer size can be 
        daemon exiting with code: 0
 
 The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
+
+A 64 channels configuration was succesfully tested on the _Mini PC_ with Intel Celeron N4020 processor.
+
+A 24 channels configuration was succesfully tested on the _NanoPi NEO2 board_.
 
 In case underrun happened the status reported is:
 
