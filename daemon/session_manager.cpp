@@ -593,6 +593,43 @@ std::string SessionManager::get_removed_source_sdp_(
   return sdp;
 }
 
+bool SessionManager::parse_sdp_origin(const std::string sdp, SDPOrigin& origin) const {
+  try {
+    std::stringstream sdp_string_stream(sdp);
+    std::string line;
+    while (getline(sdp_string_stream, line, '\n')) {
+      boost::trim(line);
+      if (line[1] != '=') {
+        BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid SDP file";
+        return false;
+      }
+      std::string val = line.substr(2);
+      switch (line[0]) {
+        case 'o':
+          std::vector<std::string> fields;
+          boost::split(fields, val, [line](char c) { return c == ' '; });
+          if (fields.size() < 6) {
+            BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid origin";
+            return false;
+          }
+
+          origin.username = fields[0];
+          origin.session_id = fields[1];
+          origin.session_version = fields[2];
+          origin.network_type = fields[3];
+          origin.address_type = fields[4];
+          origin.unicast_address = fields[5];
+          return true;
+      }
+    }
+  } catch (...) {
+    BOOST_LOG_TRIVIAL(fatal) << "session_manager:: invalid SDP"
+                             << ", cannot extract SDP identifier";
+  }
+
+  return false;
+}
+
 std::string SessionManager::get_source_sdp_(uint32_t id,
                                             const StreamInfo& info) const {
   std::shared_lock ptp_lock(ptp_mutex_);
@@ -1007,6 +1044,42 @@ size_t SessionManager::process_sap() {
   });
 
   return sdp_len_sum;
+}
+
+bool SessionManager::sink_is_still_valid(const std::string sdp, const std::list<RemoteSource> sources_list) const {
+  for (auto& source : sources_list) {
+    if (sdp == source.sdp) {
+      return true; // Exact match exist, no need to update
+    }
+  }
+  return false;
+}
+
+void SessionManager::update_sources(const std::list<RemoteSource> sources_list) {
+  std::list<StreamSink> sinks_list = get_sinks();
+  for (auto& sink : sinks_list) {
+    if (sink_is_still_valid(sink.sdp, sources_list))
+      continue;
+
+    SDPOrigin sink_sdp_origin;
+    if(!parse_sdp_origin(sink.sdp, sink_sdp_origin))
+      continue;
+
+    for (auto& source : sources_list) {
+      SDPOrigin source_sdp_origin;
+      if(!parse_sdp_origin(source.sdp, source_sdp_origin))
+        continue;
+
+      if (sink_sdp_origin == source_sdp_origin) {
+        // Re-add sink with new SDP, since the sink.id is the same there will be an update
+        sink.sdp = source.sdp;
+        add_sink(sink);
+        // Direkt needs status file saved so the direkt unit can be shutdown
+        // at any moment without loosing configuration
+        save_status();
+      }
+    }
+  }
 }
 
 void SessionManager::on_update_sources() {

@@ -173,6 +173,11 @@ int main(int argc, char* argv[]) {
           break;
         }
 
+        /* Use a newer version of source if the current version isn't available anymore.
+         * This typically happens when equipment is restarted. */
+        std::list<RemoteSource> sources = browser->get_remote_sources();
+        session_manager->update_sources(sources);
+
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
 

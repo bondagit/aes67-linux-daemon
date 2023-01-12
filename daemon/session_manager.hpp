@@ -28,6 +28,7 @@
 
 #include "config.hpp"
 #include "driver_interface.hpp"
+#include "browser.hpp"
 #include "igmp.hpp"
 #include "sap.hpp"
 
@@ -95,6 +96,25 @@ struct StreamInfo {
   uint32_t session_version{0};
 };
 
+struct SDPOrigin {
+  std::string username;
+  std::string session_id;
+  std::string session_version;
+  std::string network_type;
+  std::string address_type;
+  std::string unicast_address;
+
+  bool operator==(const SDPOrigin& rhs) const
+  {
+    // session_version is not part of comparison, see RFC 4566
+    return username == rhs.username &&
+           session_id == rhs.session_id &&
+           network_type == rhs.network_type &&
+           address_type == rhs.address_type &&
+           unicast_address == rhs.unicast_address;
+  }
+};
+
 class SessionManager {
  public:
   constexpr static uint8_t stream_id_max = 63;
@@ -159,6 +179,7 @@ class SessionManager {
   bool load_status();
   bool save_status();
 
+  void update_sources(const std::list<RemoteSource> sources_list);
   size_t process_sap();
 
  protected:
@@ -183,7 +204,10 @@ class SessionManager {
   StreamSource get_source_(uint8_t id, const StreamInfo& info) const;
   StreamSink get_sink_(uint8_t id, const StreamInfo& info) const;
 
+  bool sink_is_still_valid(const std::string sdp, const std::list<RemoteSource> sources_list) const;
+
   bool parse_sdp(const std::string sdp, StreamInfo& info) const;
+  bool parse_sdp_origin(const std::string sdp, SDPOrigin& origin) const;
   bool worker();
   // singleton, use create() to build
   SessionManager(std::shared_ptr<DriverManager> driver,
