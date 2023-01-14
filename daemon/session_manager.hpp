@@ -28,8 +28,26 @@
 
 #include "config.hpp"
 #include "driver_interface.hpp"
+#include "browser.hpp"
 #include "igmp.hpp"
 #include "sap.hpp"
+
+struct SDPOrigin {
+  std::string username;
+  std::string session_id;
+  uint64_t session_version{0};
+  std::string network_type;
+  std::string address_type;
+  std::string unicast_address;
+
+  bool operator==(const SDPOrigin& rhs) const {
+    // session_version is not part of comparison, see RFC 4566
+    return username == rhs.username && session_id == rhs.session_id &&
+           network_type == rhs.network_type &&
+           address_type == rhs.address_type &&
+           unicast_address == rhs.unicast_address;
+  }
+};
 
 struct StreamSource {
   uint8_t id{0};
@@ -93,6 +111,7 @@ struct StreamInfo {
   std::string sink_sdp;
   uint32_t session_id{0};
   uint32_t session_version{0};
+  SDPOrigin origin;
 };
 
 class SessionManager {
@@ -101,6 +120,7 @@ class SessionManager {
 
   static std::shared_ptr<SessionManager> create(
       std::shared_ptr<DriverManager> driver,
+      std::shared_ptr<Browser> browser,
       std::shared_ptr<Config> config);
   SessionManager() = delete;
   SessionManager(const SessionManager&) = delete;
@@ -165,6 +185,10 @@ class SessionManager {
   constexpr static const char ptp_primary_mcast_addr[] = "224.0.1.129";
   constexpr static const char ptp_pdelay_mcast_addr[] = "224.0.1.107";
 
+  std::list<StreamSink> get_updated_sinks(
+      const std::list<RemoteSource>& sources_list);
+  void update_sinks(const std::list<RemoteSource>& sources_list);
+
   void on_add_source(const StreamSource& source, const StreamInfo& info);
   void on_remove_source(const StreamInfo& info);
 
@@ -183,16 +207,22 @@ class SessionManager {
   StreamSource get_source_(uint8_t id, const StreamInfo& info) const;
   StreamSink get_sink_(uint8_t id, const StreamInfo& info) const;
 
+  bool sink_is_still_valid(const std::string sdp,
+                           const std::list<RemoteSource> sources_list) const;
+
   bool parse_sdp(const std::string sdp, StreamInfo& info) const;
+  bool parse_sdp_origin(const std::string sdp, SDPOrigin& origin) const;
   bool worker();
   // singleton, use create() to build
   SessionManager(std::shared_ptr<DriverManager> driver,
+                 std::shared_ptr<Browser> browser,
                  std::shared_ptr<Config> config)
-      : driver_(driver), config_(config) {
+      : browser_(browser), driver_(driver), config_(config) {
     ptp_config_.domain = config->get_ptp_domain();
     ptp_config_.dscp = config->get_ptp_dscp();
   };
 
+  std::shared_ptr<Browser> browser_;
   std::shared_ptr<DriverManager> driver_;
   std::shared_ptr<Config> config_;
   std::future<bool> res_;

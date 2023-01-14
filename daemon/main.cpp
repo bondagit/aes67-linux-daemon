@@ -125,8 +125,14 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error(std::string("DriverManager:: init failed"));
       }
 
+      /* start browser */
+      auto browser = Browser::create(config);
+      if (browser == nullptr || !browser->init()) {
+        throw std::runtime_error(std::string("Browser:: init failed"));
+      }
+
       /* start session manager */
-      auto session_manager = SessionManager::create(driver, config);
+      auto session_manager = SessionManager::create(driver, browser, config);
       if (session_manager == nullptr || !session_manager->init()) {
         throw std::runtime_error(std::string("SessionManager:: init failed"));
       }
@@ -141,12 +147,6 @@ int main(int argc, char* argv[]) {
       RtspServer rtsp_server(session_manager, config);
       if (!rtsp_server.init()) {
         throw std::runtime_error(std::string("RtspServer:: init failed"));
-      }
-
-      /* start browser */
-      auto browser = Browser::create(config);
-      if (browser == nullptr || !browser->init()) {
-        throw std::runtime_error(std::string("Browser:: init failed"));
       }
 
       /* start http server */
@@ -184,11 +184,6 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error(std::string("HttpServer:: terminate failed"));
       }
 
-      /* stop browser */
-      if (!browser->terminate()) {
-        throw std::runtime_error(std::string("Browser:: terminate failed"));
-      }
-
       /* stop rtsp server */
       if (!rtsp_server.terminate()) {
         throw std::runtime_error(std::string("RtspServer:: terminate failed"));
@@ -205,6 +200,11 @@ int main(int argc, char* argv[]) {
       if (!session_manager->terminate()) {
         throw std::runtime_error(
             std::string("SessionManager:: terminate failed"));
+      }
+
+      /* stop browser */
+      if (!browser->terminate()) {
+        throw std::runtime_error(std::string("Browser:: terminate failed"));
       }
 
       /* stop driver manager */
