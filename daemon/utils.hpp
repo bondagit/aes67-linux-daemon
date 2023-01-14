@@ -38,4 +38,23 @@ std::string get_host_node_id(uint32_t ip_addr);
 
 std::string sdp_get_subject(const std::string& sdp);
 
+struct SDPOrigin {
+  std::string username;
+  std::string session_id;
+  uint64_t session_version{0};
+  std::string network_type;
+  std::string address_type;
+  std::string unicast_address;
+
+  bool operator==(const SDPOrigin& rhs) const {
+    // session_version is not part of comparison, see RFC 4566
+    return username == rhs.username && session_id == rhs.session_id &&
+           network_type == rhs.network_type &&
+           address_type == rhs.address_type &&
+           unicast_address == rhs.unicast_address;
+  }
+};
+
+SDPOrigin sdp_get_origin(const std::string sdp);
+
 #endif

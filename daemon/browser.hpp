@@ -35,6 +35,7 @@
 #include "igmp.hpp"
 #include "mdns_client.hpp"
 #include "sap.hpp"
+#include "utils.hpp"
 
 using namespace boost::multi_index;
 
@@ -44,6 +45,7 @@ struct RemoteSource {
   std::string address;
   std::string name;
   std::string domain; /* mDNS only */
+  SDPOrigin origin;
   std::string sdp;
   uint32_t last_seen{0};       /* seconds from daemon startup */
   uint32_t announce_period{0}; /* period between annoucements */

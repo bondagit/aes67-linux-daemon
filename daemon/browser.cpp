@@ -19,7 +19,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "utils.hpp"
 #include "browser.hpp"
 
 using namespace boost::algorithm;
@@ -85,6 +84,7 @@ bool Browser::worker() {
                ip::address_v4(ntohl(addr)).to_string(),
                sdp_get_subject(sdp),
                {},
+               sdp_get_origin(sdp),
                sdp,
                static_cast<uint32_t>(
                    duration_cast<second_t>(steady_clock::now() - startup_)
@@ -163,8 +163,9 @@ void Browser::on_change_rtsp_source(const std::string& name,
                               << " name " << name << " domain " << domain;
       auto upd_source{*it};
       upd_source.id = s.id;
-      upd_source.sdp = s.sdp;
       upd_source.address = s.address;
+      upd_source.origin = sdp_get_origin(s.sdp);
+      upd_source.sdp = s.sdp;
       upd_source.last_seen = last_seen;
       sources_.get<name_tag>().replace(it, upd_source);
       return;
@@ -174,8 +175,8 @@ void Browser::on_change_rtsp_source(const std::string& name,
   /* entry not found -> add */
   BOOST_LOG_TRIVIAL(info) << "browser:: adding RTSP source " << s.id << " name "
                           << name << " domain " << domain;
-  sources_.insert(
-      {s.id, s.source, s.address, name, domain, s.sdp, last_seen, 0});
+  sources_.insert({s.id, s.source, s.address, name, domain,
+                   sdp_get_origin(s.sdp), s.sdp, last_seen, 0});
 }
 
 void Browser::on_remove_rtsp_source(const std::string& name,

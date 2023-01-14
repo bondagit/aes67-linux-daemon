@@ -607,44 +607,6 @@ std::string SessionManager::get_removed_source_sdp_(
   return sdp;
 }
 
-bool SessionManager::parse_sdp_origin(const std::string sdp,
-                                      SDPOrigin& origin) const {
-  try {
-    std::stringstream sdp_string_stream(sdp);
-    std::string line;
-    while (getline(sdp_string_stream, line, '\n')) {
-      boost::trim(line);
-      if (line[1] != '=') {
-        BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid SDP file";
-        return false;
-      }
-      std::string val = line.substr(2);
-      switch (line[0]) {
-        case 'o':
-          std::vector<std::string> fields;
-          boost::split(fields, val, [line](char c) { return c == ' '; });
-          if (fields.size() < 6) {
-            BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid origin";
-            return false;
-          }
-
-          origin.username = fields[0];
-          origin.session_id = fields[1];
-          origin.session_version = std::stoull(fields[2]);
-          origin.network_type = fields[3];
-          origin.address_type = fields[4];
-          origin.unicast_address = fields[5];
-          return true;
-      }
-    }
-  } catch (...) {
-    BOOST_LOG_TRIVIAL(fatal) << "session_manager:: invalid SDP"
-                             << ", cannot extract SDP identifier";
-  }
-
-  return false;
-}
-
 std::string SessionManager::get_source_sdp_(uint32_t id,
                                             const StreamInfo& info) const {
   std::shared_lock ptp_lock(ptp_mutex_);
@@ -1068,23 +1030,21 @@ std::list<StreamSink> SessionManager::get_updated_sinks(
     uint64_t newVersion{0};
     StreamSink sink{get_sink_(id, info)};
     for (auto& source : sources_list) {
-      SDPOrigin source_sdp_origin;
-      if (!parse_sdp_origin(source.sdp, source_sdp_origin))
+      // if no remote source origin specified, skip
+      if (source.origin.session_id == "")
         continue;
 
-      if (sinks_[sink.id].origin == source_sdp_origin &&
-          sink.sdp != source.sdp &&
+      // search for the largest corresponding remote source version
+      if (sinks_[sink.id].origin == source.origin && sink.sdp != source.sdp &&
           sinks_[sink.id].origin.session_version <
-              source_sdp_origin.session_version &&
-          newVersion < source_sdp_origin.session_version) {
-        newVersion = source_sdp_origin.session_version;
+              source.origin.session_version &&
+          newVersion < source.origin.session_version) {
+        newVersion = source.origin.session_version;
         sink.sdp = source.sdp;
       }
     }
 
     if (newVersion) {
-      // Re-add sink with new SDP, since the sink.id is the same there will be
-      // an update
       BOOST_LOG_TRIVIAL(info)
           << "session_manager:: sink " << std::to_string(sink.id)
           << " SDP change detected version " << newVersion << " updating";
@@ -1097,6 +1057,8 @@ std::list<StreamSink> SessionManager::get_updated_sinks(
 void SessionManager::update_sinks(const std::list<RemoteSource>& sources_list) {
   auto sinks_list = get_updated_sinks(sources_list);
   for (auto& sink : sinks_list) {
+    // Re-add sink with new SDP, since the sink.id is the same there will be
+    // an update
     add_sink(sink);
   }
 }
