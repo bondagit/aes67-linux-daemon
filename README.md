@@ -50,7 +50,7 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * control and configuration of up to 64 multicast and unicast sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
 * HTTP REST API for the daemon control and configuration
-* SAP sources discovery and advertisement compatible with AES67 standard
+* SAP sources discovery, update and advertisement compatible with AES67 standard
 * mDNS sources discovery and advertisement (using Linux Avahi) compatible with Ravenna standard
 * RTSP client and server to retrieve, return and update SDP files via DESCRIBE and ANNOUNCE methods according to Ravenna standard
 * IGMP handling for SAP, PTP and RTP sessions

@@ -1055,11 +1055,13 @@ std::list<StreamSink> SessionManager::get_updated_sinks(
 }
 
 void SessionManager::update_sinks(const std::list<RemoteSource>& sources_list) {
-  auto sinks_list = get_updated_sinks(sources_list);
-  for (auto& sink : sinks_list) {
-    // Re-add sink with new SDP, since the sink.id is the same there will be
-    // an update
-    add_sink(sink);
+  if (config_->get_auto_sinks_update()) {
+    auto sinks_list = get_updated_sinks(sources_list);
+    for (auto& sink : sinks_list) {
+      // Re-add sink with new SDP, since the sink.id is the same there will be
+      // an update
+      add_sink(sink);
+    }
   }
 }
 

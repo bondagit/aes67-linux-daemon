@@ -84,7 +84,7 @@ export default class RestAPI {
     });
   }
 
-  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id) {
+  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id, auto_sinks_update) {
     return this.doFetch(config, {
       body: JSON.stringify({
         log_severity: parseInt(log_severity, 10),
@@ -100,7 +100,8 @@ export default class RestAPI {
         sap_mcast_addr: sap_mcast_addr,
         sap_interval: parseInt(sap_interval, 10),
         custom_node_id: custom_node_id,
-        mdns_enabled: mdns_enabled
+        mdns_enabled: mdns_enabled,
+        auto_sinks_update: auto_sinks_update
       }),
       method: 'POST'
     }).catch(err => {

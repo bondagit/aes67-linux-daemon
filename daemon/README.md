@@ -12,6 +12,7 @@ The daemon is responsible for:
 * mDNS sources discovery and advertisement (using Linux Avahi) compatible with Ravenna standard
 * RTSP client and server to retrieve, return and update SDP files via DESCRIBE and ANNOUNCE methods according to Ravenna standard
 * IGMP handling for SAP, PTP and RTP sessions
+* automatic update of Sinks based on discovered mDNS/SAP remote sources
 
 
 ## Configuration file ##
@@ -187,7 +188,8 @@ Example
       "ip_addr": "127.0.0.1",
       "node_id": "AES67 daemon d9aca383",
       "custom_node_id": "",
-      "ptp_status_script": "./scripts/ptp_status.sh"
+      "ptp_status_script": "./scripts/ptp_status.sh",
+      "auto_sinks_update": true
     }
 
 where:
@@ -268,6 +270,10 @@ where:
 > **node\_id**
 > JSON string specifying the unique node identifier used to identify mDNS, SAP and SDP services announced by the daemon.
 > **_NOTE:_** This parameter is read-only and cannot be set. The server will determine the node id at startup time.
+
+> **mauto\_sinks\_update**
+> JSON boolean specifying whether to enable or disable the automatic update of the configured Sinks.
+> **_NOTE:_** When enabled the daemon will automatically update the configured Sinks according to the discovered remote sources via SAP and mDNS/RTSP updates. The SDP Originator (o=) is used to match a Sink with the remote source/s.
 
 > **custom\_node\_id**
 > JSON string specifying a custom node identifier used to identify mDNS, SAP and SDP services announced by the daemon. 

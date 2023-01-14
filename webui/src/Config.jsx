@@ -59,7 +59,8 @@ class Config extends Component {
       ipAddr: '',
       errors: 0,
       isConfigLoading: false,
-      isVersionLoading: false
+      isVersionLoading: false,
+      autoSinksUpdate: false
     };
     this.onSubmit = this.onSubmit.bind(this);
     this.inputIsValid = this.inputIsValid.bind(this);
@@ -104,6 +105,7 @@ class Config extends Component {
             macAddr: data.mac_addr,
             ipAddr: data.ip_addr,
             nodeId: data.node_id,
+            autoSinksUpdate: data.auto_sinks_update,
             isConfigLoading: false
 	  }))
       .catch(err => this.setState({isConfigLoading: false}));
@@ -139,7 +141,8 @@ class Config extends Component {
       this.state.sapMcastAddr,
       this.state.sapInterval,
       this.state.mdnsEnabled,
-      this.state.customNodeId)
+      this.state.customNodeId,
+      this.state.autoSinksUpdate)
     .then(response => toast.success('Applying new configuration ...'));
   }
 
@@ -225,6 +228,10 @@ class Config extends Component {
           <tr height="35">
             <th align="left"> <label>mDNS enabled</label> </th>
             <th align="left"> <input type="checkbox" onChange={e => this.setState({mdnsEnabled: e.target.checked})} checked={this.state.mdnsEnabled ? true : undefined}/> </th>
+          </tr>
+          <tr height="35">
+            <th align="left"> <label>Automaitc update of Sinks</label> </th>
+            <th align="left"> <input type="checkbox" onChange={e => this.setState({autoSinksUpdate: e.target.checked})} checked={this.state.autoSinksUpdate ? true : undefined}/> </th>
           </tr>
           <tr>
             <th align="left"> <label>Network Interface</label> </th>
