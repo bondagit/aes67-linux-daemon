@@ -134,9 +134,9 @@ std::pair<bool, RtspSource> RtspClient::process(RtspClient::Observer callback,
     BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: connecting to "
                              << "rtsp://" << address << ":" << port << path;
 #if BOOST_VERSION < 106600
-  s.expires_from_now(boost::posix_time::seconds(1));
+    s.expires_from_now(boost::posix_time::seconds(5));
 #else
-  s.expires_after(boost::asio::chrono::seconds(1));
+    s.expires_after(boost::asio::chrono::seconds(5));
 #endif
     s.connect(address, port.length() ? port : dft_port);
     if (!s || s.error()) {
@@ -233,6 +233,11 @@ std::pair<bool, RtspSource> RtspClient::process(RtspClient::Observer callback,
       }
 
       if (wait_for_updates) {
+#if BOOST_VERSION < 106600
+        s.expires_from_now(boost::posix_time::hours(24 * 365 * 10));
+#else
+        s.expires_after(boost::asio::chrono::hours(24 * 365 * 10));
+#endif
         /* we start waiting for updates */
         do {
           std::getline(s, request);
