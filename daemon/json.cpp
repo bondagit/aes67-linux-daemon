@@ -29,7 +29,7 @@
 #include "json.hpp"
 
 static inline std::string remove_undesired_chars(const std::string& s) {
-  std::regex html_regex("[^ A-Za-z0-9:~._/=%\()\\r\\n\\t\?#-]?");
+  std::regex html_regex("[^ A-Za-z0-9:~.,_/=%\()\\r\\n\\t\?#-]?");
   return std::regex_replace(s, html_regex, "");
 }
 
