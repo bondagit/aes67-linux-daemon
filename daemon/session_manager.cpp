@@ -1054,9 +1054,10 @@ std::list<StreamSink> SessionManager::get_updated_sinks(
   return sinks_list;
 }
 
-void SessionManager::update_sinks(const std::list<RemoteSource>& sources_list) {
+void SessionManager::update_sinks() {
   if (config_->get_auto_sinks_update()) {
-    auto sinks_list = get_updated_sinks(sources_list);
+    std::list<RemoteSource> remote_sources = browser_->get_remote_sources();
+    auto sinks_list = get_updated_sinks(remote_sources);
     for (auto& sink : sinks_list) {
       // Re-add sink with new SDP, since the sink.id is the same there will be
       // an update
@@ -1214,10 +1215,7 @@ bool SessionManager::worker() {
                               << sap_interval << " secs";
     }
 
-    /* Use a newer version of source if the current version isn't available
-     * anymore. This typically happens when equipment is restarted. */
-    std::list<RemoteSource> remote_sources = browser_->get_remote_sources();
-    update_sinks(remote_sources);
+    update_sinks();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }

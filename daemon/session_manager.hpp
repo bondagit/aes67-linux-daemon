@@ -170,7 +170,7 @@ class SessionManager {
 
   std::list<StreamSink> get_updated_sinks(
       const std::list<RemoteSource>& sources_list);
-  void update_sinks(const std::list<RemoteSource>& sources_list);
+  void update_sinks();
 
   void on_add_source(const StreamSource& source, const StreamInfo& info);
   void on_remove_source(const StreamInfo& info);
