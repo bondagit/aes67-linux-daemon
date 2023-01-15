@@ -230,7 +230,7 @@ class Config extends Component {
             <th align="left"> <input type="checkbox" onChange={e => this.setState({mdnsEnabled: e.target.checked})} checked={this.state.mdnsEnabled ? true : undefined}/> </th>
           </tr>
           <tr height="35">
-            <th align="left"> <label>Automaitc update of Sinks</label> </th>
+            <th align="left"> <label>Auto Sinks update</label> </th>
             <th align="left"> <input type="checkbox" onChange={e => this.setState({autoSinksUpdate: e.target.checked})} checked={this.state.autoSinksUpdate ? true : undefined}/> </th>
           </tr>
           <tr>

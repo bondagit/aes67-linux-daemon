@@ -1048,7 +1048,7 @@ std::list<StreamSink> SessionManager::get_updated_sinks(
       BOOST_LOG_TRIVIAL(info)
           << "session_manager:: sink " << std::to_string(sink.id)
           << " SDP change detected version " << newVersion << " updating";
-      sinks_list.emplace_back(sink);
+      sinks_list.emplace_back(std::move(sink));
     }
   }
   return sinks_list;
