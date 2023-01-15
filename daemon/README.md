@@ -271,9 +271,9 @@ where:
 > JSON string specifying the unique node identifier used to identify mDNS, SAP and SDP services announced by the daemon.
 > **_NOTE:_** This parameter is read-only and cannot be set. The server will determine the node id at startup time.
 
-> **mauto\_sinks\_update**
+> **auto\_sinks\_update**
 > JSON boolean specifying whether to enable or disable the automatic update of the configured Sinks.
-> **_NOTE:_** When enabled the daemon will automatically update the configured Sinks according to the discovered remote sources via SAP and mDNS/RTSP updates. The SDP Originator (o=) is used to match a Sink with the remote source/s.
+> When enabled the daemon will automatically update the configured Sinks according to the discovered remote sources via SAP and mDNS/RTSP updates. The SDP Originator (o=) is used to match a Sink with the remote source/s.
 
 > **custom\_node\_id**
 > JSON string specifying a custom node identifier used to identify mDNS, SAP and SDP services announced by the daemon. 
