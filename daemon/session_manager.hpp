@@ -25,6 +25,7 @@
 #include <map>
 #include <shared_mutex>
 #include <thread>
+#include <chrono>
 
 #include "config.hpp"
 #include "driver_interface.hpp"
@@ -114,6 +115,8 @@ class SessionManager {
   bool init() {
     if (!running_) {
       running_ = true;
+      g_session_version = std::chrono::system_clock::now().time_since_epoch() /
+                          std::chrono::seconds(1);
       // to have an increasing session versions between restarts
       res_ = std::async(std::launch::async, &SessionManager::worker, this);
     }
@@ -245,7 +248,7 @@ class SessionManager {
   uint32_t last_sink_update_{0};
 
   /* used to handle session versioning */
-  inline static std::atomic<uint16_t> g_session_version{0};
+  inline static std::atomic<uint32_t> g_session_version{0};
 };
 
 #endif
