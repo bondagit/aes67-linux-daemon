@@ -61,6 +61,7 @@ class Browser : public MDNSClient {
 
   bool init() override;
   bool terminate() override;
+  uint32_t get_last_update_ts() const { return last_update_; }
 
   std::list<RemoteSource> get_remote_sources(
       const std::string& source = "all") const;
@@ -99,6 +100,7 @@ class Browser : public MDNSClient {
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;
   std::chrono::time_point<std::chrono::steady_clock> startup_;
+  uint32_t last_update_{0}; /* seconds from daemon startup */
 };
 
 #endif

@@ -1056,12 +1056,18 @@ std::list<StreamSink> SessionManager::get_updated_sinks(
 
 void SessionManager::update_sinks() {
   if (config_->get_auto_sinks_update()) {
-    std::list<RemoteSource> remote_sources = browser_->get_remote_sources();
-    auto sinks_list = get_updated_sinks(remote_sources);
-    for (auto& sink : sinks_list) {
-      // Re-add sink with new SDP, since the sink.id is the same there will be
-      // an update
-      add_sink(sink);
+    uint32_t last_update = browser_->get_last_update_ts();
+    // check remote sources only if an update arrived
+    if (last_update && last_sink_update_ != last_update) {
+      BOOST_LOG_TRIVIAL(debug) << "Updating sinks ...";
+      std::list<RemoteSource> remote_sources = browser_->get_remote_sources();
+      auto sinks_list = get_updated_sinks(remote_sources);
+      for (auto& sink : sinks_list) {
+        // Re-add sink with new SDP, since the sink.id is the same there will be
+        // an update
+        add_sink(sink);
+      }
+      last_sink_update_ = last_update;
     }
   }
 }
