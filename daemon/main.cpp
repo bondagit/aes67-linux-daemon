@@ -216,8 +216,13 @@ int main(int argc, char* argv[]) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
 #ifdef _USE_SYSTEMD_
-      sd_notify(0, "STOPPING=1");
-      sd_notify(0, "STATUS=Stopping");
+      if (is_terminated()) {
+        sd_notify(0, "STOPPING=1");
+        sd_notify(0, "STATUS=Stopping");
+      } else {
+        sd_notify(0, "RELOADING=1");
+        sd_notify(0, "STATUS=Restarting");
+      }
 #endif
 
       /* save session status to file */
