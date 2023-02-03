@@ -118,7 +118,7 @@ See [ALSA RAVENNA/AES67 Driver README](https://github.com/bondagit/aes67-linux-d
 
 This directory contains systemd configuration files for the daemon.
 
-The daemon integrates with systemd watchdog. To enable it recompile it with the option _-DWITH_SYSTEMD=ON_
+The daemon integrates with systemd watchdog. To enable it recompile it with the CMake option _-DWITH_SYSTEMD=ON_
 
 You can install the daemon under systemd using the following commands:
 
@@ -127,7 +127,7 @@ You can install the daemon under systemd using the following commands:
       sudo cp daemon/daemon.conf /etc
       sudo cp systemd/aes67-daemon.service /etc/systemd/system
       sudo systemctl enable aes67-daemon
-      systemctl daemon-reexec
+      sudo systemctl daemon-reexec
 
 To start the daemon use:
 
@@ -138,9 +138,9 @@ To stop it use:
      sudo systemctl stop aes67-daemon
 
 
-The daemon requires the RAVENNA module to be loaded.
+The daemon requires the _MergingRavennaALSA_ module to run.
 
-You can install the module on Ubuntu distro using the following commands:
+You can usally install the module on using the following commands:
 
     cd 3rdparty/ravenna-alsa-lkm/driver
     sudo make modules_install
@@ -148,7 +148,7 @@ You can install the module on Ubuntu distro using the following commands:
 If this doesn't work because you miss kernel certificate follow the instructions at: [No OpenSSL sign-file signing_key.pem](https://superuser.com/questions/1214116/no-openssl-sign-file-signing-key-pem-leads-to-error-while-loading-kernel-modules)
 
 
-Finally use the command to probe the modules:
+Finally use the command to load the modules:
 
     sudo depmod -a
 
