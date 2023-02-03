@@ -1,0 +1,60 @@
+[Unit]
+Description=AES67 daemon service
+Before=multi-user.target
+After=network.target
+
+[Service]
+Type=notify
+# Will be adjusted by service during startup
+WatchdogSec=10
+
+# Run as separate user created via sysusers.d
+User=aes67-daemon
+
+ExecStart=/usr/local/bin/aes67-daemon
+
+# Security filters.
+CapabilityBoundingSet=
+DevicePolicy=closed
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateMounts=yes
+PrivateTmp=yes
+PrivateUsers=yes
+# interface::get_mac_from_arp_cache() reads from /proc/net/arp
+ProcSubset=all
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectProc=invisible
+ProtectSystem=strict
+RemoveIPC=yes
+RestrictAddressFamilies=AF_INET AF_NETLINK AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=~@clock
+SystemCallFilter=~@cpu-emulation
+SystemCallFilter=~@debug
+SystemCallFilter=~@module
+SystemCallFilter=~@mount
+SystemCallFilter=~@obsolete
+SystemCallFilter=~@privileged
+SystemCallFilter=~@raw-io
+SystemCallFilter=~@reboot
+SystemCallFilter=~@resources
+SystemCallFilter=~@swap
+UMask=077
+# Paths matching daemon.conf
+ReadWritePaths=/etc/daemon.conf
+ReadWritePaths=/etc/status.json
+
+[Install]
+WantedBy=multi-user.target

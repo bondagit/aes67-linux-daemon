@@ -11,6 +11,8 @@ option(WITH_AVAHI "Include mDNS support via Avahi" OFF)
 option(FAKE_DRIVER "Use fake driver instead of RAVENNA" OFF)
 set(CMAKE_CXX_STANDARD 17)
 
+option(WITH_SYSTEMD "Include systemd notify and watchdog support" OFF)
+
 # ravena lkm _should_ be provided by the CLI. Nonetheless, we should be able
 # to find it in system dirs too...
 if (NOT RAVENNNA_ALSA_LKM_DIR)
@@ -53,4 +55,10 @@ if(WITH_AVAHI)
   add_definitions(-D_USE_AVAHI_)
   include_directories(aes67-daemon ${AVAHI_INCLUDE_DIRS})
   target_link_libraries(aes67-daemon ${AVAHI_LIBRARIES})
+endif()
+
+if(WITH_SYSTEMD)
+	MESSAGE(STATUS "WITH_SYSTEMD")
+	add_definitions(-D_USE_SYSTEMD_)
+	target_link_libraries(aes67-daemon systemd)
 endif()
