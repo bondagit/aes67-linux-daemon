@@ -31,11 +31,15 @@
 #include "rtsp_server.hpp"
 #include "session_manager.hpp"
 
+#ifdef _USE_SYSTEMD_
+#include <systemd/sd-daemon.h>
+#endif
+
 namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static std::string version("bondagit-1.5.3");
+static std::string version("bondagit-1.6.1");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -63,6 +67,11 @@ int main(int argc, char* argv[]) {
                                                        "message");
   int unix_style = postyle::unix_style | postyle::short_allow_next;
   bool driver_restart(true);
+
+#ifdef _USE_SYSTEMD_
+  // with which interval we should pet the dog
+  uint64_t current_watchdog_usec;
+#endif
 
   po::variables_map vm;
   try {
@@ -98,6 +107,17 @@ int main(int argc, char* argv[]) {
 
   std::string filename = vm["config"].as<std::string>();
 
+#ifdef _USE_SYSTEMD_
+  sd_watchdog_enabled(0, &current_watchdog_usec);
+
+  if (current_watchdog_usec > 0) {
+    // Inform systemd that if we're not petting the dog in 5s we're bust.
+    sd_notify(0, "WATCHDOG_USEC=5000000");
+
+    current_watchdog_usec = 5000000;
+  }
+#endif
+
   while (!is_terminated() && rc == EXIT_SUCCESS) {
     /* load configuration from file */
     auto config = Config::parse(filename, driver_restart);
@@ -112,6 +132,11 @@ int main(int argc, char* argv[]) {
     log_init(*config);
 
     if (config->get_ip_addr_str().empty()) {
+#ifdef _USE_SYSTEMD_
+      if (current_watchdog_usec > 0)
+        sd_notify(0, "WATCHDOG=1");
+      sd_notify(0, "STATUS=no IP address, waiting ...");
+#endif
       BOOST_LOG_TRIVIAL(info) << "main:: no IP address, waiting ...";
       std::this_thread::sleep_for(std::chrono::seconds(1));
       continue;
@@ -125,8 +150,14 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error(std::string("DriverManager:: init failed"));
       }
 
+      /* start browser */
+      auto browser = Browser::create(config);
+      if (browser == nullptr || !browser->init()) {
+        throw std::runtime_error(std::string("Browser:: init failed"));
+      }
+
       /* start session manager */
-      auto session_manager = SessionManager::create(driver, config);
+      auto session_manager = SessionManager::create(driver, browser, config);
       if (session_manager == nullptr || !session_manager->init()) {
         throw std::runtime_error(std::string("SessionManager:: init failed"));
       }
@@ -143,12 +174,6 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error(std::string("RtspServer:: init failed"));
       }
 
-      /* start browser */
-      auto browser = Browser::create(config);
-      if (browser == nullptr || !browser->init()) {
-        throw std::runtime_error(std::string("Browser:: init failed"));
-      }
-
       /* start http server */
       HttpServer http_server(session_manager, browser, config);
       if (!http_server.init()) {
@@ -159,7 +184,22 @@ int main(int argc, char* argv[]) {
       session_manager->load_status();
 
       BOOST_LOG_TRIVIAL(debug) << "main:: init done, entering loop...";
+
+#ifdef _USE_SYSTEMD_
+      // To be able to use sd_notify at all have to set service NotifyAccess
+      // (e.g. to main)
+      sd_notify(0, "READY=1");  // If service Type=notify the service is only
+                                // considered ready once we send this (this is
+                                // independent of watchdog capability)
+      sd_notify(0, "STATUS=Working");
+#endif
+
       while (!is_terminated()) {
+#ifdef _USE_SYSTEMD_
+        if (current_watchdog_usec > 0)
+          sd_notify(0, "WATCHDOG=1");
+#endif
+
         auto [ip_addr, ip_str] = get_interface_ip(config->get_interface_name());
         if (config->get_ip_addr_str() != ip_str) {
           BOOST_LOG_TRIVIAL(warning)
@@ -175,6 +215,15 @@ int main(int argc, char* argv[]) {
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
+#ifdef _USE_SYSTEMD_
+      if (is_terminated()) {
+        sd_notify(0, "STOPPING=1");
+        sd_notify(0, "STATUS=Stopping");
+      } else {
+        sd_notify(0, "RELOADING=1");
+        sd_notify(0, "STATUS=Restarting");
+      }
+#endif
 
       /* save session status to file */
       session_manager->save_status();
@@ -182,11 +231,6 @@ int main(int argc, char* argv[]) {
       /* stop http server */
       if (!http_server.terminate()) {
         throw std::runtime_error(std::string("HttpServer:: terminate failed"));
-      }
-
-      /* stop browser */
-      if (!browser->terminate()) {
-        throw std::runtime_error(std::string("Browser:: terminate failed"));
       }
 
       /* stop rtsp server */
@@ -205,6 +249,11 @@ int main(int argc, char* argv[]) {
       if (!session_manager->terminate()) {
         throw std::runtime_error(
             std::string("SessionManager:: terminate failed"));
+      }
+
+      /* stop browser */
+      if (!browser->terminate()) {
+        throw std::runtime_error(std::string("Browser:: terminate failed"));
       }
 
       /* stop driver manager */

@@ -29,7 +29,7 @@
 #include "json.hpp"
 
 static inline std::string remove_undesired_chars(const std::string& s) {
-  std::regex html_regex("[^ A-Za-z0-9:~._/=%\()\\r\\n\\t\?#-]?");
+  std::regex html_regex("[^ A-Za-z0-9:~.,_/=%\()\\r\\n\\t\?#-]?");
   return std::regex_replace(s, html_regex, "");
 }
 
@@ -99,13 +99,16 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"interface_name\": \""
      << escape_json(config.get_interface_name()) << "\""
      << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
-     << ",\n  \"custom_node_id\": \"" << escape_json(config.get_custom_node_id()) << "\""
+     << ",\n  \"custom_node_id\": \""
+     << escape_json(config.get_custom_node_id()) << "\""
      << ",\n  \"node_id\": \"" << escape_json(config.get_node_id()) << "\""
      << ",\n  \"ptp_status_script\": \""
      << escape_json(config.get_ptp_status_script()) << "\""
-     << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str()) << "\""
+     << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str())
+     << "\""
      << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
-     << "\n}\n";
+     << ",\n  \"auto_sinks_update\": " << std::boolalpha
+     << config.get_auto_sinks_update() << "\n}\n";
   return ss.str();
 }
 
@@ -327,6 +330,8 @@ Config json_to_config_(std::istream& js, Config& config) {
       } else if (key == "custom_node_id") {
         config.set_custom_node_id(
             remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "auto_sinks_update") {
+        config.set_auto_sinks_update(val.get_value<bool>());
       } else if (key == "mac_addr" || key == "ip_addr" || key == "node_id") {
         /* ignored */
       } else {

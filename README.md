@@ -50,10 +50,11 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * control and configuration of up to 64 multicast and unicast sources and sinks using the ALSA RAVENNA/AES67 driver via netlink
 * session handling and SDP parsing and creation
 * HTTP REST API for the daemon control and configuration
-* SAP sources discovery and advertisement compatible with AES67 standard
+* SAP sources discovery, update and advertisement compatible with AES67 standard
 * mDNS sources discovery and advertisement (using Linux Avahi) compatible with Ravenna standard
 * RTSP client and server to retrieve, return and update SDP files via DESCRIBE and ANNOUNCE methods according to Ravenna standard
 * IGMP handling for SAP, PTP and RTP sessions
+* Integration with systemd watchdog monitoring (from daemon release v1.6)
 
 The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.
 See the [README](daemon/README.md) file in this directory for additional information about the AES67 daemon configuration and the HTTP REST API.
@@ -112,6 +113,45 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 * patch to compile with Linux Kernel v5
 
 See [ALSA RAVENNA/AES67 Driver README](https://github.com/bondagit/aes67-linux-daemon/blob/master/README.md) for additional information about the Merging Technologies module and for proper Linux Kernel configuration and tuning.
+
+### [systemd](systemd) directory ###
+
+This directory contains systemd configuration files for the daemon.
+
+The daemon integrates with systemd watchdog. To enable it recompile it with the option _-DWITH_SYSTEMD=ON_
+
+You can install the daemon under systemd using the following commands:
+
+      sudo useradd -M -l aes67-daemon -c "AES67 Linux daemon"
+      sudo cp daemon/aes67-daemon /usr/local/bin/aes67-daemon
+      sudo cp daemon/daemon.conf /etc
+      sudo cp systemd/aes67-daemon.service /etc/systemd/system
+      sudo systemctl enable aes67-daemon
+      systemctl daemon-reexec
+
+To start the daemon use:
+
+     sudo systemctl start aes67-daemon
+
+To stop it use:
+
+     sudo systemctl stop aes67-daemon
+
+
+The daemon requires the RAVENNA module to be loaded.
+
+You can install the module on Ubuntu distro using the following commands:
+
+    cd 3rdparty/ravenna-alsa-lkm/driver
+    sudo make modules_install
+
+If this doesn't work because you miss kernel certificate follow the instructions at: [No OpenSSL sign-file signing_key.pem](https://superuser.com/questions/1214116/no-openssl-sign-file-signing-key-pem-leads-to-error-while-loading-kernel-modules)
+
+
+Finally use the command to probe the modules:
+
+    sudo depmod -a
+
 
 ### [test](test) directory ###
 

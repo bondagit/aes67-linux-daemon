@@ -19,6 +19,7 @@
 //
 
 #include "utils.hpp"
+#include "log.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -86,9 +87,9 @@ std::string get_host_node_id(uint32_t ip_addr) {
 }
 
 std::string sdp_get_subject(const std::string& sdp) {
-  std::stringstream ssstrem(sdp);
+  std::stringstream sstrem(sdp);
   std::string line;
-  while (getline(ssstrem, line, '\n')) {
+  while (getline(sstrem, line, '\n')) {
     if (line.substr(0, 2) == "s=") {
       auto subject = line.substr(2);
       boost::trim(subject);
@@ -96,4 +97,41 @@ std::string sdp_get_subject(const std::string& sdp) {
     }
   }
   return "";
+}
+
+SDPOrigin sdp_get_origin(const std::string sdp) {
+  SDPOrigin origin;
+  try {
+    std::stringstream sstream(sdp);
+    std::string line;
+    while (getline(sstream, line, '\n')) {
+      boost::trim(line);
+      if (line[1] != '=') {
+        BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid SDP file";
+        break;
+      }
+      std::string val = line.substr(2);
+      if (line[0] == 'o') {
+        std::vector<std::string> fields;
+        boost::split(fields, val, [line](char c) { return c == ' '; });
+        if (fields.size() < 6) {
+          BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid origin";
+          break;
+        }
+
+        origin.username = fields[0];
+        origin.session_id = fields[1];
+        origin.session_version = std::stoull(fields[2]);
+        origin.network_type = fields[3];
+        origin.address_type = fields[4];
+        origin.unicast_address = fields[5];
+        break;
+      }
+    }
+  } catch (...) {
+    BOOST_LOG_TRIVIAL(fatal) << "session_manager:: invalid SDP"
+                             << ", cannot extract SDP identifier";
+  }
+
+  return origin;
 }

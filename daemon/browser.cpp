@@ -19,7 +19,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "utils.hpp"
 #include "browser.hpp"
 
 using namespace boost::algorithm;
@@ -73,23 +72,23 @@ bool Browser::worker() {
       BOOST_LOG_TRIVIAL(debug) << "browser:: received SAP message for " << id;
 
       std::unique_lock sources_lock(sources_mutex_);
+      last_update_ =
+          duration_cast<second_t>(steady_clock::now() - startup_).count();
 
       auto it = sources_.get<id_tag>().find(id);
       if (it == sources_.end()) {
         // Source is not in the map
         if (is_announce) {
           // annoucement, add new source
-          sources_.insert(
-              {id,
-               "SAP",
-               ip::address_v4(ntohl(addr)).to_string(),
-               sdp_get_subject(sdp),
-               {},
-               sdp,
-               static_cast<uint32_t>(
-                   duration_cast<second_t>(steady_clock::now() - startup_)
-                       .count()),
-               config_->get_sap_interval()});
+          sources_.insert({id,
+                           "SAP",
+                           ip::address_v4(ntohl(addr)).to_string(),
+                           sdp_get_subject(sdp),
+                           {},
+                           sdp_get_origin(sdp),
+                           sdp,
+                           last_update_,
+                           config_->get_sap_interval()});
         }
       } else {
         // Source is already in the map
@@ -97,12 +96,10 @@ bool Browser::worker() {
           BOOST_LOG_TRIVIAL(debug)
               << "browser:: refreshing SAP source " << it->id;
           // annoucement, update last seen and announce period
-          uint32_t last_seen =
-              duration_cast<second_t>(steady_clock::now() - startup_).count();
           auto upd_source{*it};
-          if ((last_seen - upd_source.last_seen) != 0) {
-            upd_source.announce_period = last_seen - upd_source.last_seen;
-            upd_source.last_seen = last_seen;
+          if ((last_update_ - upd_source.last_seen) != 0) {
+            upd_source.announce_period = last_update_ - upd_source.last_seen;
+            upd_source.last_seen = last_update_;
             sources_.replace(it, upd_source);
           }
         } else {
@@ -130,6 +127,8 @@ bool Browser::worker() {
           BOOST_LOG_TRIVIAL(info)
               << "browser:: SAP source " << it->id << " timeout";
           it = sources_.erase(it);
+          last_update_ =
+              duration_cast<second_t>(steady_clock::now() - startup_).count();
         } else {
           it++;
         }
@@ -150,9 +149,9 @@ bool Browser::worker() {
 void Browser::on_change_rtsp_source(const std::string& name,
                                     const std::string& domain,
                                     const RtspSource& s) {
-  uint32_t last_seen =
-      duration_cast<second_t>(steady_clock::now() - startup_).count();
   std::unique_lock sources_lock(sources_mutex_);
+  last_update_ =
+      duration_cast<second_t>(steady_clock::now() - startup_).count();
   /* search by name */
   auto rng = sources_.get<name_tag>().equal_range(name);
   while (rng.first != rng.second) {
@@ -163,9 +162,10 @@ void Browser::on_change_rtsp_source(const std::string& name,
                               << " name " << name << " domain " << domain;
       auto upd_source{*it};
       upd_source.id = s.id;
-      upd_source.sdp = s.sdp;
       upd_source.address = s.address;
-      upd_source.last_seen = last_seen;
+      upd_source.origin = sdp_get_origin(s.sdp);
+      upd_source.sdp = s.sdp;
+      upd_source.last_seen = last_update_;
       sources_.get<name_tag>().replace(it, upd_source);
       return;
     }
@@ -174,8 +174,8 @@ void Browser::on_change_rtsp_source(const std::string& name,
   /* entry not found -> add */
   BOOST_LOG_TRIVIAL(info) << "browser:: adding RTSP source " << s.id << " name "
                           << name << " domain " << domain;
-  sources_.insert(
-      {s.id, s.source, s.address, name, domain, s.sdp, last_seen, 0});
+  sources_.insert({s.id, s.source, s.address, name, domain,
+                   sdp_get_origin(s.sdp), s.sdp, last_update_, 0});
 }
 
 void Browser::on_remove_rtsp_source(const std::string& name,
@@ -190,6 +190,8 @@ void Browser::on_remove_rtsp_source(const std::string& name,
           << "browser:: removing RTSP source " << it->id << " name " << it->name
           << " domain " << it->domain;
       name_idx.erase(it);
+      last_update_ =
+          duration_cast<second_t>(steady_clock::now() - startup_).count();
       break;
     }
     ++rng.first;
@@ -205,6 +207,7 @@ bool Browser::init() {
     running_ = true;
     res_ = std::async(std::launch::async, &Browser::worker, this);
   }
+  last_update_ = 0;
   return true;
 }
 

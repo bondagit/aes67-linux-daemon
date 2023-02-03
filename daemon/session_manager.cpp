@@ -38,7 +38,7 @@
 #include "session_manager.hpp"
 #include "interface.hpp"
 
-static uint8_t get_codec_word_lenght(const std::string& codec) {
+static uint8_t get_codec_word_length(const std::string& codec) {
   if (codec == "L16") {
     return 2;
   }
@@ -103,8 +103,21 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
             return false;
           }
           break;
-        case 'o':
-          break;
+        case 'o': {
+          std::vector<std::string> fields;
+          boost::split(fields, val, [line](char c) { return c == ' '; });
+          if (fields.size() < 6) {
+            BOOST_LOG_TRIVIAL(warning)
+                << "session_manager:: invalid origin at line " << num;
+          } else {
+            info.origin.username = fields[0];
+            info.origin.session_id = fields[1];
+            info.origin.session_version = std::stoull(fields[2]);
+            info.origin.network_type = fields[3];
+            info.origin.address_type = fields[4];
+            info.origin.unicast_address = fields[5];
+          }
+        } break;
         case 't':
           /* t=0 0 */
           status = sdp_parser_status::time;
@@ -150,7 +163,7 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
                 if (info.stream.m_byPayloadType == std::stoi(fields[0])) {
                   strncpy(info.stream.m_cCodec, fields[1].c_str(),
                           sizeof(info.stream.m_cCodec) - 1);
-                  info.stream.m_byWordLength = get_codec_word_lenght(fields[1]);
+                  info.stream.m_byWordLength = get_codec_word_length(fields[1]);
                   info.stream.m_ui32SamplingRate = std::stoul(fields[2]);
                   if (info.stream.m_byNbOfChannels != std::stoi(fields[3])) {
                     BOOST_LOG_TRIVIAL(warning)
@@ -275,14 +288,15 @@ bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
 
 std::shared_ptr<SessionManager> SessionManager::create(
     std::shared_ptr<DriverManager> driver,
+    std::shared_ptr<Browser> browser,
     std::shared_ptr<Config> config) {
   // no need to be thread-safe here
   static std::weak_ptr<SessionManager> instance;
   if (auto ptr = instance.lock()) {
     return ptr;
   }
-  auto ptr =
-      std::shared_ptr<SessionManager>(new SessionManager(driver, config));
+  auto ptr = std::shared_ptr<SessionManager>(
+      new SessionManager(driver, browser, config));
   instance = ptr;
   return ptr;
 }
@@ -481,7 +495,7 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
           sizeof(info.stream.m_cName) - 1);
   info.stream.m_ucDSCP = source.dscp;  // IPv4 DSCP
   info.stream.m_byPayloadType = source.payload_type;
-  info.stream.m_byWordLength = get_codec_word_lenght(source.codec);
+  info.stream.m_byWordLength = get_codec_word_length(source.codec);
   info.stream.m_byNbOfChannels = source.map.size();
   strncpy(info.stream.m_cCodec, source.codec.c_str(),
           sizeof(info.stream.m_cCodec) - 1);
@@ -613,8 +627,7 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   ss << "v=0\n"
      << "o=- " << info.session_id << " " << info.session_version << " IN IP4 "
      << ip::address_v4(info.stream.m_ui32SrcIP).to_string() << "\n"
-     << "s=" << config_->get_node_id() << " "
-     << info.stream.m_cName << "\n"
+     << "s=" << config_->get_node_id() << " " << info.stream.m_cName << "\n"
      << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string();
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
     ss << "/" << static_cast<unsigned>(info.stream.m_byTTL);
@@ -642,8 +655,8 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   if (info.refclk_ptp_traceable) {
     ss << "traceable\n";
   } else {
-    ss << ptp_status_.gmid << ":"
-       << static_cast<unsigned>(ptp_config_.domain) << "\n";
+    ss << ptp_status_.gmid << ":" << static_cast<unsigned>(ptp_config_.domain)
+       << "\n";
   }
   ss << "a=recvonly\n";
 
@@ -1009,6 +1022,56 @@ size_t SessionManager::process_sap() {
   return sdp_len_sum;
 }
 
+std::list<StreamSink> SessionManager::get_updated_sinks(
+    const std::list<RemoteSource>& sources_list) {
+  std::list<StreamSink> sinks_list;
+  std::shared_lock sinks_lock(sinks_mutex_);
+  for (auto const& [id, info] : sinks_) {
+    uint64_t newVersion{0};
+    StreamSink sink{get_sink_(id, info)};
+    for (auto& source : sources_list) {
+      // if no remote source origin specified, skip
+      if (source.origin.session_id == "")
+        continue;
+
+      // search for the largest corresponding remote source version
+      if (sinks_[sink.id].origin == source.origin && sink.sdp != source.sdp &&
+          sinks_[sink.id].origin.session_version <
+              source.origin.session_version &&
+          newVersion < source.origin.session_version) {
+        newVersion = source.origin.session_version;
+        sink.sdp = source.sdp;
+      }
+    }
+
+    if (newVersion) {
+      BOOST_LOG_TRIVIAL(info)
+          << "session_manager:: sink " << std::to_string(sink.id)
+          << " SDP change detected version " << newVersion << " updating";
+      sinks_list.emplace_back(std::move(sink));
+    }
+  }
+  return sinks_list;
+}
+
+void SessionManager::update_sinks() {
+  if (config_->get_auto_sinks_update()) {
+    uint32_t last_update = browser_->get_last_update_ts();
+    // check remote sources only if an update arrived
+    if (last_update && last_sink_update_ != last_update) {
+      BOOST_LOG_TRIVIAL(debug) << "Updating sinks ...";
+      std::list<RemoteSource> remote_sources = browser_->get_remote_sources();
+      auto sinks_list = get_updated_sinks(remote_sources);
+      for (auto& sink : sinks_list) {
+        // Re-add sink with new SDP, since the sink.id is the same there will be
+        // an update
+        add_sink(sink);
+      }
+      last_sink_update_ = last_update;
+    }
+  }
+}
+
 void SessionManager::on_update_sources() {
   // trigger sources SDP file update
   sources_mutex_.lock();
@@ -1039,8 +1102,9 @@ void SessionManager::on_ptp_status_changed(const std::string& status) const {
       for (int i = STDERR_FILENO + 1; i < fdlimit; i++)
         close(i);
 
-      char* argv_list[] = {const_cast<char*>(config_->get_ptp_status_script().c_str()),
-                           const_cast<char*>(status.c_str()), NULL};
+      char* argv_list[] = {
+          const_cast<char*>(config_->get_ptp_status_script().c_str()),
+          const_cast<char*>(status.c_str()), NULL};
 
       execv(config_->get_ptp_status_script().c_str(), argv_list);
       exit(0);
@@ -1156,6 +1220,8 @@ bool SessionManager::worker() {
       BOOST_LOG_TRIVIAL(info) << "session_manager:: next SAP announcements in "
                               << sap_interval << " secs";
     }
+
+    update_sinks();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }

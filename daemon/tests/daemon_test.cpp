@@ -398,6 +398,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto interface_name = pt.get<std::string>("interface_name");
   auto mac_addr = pt.get<std::string>("mac_addr");
   auto ip_addr = pt.get<std::string>("ip_addr");
+  auto auto_sinks_update = pt.get<bool>("auto_sinks_update");
   BOOST_CHECK_MESSAGE(http_port == 9999, "config as excepcted");
   // BOOST_CHECK_MESSAGE(log_severity == 5, "config as excepcted");
   BOOST_CHECK_MESSAGE(playout_delay == 0, "config as excepcted");
@@ -419,6 +420,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(ptp_status_script == "", "config as excepcted");
   BOOST_CHECK_MESSAGE(node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(custom_node_id == "test node", "config as excepcted");
+  BOOST_CHECK_MESSAGE(auto_sinks_update == true, "config as excepcted");
 }
 
 BOOST_AUTO_TEST_CASE(get_ptp_status) {
