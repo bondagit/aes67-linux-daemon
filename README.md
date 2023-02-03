@@ -118,6 +118,8 @@ See [ALSA RAVENNA/AES67 Driver README](https://github.com/bondagit/aes67-linux-d
 
 This directory contains systemd configuration files for the daemon.
 
+The daemon integrates with systemd watchdog. To enable it recompile it with the option _-DWITH_SYSTEMD=ON_
+
 You can install the daemon under systemd using the following commands:
 
       sudo useradd -M -l aes67-daemon -c "AES67 Linux daemon"
