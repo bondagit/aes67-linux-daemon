@@ -1,15 +1,29 @@
-# C/C++ with GCC
-# Build your C/C++ project with GCC using make.
-# Add steps that publish test results, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
 - master
 
-pool:
-  vmImage: ubuntu-latest
+resources:
+- repo: self
 
-steps:
-- script: |
-    ./build.sh
-  displayName: 'build'
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        command: build
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile.daemon_tests'
+        tags: |
+          $(tag)
