@@ -118,7 +118,7 @@ See [ALSA RAVENNA/AES67 Driver README](https://github.com/bondagit/aes67-linux-d
 
 This directory contains systemd configuration files for the daemon.
 
-The daemon integrates with systemd watchdog. To enable it recompile it with the CMake option _-DWITH_SYSTEMD=ON_
+The daemon integrates with systemd watchdog. To enable it recompile with the CMake option _-DWITH_SYSTEMD=ON_
 
 You can install the daemon under systemd using the following commands:
 
@@ -140,12 +140,13 @@ To stop it use:
 
 The daemon requires the _MergingRavennaALSA_ module to run.
 
-You can usally install the module on using the following commands:
+You can usally install the module using the following commands:
 
     cd 3rdparty/ravenna-alsa-lkm/driver
     sudo make modules_install
 
-If this doesn't work because you miss kernel certificate follow the instructions at: [No OpenSSL sign-file signing_key.pem](https://superuser.com/questions/1214116/no-openssl-sign-file-signing-key-pem-leads-to-error-while-loading-kernel-modules)
+If this doesn't work because you miss kernel certificate follow the instructions at: 
+[No OpenSSL sign-file signing_key.pem](https://superuser.com/questions/1214116/no-openssl-sign-file-signing-key-pem-leads-to-error-while-loading-kernel-modules)
 
 
 Finally use the command to load the modules:
