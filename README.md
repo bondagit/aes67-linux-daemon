@@ -3,6 +3,8 @@
 AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.
 See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) for additional info.
 
+[![Build Status](https://dev.azure.com/AndreaBondavalli/AES67%20Linux%20daemon/_apis/build/status/bondagit.aes67-linux-daemon?branchName=master)](https://dev.azure.com/AndreaBondavalli/AES67%20Linux%20daemon/_build/latest?definitionId=24&branchName=master)
+
 # Introduction
 
 The daemon is a Linux process that uses the [Merging Technologies ALSA RAVENNA/AES67 Driver](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master) to handle PTP synchronization and RTP streams and exposes a REST interface for configuration and status monitoring.
