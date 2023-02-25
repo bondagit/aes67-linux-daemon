@@ -29,9 +29,9 @@
 class HttpServer {
  public:
   HttpServer() = delete;
-  HttpServer(std::shared_ptr<SessionManager> session_manager,
-             std::shared_ptr<Browser> browser,
-             std::shared_ptr<Config> config)
+  explicit HttpServer(std::shared_ptr<SessionManager> session_manager,
+                      std::shared_ptr<Browser> browser,
+                      std::shared_ptr<Config> config)
       : session_manager_(session_manager), browser_(browser), config_(config){};
   bool init();
   bool terminate();

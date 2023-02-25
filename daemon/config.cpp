@@ -76,8 +76,7 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
     config.sap_mcast_addr_ = "224.2.127.254";
   }
   if (config.ptp_domain_ > 127)
-    if (config.ptp_domain_ > 127)
-      config.ptp_domain_ = 0;
+    config.ptp_domain_ = 0;
 
   auto [mac_addr, mac_str] = get_interface_mac(config.interface_name_);
   if (mac_str.empty()) {

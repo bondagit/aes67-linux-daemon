@@ -28,7 +28,7 @@
 #ifdef _USE_AVAHI_
 struct AvahiLockGuard {
   AvahiLockGuard() = delete;
-  AvahiLockGuard(AvahiThreadedPoll* poll) : poll_(poll) {
+  explicit AvahiLockGuard(AvahiThreadedPoll* poll) : poll_(poll) {
     if (poll_ != nullptr) {
       avahi_threaded_poll_lock(poll_);
     }

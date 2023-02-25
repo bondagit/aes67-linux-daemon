@@ -25,7 +25,7 @@ bool RtspServer::update_source(uint8_t id,
                                const std::string& sdp) {
   bool ret = false;
   BOOST_LOG_TRIVIAL(debug) << "rtsp_server:: added source " << name;
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::scoped_lock<std::mutex> lock{mutex_};
   for (unsigned int i = 0; i < sessions_.size(); i++) {
     auto session = sessions_[i].lock();
     if (session != nullptr) {
@@ -39,7 +39,7 @@ bool RtspServer::update_source(uint8_t id,
 void RtspServer::accept() {
   acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
     if (!ec) {
-      std::lock_guard<std::mutex> lock(mutex_);
+      std::scoped_lock<std::mutex> lock{mutex_};
       /* check for free sessions */
       unsigned int i = 0;
       for (; i < sessions_.size(); i++) {
@@ -73,8 +73,8 @@ bool RtspSession::announce(uint8_t id,
    * and the specified source id has been described on this session send update
    */
   if (cseq_ < 0 && source_ids_.find(id) != source_ids_.end()) {
-    std::string path(std::string("/by-name/") +
-                     config_->get_node_id() + " " + name);
+    std::string path(std::string("/by-name/") + config_->get_node_id() + " " +
+                     name);
     std::stringstream ss;
     ss << "ANNOUNCE rtsp://" << address << ":" << std::to_string(port)
        << httplib::detail::encode_url(path) << " RTSP/1.0\r\n"
@@ -170,17 +170,18 @@ void RtspSession::build_response(const std::string& url) {
     send_error(400, "Bad Request");
     return;
   }
-  auto path = std::get<4>(res);
-  auto base_path =
-      std::string("/by-name/") + config_->get_node_id() + " ";
+  const auto& path = std::get<4>(res);
+  auto base_path = std::string("/by-name/") + config_->get_node_id() + " ";
   uint8_t id = SessionManager::stream_id_max + 1;
   if (path.rfind(base_path) != std::string::npos) {
     /* extract the source name from path and retrive the id */
     id = session_manager_->get_source_id(path.substr(base_path.length()));
   } else if (path.rfind("/by-id/") != std::string::npos) {
     try {
-      id = stoi(path.substr(7));
+      id = (uint8_t)stoi(path.substr(7));
     } catch (...) {
+      id = SessionManager::stream_id_max + 1;
+      ;
     }
   }
   if (id != (SessionManager::stream_id_max + 1)) {

@@ -46,7 +46,7 @@ class MDNSServer {
   MDNSServer() = delete;
   MDNSServer(const MDNSServer&) = delete;
   MDNSServer& operator=(const MDNSServer&) = delete;
-  virtual ~MDNSServer() { terminate(); };
+  virtual ~MDNSServer() = default;
 
   virtual bool init();
   virtual bool terminate();
@@ -55,6 +55,16 @@ class MDNSServer {
   bool remove_service(const std::string& name);
 
  protected:
+  static void entry_group_callback(AvahiEntryGroup* g,
+                                   AvahiEntryGroupState state,
+                                   void* userdata);
+  static void client_callback(AvahiClient* c,
+                              AvahiClientState state,
+                              void* userdata);
+
+  bool create_services(AvahiClient* client);
+
+ private:
   std::atomic_bool running_{false};
   std::shared_ptr<SessionManager> session_manager_;
   std::shared_ptr<Config> config_;
@@ -72,14 +82,6 @@ class MDNSServer {
   std::unique_ptr<AvahiClient, decltype(&avahi_client_free)> client_{
       nullptr, &avahi_client_free};
 
-  static void entry_group_callback(AvahiEntryGroup* g,
-                                   AvahiEntryGroupState state,
-                                   void* userdata);
-  static void client_callback(AvahiClient* c,
-                              AvahiClientState state,
-                              void* userdata);
-
-  bool create_services(AvahiClient* client);
 #endif
 };
 

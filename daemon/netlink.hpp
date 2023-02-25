@@ -26,62 +26,55 @@
 template <typename Protocol>
 class nl_endpoint {
  private:
-  sockaddr_nl sockaddr{.nl_family = AF_NETLINK};
+  sockaddr_nl sockaddr_{.nl_family = AF_NETLINK};
 
  public:
   using protocol_type = Protocol;
   using data_type = boost::asio::detail::socket_addr_type;
 
   nl_endpoint() {
-    sockaddr.nl_groups = 0;
-    sockaddr.nl_pid = getpid();
+    sockaddr_.nl_groups = 0;
+    sockaddr_.nl_pid = getpid();
   }
 
   nl_endpoint(int group, int pid = getpid()) {
-    sockaddr.nl_groups = group;
-    sockaddr.nl_pid = pid;
-  }
-
-  nl_endpoint(const nl_endpoint& other) { sockaddr = other.sockaddr; }
-
-  nl_endpoint& operator=(const nl_endpoint& other) {
-    sockaddr = other.sockaddr;
-    return *this;
+    sockaddr_.nl_groups = group;
+    sockaddr_.nl_pid = pid;
   }
 
   protocol_type protocol() const { return protocol_type(); }
 
-  data_type* data() { return reinterpret_cast<struct sockaddr*>(&sockaddr); }
+  data_type* data() { return reinterpret_cast<struct sockaddr*>(&sockaddr_); }
 
   const data_type* data() const {
-    return reinterpret_cast<const struct sockaddr*>(&sockaddr);
+    return reinterpret_cast<const struct sockaddr*>(&sockaddr_);
   }
 
-  std::size_t size() const { return sizeof(sockaddr); }
+  std::size_t size() const { return sizeof(sockaddr_); }
 
   void resize(std::size_t size) { /* nothing we can do here */
   }
 
-  std::size_t capacity() const { return sizeof(sockaddr); }
+  std::size_t capacity() const { return sizeof(sockaddr_); }
 };
 
 class nl_protocol {
  public:
-  nl_protocol() { proto = 0; }
+  nl_protocol() : proto_(0) {}
 
-  explicit nl_protocol(int proto) { this->proto = proto; }
+  explicit nl_protocol(int proto) : proto_(proto) {}
 
   int type() const { return SOCK_RAW; }
 
-  int protocol() const { return proto; }
+  int protocol() const { return proto_; }
 
   int family() const { return PF_NETLINK; }
 
-  typedef nl_endpoint<nl_protocol> endpoint;
-  typedef boost::asio::basic_raw_socket<nl_protocol> socket;
+  using endpoint = nl_endpoint<nl_protocol>;
+  using socket = boost::asio::basic_raw_socket<nl_protocol>;
 
  private:
-  int proto;
+  int proto_;
 };
 
 #endif

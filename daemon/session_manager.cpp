@@ -409,7 +409,7 @@ bool SessionManager::load_status() {
   return true;
 }
 
-bool SessionManager::save_status() {
+bool SessionManager::save_status() const {
   if (config_->get_status_file().empty()) {
     return true;
   }
@@ -443,7 +443,8 @@ uint8_t SessionManager::get_source_id(const std::string& name) const {
   return it != source_names_.end() ? it->second : (stream_id_max + 1);
 }
 
-void SessionManager::add_source_observer(ObserverType type, Observer cb) {
+void SessionManager::add_source_observer(ObserverType type,
+                                         const Observer& cb) {
   switch (type) {
     case ObserverType::add_source:
       add_source_observers.push_back(cb);
@@ -459,7 +460,7 @@ void SessionManager::add_source_observer(ObserverType type, Observer cb) {
 
 void SessionManager::on_add_source(const StreamSource& source,
                                    const StreamInfo& info) {
-  for (auto cb : add_source_observers) {
+  for (const auto& cb : add_source_observers) {
     cb(source.id, source.name, get_source_sdp_(source.id, info));
   }
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
@@ -470,8 +471,8 @@ void SessionManager::on_add_source(const StreamSource& source,
 }
 
 void SessionManager::on_remove_source(const StreamInfo& info) {
-  for (auto cb : remove_source_observers) {
-    cb(info.stream.m_uiId, info.stream.m_cName, {});
+  for (const auto& cb : remove_source_observers) {
+    cb((uint8_t)info.stream.m_uiId, info.stream.m_cName, {});
   }
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
     igmp_.leave(config_->get_ip_addr_str(),
@@ -531,13 +532,14 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
         config_->get_interface_name(),
         ip::address_v4(info.stream.m_ui32DestIP).to_string());
     int retry = 3;
-    while (!mac_addr.second.length() && retry--) {
+    while (!mac_addr.second.length() && retry > 0) {
       // if not in cache already try to populate the MAC cache
       (void)echo_try_connect(
           ip::address_v4(info.stream.m_ui32DestIP).to_string());
       mac_addr = get_mac_from_arp_cache(
           config_->get_interface_name(),
           ip::address_v4(info.stream.m_ui32DestIP).to_string());
+      retry--;
     }
     if (!mac_addr.second.length()) {
       BOOST_LOG_TRIVIAL(error)
@@ -693,8 +695,7 @@ std::error_code SessionManager::remove_source(uint32_t id) {
   }
 
   std::error_code ret;
-  const auto& info = (*it).second;
-  if (info.enabled) {
+  if (const auto& info = (*it).second; info.enabled) {
     ret = driver_->remove_rtp_stream(info.handle);
     if (!ret) {
       on_remove_source(info);
@@ -808,7 +809,7 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
       return DaemonErrc::cannot_parse_sdp;
     }
 
-    info.sink_sdp = std::move(sink.sdp);
+    info.sink_sdp = sink.sdp;
   }
   info.sink_source = sink.source;
   info.sink_use_sdp = true;  // save back and use with SDP file
@@ -1076,7 +1077,7 @@ void SessionManager::on_update_sources() {
   // trigger sources SDP file update
   sources_mutex_.lock();
   for (auto& [id, info] : sources_) {
-    for (auto cb : update_source_observers) {
+    for (const auto& cb : update_source_observers) {
       info.session_version++;
       cb(id, info.stream.m_cName, get_source_sdp_(id, info));
     }
@@ -1102,9 +1103,8 @@ void SessionManager::on_ptp_status_changed(const std::string& status) const {
       for (int i = STDERR_FILENO + 1; i < fdlimit; i++)
         close(i);
 
-      char* argv_list[] = {
-          const_cast<char*>(config_->get_ptp_status_script().c_str()),
-          const_cast<char*>(status.c_str()), NULL};
+      char* argv_list[] = {(char*)(config_->get_ptp_status_script().c_str()),
+                           (char*)(status.c_str()), nullptr};
 
       execv(config_->get_ptp_status_script().c_str(), argv_list);
       exit(0);

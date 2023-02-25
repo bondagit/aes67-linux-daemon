@@ -37,7 +37,7 @@ class SAP {
   constexpr static uint16_t max_length = 4096;
 
   SAP() = delete;
-  SAP(const std::string& sap_mcast_addr);
+  explicit SAP(const std::string& sap_mcast_addr);
 
   bool set_multicast_interface(const std::string& interface_ip);
   bool announcement(uint16_t msg_id_hash,

@@ -54,7 +54,7 @@ void DriverHandler::send(enum MT_ALSA_msg_id id,
                          NetlinkClient& client,
                          uint8_t* buffer,
                          size_t data_size,
-                         const uint8_t* data) {
+                         const uint8_t* data) const {
   struct MT_ALSA_msg alsa_msg;
   memset(&alsa_msg, 0, sizeof(alsa_msg));
   alsa_msg.id = id;
@@ -143,7 +143,7 @@ bool DriverHandler::terminate(const Config& /* config */) {
 void DriverHandler::send_command(enum MT_ALSA_msg_id id,
                                  size_t data_size,
                                  const uint8_t* data) {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::scoped_lock<std::mutex> lock{mutex_};
   if (data_size > max_payload) {
     on_command_error(id, DaemonErrc::send_invalid_size);
     return;

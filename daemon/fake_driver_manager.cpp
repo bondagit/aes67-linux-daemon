@@ -120,8 +120,9 @@ std::error_code DriverManager::add_rtp_stream(
     uint64_t& stream_handle) {
   stream_handle = ++g_handle;
   handles_.insert(stream_handle);
-  BOOST_LOG_TRIVIAL(info) << "fake_driver_manager:: add RTP stream success handle "
-                          << stream_handle;
+  BOOST_LOG_TRIVIAL(info)
+      << "fake_driver_manager:: add RTP stream success handle "
+      << stream_handle;
   return std::error_code{};
 }
 
@@ -170,7 +171,8 @@ std::error_code DriverManager::set_playout_delay(int32_t delay) {
 
 std::error_code DriverManager::get_sample_rate(uint32_t& sample_rate) {
   sample_rate = sample_rate_;
-  BOOST_LOG_TRIVIAL(info) << "fake_driver_manager:: sample rate " << sample_rate;
+  BOOST_LOG_TRIVIAL(info) << "fake_driver_manager:: sample rate "
+                          << sample_rate;
   return std::error_code{};
 }
 

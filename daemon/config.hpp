@@ -35,7 +35,7 @@ class Config {
   /* attributes retrieved from config json */
   uint16_t get_http_port() const { return http_port_; };
   uint16_t get_rtsp_port() const { return rtsp_port_; };
-  const std::string get_http_base_dir() const { return http_base_dir_; };
+  const std::string& get_http_base_dir() const { return http_base_dir_; };
   int get_log_severity() const { return log_severity_; };
   uint32_t get_playout_delay() const { return playout_delay_; };
   uint32_t get_tic_frame_size_at_1fs() const { return tic_frame_size_at_1fs_; };
@@ -64,7 +64,7 @@ class Config {
   bool get_daemon_restart() const { return daemon_restart_; };
   bool get_driver_restart() const { return driver_restart_; };
   bool get_mdns_enabled() const { return mdns_enabled_; };
-  int get_interface_idx() { return interface_idx_; };
+  int get_interface_idx() const { return interface_idx_; };
   const std::string& get_ptp_status_script() const {
     return ptp_status_script_;
   }

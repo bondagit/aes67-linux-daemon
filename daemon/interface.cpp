@@ -127,7 +127,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
     std::vector<std::string> tokens;
 
     std::getline(stream, line);
-    if (line.find(ip)) {
+    if (line.find(ip) == std::string::npos) {
       continue;
     }
     boost::split(tokens, line, boost::is_any_of(" "), boost::token_compress_on);
@@ -139,8 +139,8 @@ std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
       int j = 0;
       bool check = false;
       for (auto const& item : vec) {
-        mac[j] = strtol(item.c_str(), NULL, 16);
-        check |= mac[j];
+        mac[j] = strtol(item.c_str(), nullptr, 16);
+        check = check | (mac[j] != 0);
         j++;
       }
       if (check) {

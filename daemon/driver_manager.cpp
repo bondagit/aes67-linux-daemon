@@ -75,7 +75,7 @@ bool DriverManager::init(const Config& config) {
     return false;
   }
 
-  sample_rate = config.get_sample_rate();
+  sample_rate_ = config.get_sample_rate();
 
   TPTPConfig ptp_config;
   ptp_config.ui8Domain = config.get_ptp_domain();
@@ -287,39 +287,41 @@ void DriverManager::on_event(enum MT_ALSA_msg_id id,
       break;
     case MT_ALSA_Msg_SetMasterOutputVolume:
       if (req_size == sizeof(int32_t)) {
-        memcpy(&output_volume, req, req_size);
+        memcpy(&output_volume_, req, req_size);
         BOOST_LOG_TRIVIAL(info)
-            << "driver_manager:: event SetMasterOutputVolume " << output_volume;
+            << "driver_manager:: event SetMasterOutputVolume "
+            << output_volume_;
       }
       resp_size = 0;
       break;
     case MT_ALSA_Msg_SetMasterOutputSwitch:
       if (req_size == sizeof(int32_t)) {
-        memcpy(&output_switch, req, req_size);
+        memcpy(&output_switch_, req, req_size);
         BOOST_LOG_TRIVIAL(info)
-            << "driver_manager:: event SetMasterOutputSwitch " << output_switch;
+            << "driver_manager:: event SetMasterOutputSwitch "
+            << output_switch_;
       }
       resp_size = 0;
       break;
     case MT_ALSA_Msg_SetSampleRate:
       if (req_size == sizeof(uint32_t)) {
-        memcpy(&sample_rate, req, req_size);
+        memcpy(&sample_rate_, req, req_size);
         BOOST_LOG_TRIVIAL(info)
-            << "driver_manager:: event SetSampleRate " << sample_rate;
+            << "driver_manager:: event SetSampleRate " << sample_rate_;
       }
       resp_size = 0;
       break;
     case MT_ALSA_Msg_GetMasterOutputVolume:
       resp_size = sizeof(int32_t);
-      memcpy(resp, &output_volume, resp_size);
+      memcpy(resp, &output_volume_, resp_size);
       BOOST_LOG_TRIVIAL(info)
-          << "driver_manager:: event GetMasterOutputVolume " << output_volume;
+          << "driver_manager:: event GetMasterOutputVolume " << output_volume_;
       break;
     case MT_ALSA_Msg_GetMasterOutputSwitch:
       resp_size = sizeof(int32_t);
-      memcpy(resp, &output_switch, resp_size);
+      memcpy(resp, &output_switch_, resp_size);
       BOOST_LOG_TRIVIAL(info)
-          << "driver_manager:: event GetMasterOutputSwitch " << output_switch;
+          << "driver_manager:: event GetMasterOutputSwitch " << output_switch_;
       break;
     default:
       BOOST_LOG_TRIVIAL(error) << "driver_manager:: unknown event "

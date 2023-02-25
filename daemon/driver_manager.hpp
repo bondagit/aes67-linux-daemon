@@ -53,13 +53,13 @@ class DriverManager : public DriverHandler {
   std::error_code get_number_of_inputs(int32_t& inputs);
   std::error_code get_number_of_outputs(int32_t& outputs);
 
-  int32_t get_current_output_volume() { return output_volume; };
-  int32_t get_current_output_switch() { return output_switch; };
-  uint32_t get_current_sample_rate() { return sample_rate; };
+  int32_t get_current_output_volume() const { return output_volume_; };
+  int32_t get_current_output_switch() const { return output_switch_; };
+  uint32_t get_current_sample_rate() const { return sample_rate_; };
 
  protected:
   // singleton, use create to build
-  DriverManager(){};
+  DriverManager() = default;
 
   // these are used in init/terminate
   std::error_code hello();
@@ -79,12 +79,13 @@ class DriverManager : public DriverHandler {
                 const uint8_t* req = nullptr) override;
   void on_event_error(enum MT_ALSA_msg_id id, std::error_code error) override;
 
+ private:
   std::error_code retcode_;
   uint8_t recv_data_[NLMSG_SPACE(max_payload)]{0};
 
-  int32_t output_volume{-20};
-  int32_t output_switch{0};
-  uint32_t sample_rate{0};
+  int32_t output_volume_{-20};
+  int32_t output_switch_{0};
+  uint32_t sample_rate_{0};
 };
 
 #endif

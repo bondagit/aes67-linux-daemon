@@ -57,7 +57,6 @@ class Browser : public MDNSClient {
   Browser() = delete;
   Browser(const Browser&) = delete;
   Browser& operator=(const Browser&) = delete;
-  virtual ~Browser() { terminate(); };
 
   bool init() override;
   bool terminate() override;
@@ -68,17 +67,17 @@ class Browser : public MDNSClient {
 
  protected:
   // singleton, use create() to build
-  Browser(std::shared_ptr<Config> config)
-      : MDNSClient(config), startup_(std::chrono::steady_clock::now()){};
+  explicit Browser(std::shared_ptr<Config> config) : MDNSClient(config){};
 
   bool worker();
 
-  virtual void on_change_rtsp_source(const std::string& name,
-                                     const std::string& domain,
-                                     const RtspSource& source) override;
-  virtual void on_remove_rtsp_source(const std::string& name,
-                                     const std::string& domain) override;
+  void on_change_rtsp_source(const std::string& name,
+                             const std::string& domain,
+                             const RtspSource& source) override;
+  void on_remove_rtsp_source(const std::string& name,
+                             const std::string& domain) override;
 
+ private:
   std::future<bool> res_;
   std::atomic_bool running_{false};
 
@@ -99,7 +98,7 @@ class Browser : public MDNSClient {
 
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;
-  std::chrono::time_point<std::chrono::steady_clock> startup_;
+  std::chrono::time_point<std::chrono::steady_clock> startup_{std::chrono::steady_clock::now()};
   uint32_t last_update_{0}; /* seconds from daemon startup */
 };
 

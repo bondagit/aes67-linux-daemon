@@ -41,11 +41,11 @@ class IGMP {
   bool join(const std::string& interface_ip, const std::string& mcast_ip) {
     uint32_t mcast_ip_addr =
         ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
-    std::lock_guard<std::mutex> lock(mutex);
+    std::scoped_lock<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
     if (it != mcast_ref.end() && (*it).second > 0) {
-      mcast_ref[mcast_ip_addr]++;
+      (*it).second++;
       return true;
     }
 
@@ -76,14 +76,14 @@ class IGMP {
   bool leave(const std::string& interface_ip, const std::string& mcast_ip) {
     uint32_t mcast_ip_addr =
         ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
-    std::lock_guard<std::mutex> lock(mutex);
+    std::scoped_lock<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
     if (it == mcast_ref.end() || (*it).second == 0) {
       return false;
     }
 
-    if (--mcast_ref[mcast_ip_addr] > 0) {
+    if (--(*it).second > 0) {
       return true;
     }
 
