@@ -39,7 +39,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static std::string version("bondagit-1.6.1");
+static std::string version("bondagit-1.6.2");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
