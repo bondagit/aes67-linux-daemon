@@ -38,6 +38,8 @@ struct AvahiLockGuard {
       avahi_threaded_poll_unlock(poll_);
     }
   }
+  AvahiLockGuard(const AvahiLockGuard&) = delete;
+  AvahiLockGuard& operator=(const AvahiLockGuard&) = delete;
 
  private:
   AvahiThreadedPoll* poll_{nullptr};
