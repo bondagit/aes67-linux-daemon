@@ -55,6 +55,7 @@ class MDNSClient {
   virtual void on_remove_rtsp_source(const std::string& name,
                                      const std::string& domain){};
 
+#ifdef _USE_AVAHI_
   static void resolve_callback(AvahiServiceResolver* r,
                                AvahiIfIndex interface,
                                AvahiProtocol protocol,
@@ -80,6 +81,7 @@ class MDNSClient {
   static void client_callback(AvahiClient* c,
                               AvahiClientState state,
                               void* userdata);
+#endif
 
   void process_results();
 

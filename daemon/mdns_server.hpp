@@ -55,6 +55,7 @@ class MDNSServer {
   bool remove_service(const std::string& name);
 
  protected:
+#ifdef _USE_AVAHI_
   static void entry_group_callback(AvahiEntryGroup* g,
                                    AvahiEntryGroupState state,
                                    void* userdata);
@@ -63,6 +64,7 @@ class MDNSServer {
                               void* userdata);
 
   bool create_services(AvahiClient* client);
+#endif
 
  private:
   std::atomic_bool running_{false};
