@@ -351,11 +351,12 @@ bool HttpServer::init() {
   httplib::Client cli(config_->get_ip_addr_str().c_str(),
                       config_->get_http_port());
   int retry = 3;
-  while (retry--) {
+  while (retry) {
     auto res = cli.Get("/api/config");
     if (res && res->status == 200) {
       break;
     }
+    --retry;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   return retry;
