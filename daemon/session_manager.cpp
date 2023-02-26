@@ -38,7 +38,7 @@
 #include "session_manager.hpp"
 #include "interface.hpp"
 
-static uint8_t get_codec_word_length(const std::string& codec) {
+static uint8_t get_codec_word_length(std::string_view codec) {
   if (codec == "L16") {
     return 2;
   }
@@ -60,7 +60,7 @@ static uint8_t get_codec_word_length(const std::string& codec) {
   return 0;
 }
 
-bool SessionManager::parse_sdp(const std::string sdp, StreamInfo& info) const {
+bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
   /*
   v=0
   o=- 4 0 IN IP4 10.0.0.12
@@ -923,7 +923,7 @@ std::error_code SessionManager::get_sink_status(
   return ret;
 }
 
-std::error_code SessionManager::set_driver_config(const std::string& name,
+std::error_code SessionManager::set_driver_config(std::string_view name,
                                                   uint32_t value) const {
   if (name == "sample_rate")
     return driver_->set_sample_rate(value);
@@ -1103,8 +1103,9 @@ void SessionManager::on_ptp_status_changed(const std::string& status) const {
       for (int i = STDERR_FILENO + 1; i < fdlimit; i++)
         close(i);
 
-      char* argv_list[] = {(char*)(config_->get_ptp_status_script().c_str()),
-                           (char*)(status.c_str()), nullptr};
+      char* argv_list[] = {
+          const_cast<char*>(config_->get_ptp_status_script().c_str()),
+          const_cast<char*>(status.c_str()), nullptr};
 
       execv(config_->get_ptp_status_script().c_str(), argv_list);
       exit(0);
@@ -1142,7 +1143,8 @@ bool SessionManager::worker() {
         // return false;
       } else {
         char ptp_clock_id[24];
-        uint8_t* pui64GMID = reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID);
+        const uint8_t* pui64GMID =
+            reinterpret_cast<uint8_t*>(&ptp_status.ui64GMID);
         snprintf(ptp_clock_id, sizeof(ptp_clock_id),
                  "%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X", pui64GMID[0],
                  pui64GMID[1], pui64GMID[2], pui64GMID[3], pui64GMID[4],

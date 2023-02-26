@@ -99,7 +99,7 @@ std::string sdp_get_subject(const std::string& sdp) {
   return "";
 }
 
-SDPOrigin sdp_get_origin(const std::string sdp) {
+SDPOrigin sdp_get_origin(const std::string& sdp) {
   SDPOrigin origin;
   try {
     std::stringstream sstream(sdp);

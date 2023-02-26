@@ -112,6 +112,9 @@ struct RtspActiveClientRemover {
     }
   }
 
+  RtspActiveClientRemover(const RtspActiveClientRemover&) = delete;
+  RtspActiveClientRemover& operator=(const RtspActiveClientRemover&) = delete;
+
  private:
   ip::tcp::iostream* stream_{nullptr};
   const std::string& name_;

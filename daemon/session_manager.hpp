@@ -158,7 +158,7 @@ class SessionManager {
   uint8_t get_sink_id(const std::string& name) const;
 
   std::error_code set_ptp_config(const PTPConfig& config);
-  std::error_code set_driver_config(const std::string& name,
+  std::error_code set_driver_config(std::string_view name,
                                     uint32_t value) const;
   void get_ptp_config(PTPConfig& config) const;
   void get_ptp_status(PTPStatus& status) const;
@@ -197,7 +197,7 @@ class SessionManager {
   bool sink_is_still_valid(const std::string sdp,
                            const std::list<RemoteSource> sources_list) const;
 
-  bool parse_sdp(const std::string sdp, StreamInfo& info) const;
+  bool parse_sdp(const std::string& sdp, StreamInfo& info) const;
   bool worker();
   // singleton, use create() to build
   explicit SessionManager(std::shared_ptr<DriverManager> driver,

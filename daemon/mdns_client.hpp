@@ -39,7 +39,7 @@
 
 class MDNSClient {
  public:
-  MDNSClient(std::shared_ptr<Config> config) : config_(config){};
+  explicit MDNSClient(std::shared_ptr<Config> config) : config_(config){};
   MDNSClient() = delete;
   MDNSClient(const MDNSClient&) = delete;
   MDNSClient& operator=(const MDNSClient&) = delete;
