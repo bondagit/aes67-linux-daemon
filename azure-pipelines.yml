@@ -1,9 +1,9 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+# Azure pipeline to build and run daemon tests into Docker image
 
 trigger:
-- master
+  branches:
+    include:
+    - '*'
 
 resources:
 - repo: self
@@ -13,15 +13,12 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build image
   jobs:
   - job: Build
-    displayName: Build
-    pool:
-      vmImage: ubuntu-latest
+    pool: Default
     steps:
     - task: Docker@2
-      displayName: Build an image
+      displayName: Build and run daemon tests
       inputs:
         command: build
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile.daemon_tests'
