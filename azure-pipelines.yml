@@ -11,16 +11,13 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
 
-stages:
-- stage: Build
-  jobs:
-  - job: Build
-    pool: Default
-    steps:
-    - task: Docker@2
-      displayName: Build and run daemon tests
-      inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile.daemon_tests'
-        tags: |
-          $(tag)
+pool: Default
+
+steps:
+- task: Docker@2
+  displayName: Build and run daemon tests
+  inputs:
+    command: build
+    dockerfile: '$(Build.SourcesDirectory)/Dockerfile.daemon_tests'
+    tags: |
+      $(tag)
