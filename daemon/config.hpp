@@ -35,7 +35,7 @@ class Config {
   /* attributes retrieved from config json */
   uint16_t get_http_port() const { return http_port_; };
   uint16_t get_rtsp_port() const { return rtsp_port_; };
-  const std::string get_http_base_dir() const { return http_base_dir_; };
+  const std::string& get_http_base_dir() const { return http_base_dir_; };
   int get_log_severity() const { return log_severity_; };
   uint32_t get_playout_delay() const { return playout_delay_; };
   uint32_t get_tic_frame_size_at_1fs() const { return tic_frame_size_at_1fs_; };
@@ -64,14 +64,14 @@ class Config {
   bool get_daemon_restart() const { return daemon_restart_; };
   bool get_driver_restart() const { return driver_restart_; };
   bool get_mdns_enabled() const { return mdns_enabled_; };
-  int get_interface_idx() { return interface_idx_; };
+  int get_interface_idx() const { return interface_idx_; };
   const std::string& get_ptp_status_script() const {
     return ptp_status_script_;
   }
 
   void set_http_port(uint16_t http_port) { http_port_ = http_port; };
   void set_rtsp_port(uint16_t rtsp_port) { rtsp_port_ = rtsp_port; };
-  void set_http_base_dir(const std::string& http_base_dir) {
+  void set_http_base_dir(std::string_view http_base_dir) {
     http_base_dir_ = http_base_dir;
   };
   void set_log_severity(int log_severity) { log_severity_ = log_severity; };
@@ -85,10 +85,10 @@ class Config {
     max_tic_frame_size_ = max_tic_frame_size;
   };
   void set_sample_rate(uint32_t sample_rate) { sample_rate_ = sample_rate; };
-  void set_rtp_mcast_base(const std::string& rtp_mcast_base) {
+  void set_rtp_mcast_base(std::string_view rtp_mcast_base) {
     rtp_mcast_base_ = rtp_mcast_base;
   };
-  void set_sap_mcast_addr(const std::string& sap_mcast_addr) {
+  void set_sap_mcast_addr(std::string_view sap_mcast_addr) {
     sap_mcast_addr_ = sap_mcast_addr;
   };
   void set_rtp_port(uint16_t rtp_port) { rtp_port_ = rtp_port; };
@@ -97,30 +97,30 @@ class Config {
   void set_sap_interval(uint16_t sap_interval) {
     sap_interval_ = sap_interval;
   };
-  void set_syslog_proto(const std::string& syslog_proto) {
+  void set_syslog_proto(std::string_view syslog_proto) {
     syslog_proto_ = syslog_proto;
   };
-  void set_syslog_server(const std::string& syslog_server) {
+  void set_syslog_server(std::string_view syslog_server) {
     syslog_server_ = syslog_server;
   };
-  void set_status_file(const std::string& status_file) {
+  void set_status_file(std::string_view status_file) {
     status_file_ = status_file;
   };
-  void set_interface_name(const std::string& interface_name) {
+  void set_interface_name(std::string_view interface_name) {
     interface_name_ = interface_name;
   };
-  void set_ip_addr_str(const std::string& ip_str) { ip_str_ = ip_str; };
+  void set_ip_addr_str(std::string_view ip_str) { ip_str_ = ip_str; };
   void set_ip_addr(uint32_t ip_addr) { ip_addr_ = ip_addr; };
-  void set_mac_addr_str(const std::string& mac_str) { mac_str_ = mac_str; };
+  void set_mac_addr_str(std::string_view mac_str) { mac_str_ = mac_str; };
   void set_mac_addr(const std::array<uint8_t, 6>& mac_addr) {
     mac_addr_ = mac_addr;
   };
   void set_mdns_enabled(bool enabled) { mdns_enabled_ = enabled; };
   void set_interface_idx(int index) { interface_idx_ = index; };
-  void set_ptp_status_script(const std::string& script) {
+  void set_ptp_status_script(std::string_view script) {
     ptp_status_script_ = script;
   };
-  void set_custom_node_id(const std::string& node_id) {
+  void set_custom_node_id(std::string_view node_id) {
     custom_node_id_ = node_id;
   };
   void set_auto_sinks_update(bool auto_sinks_update) {

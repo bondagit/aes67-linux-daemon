@@ -62,11 +62,13 @@ The daemon can be cross-compiled for multiple platforms and implements the follo
 * IGMP handling for SAP, PTP and RTP sessions
 * Integration with systemd watchdog monitoring (from daemon release v1.6)
 
-The directory also contains the daemon regression tests in the [tests](daemon/tests) subdirectory.
-See the [README](daemon/README.md) file in this directory for additional information about the AES67 daemon configuration and the HTTP REST API.
+See the [README](daemon/README.md) file in this directory for additional information about the AES67 daemon configuration and the daemon HTTP REST API.
 
-Daemon regression tests can be executed via a Docker container by using a fake version of the daemon driver manager.
-This was implmented to perfom automated execution of the regression tests via a GitHub workflow.
+The directory also contains the daemon tests in the [tests](daemon/tests) subdirectory.
+
+Daemon tests can be executed via a Docker container by using a fake version of the daemon driver manager.
+This was implemented to perfom automated execution of the tests via a GitHub workflow.
+
 To build the Docker image for the daemon regression tests run:
 
       docker build --progress=plain -f ./Dockerfile.daemon_tests -t aes67-daemon-tests  .
@@ -124,16 +126,16 @@ See [ALSA RAVENNA/AES67 Driver README](https://github.com/bondagit/aes67-linux-d
 
 This directory contains systemd configuration files for the daemon.
 
-The daemon integrates with systemd watchdog. To enable it recompile with the CMake option _-DWITH_SYSTEMD=ON_
+The daemon integrates with systemd watchdog.
 
-You can install the daemon under systemd using the following commands:
+To enable it recompile the daemon with the CMake option _-DWITH_SYSTEMD=ON_
 
-      sudo useradd -M -l aes67-daemon -c "AES67 Linux daemon"
-      sudo cp daemon/aes67-daemon /usr/local/bin/aes67-daemon
-      sudo cp daemon/daemon.conf /etc
-      sudo cp systemd/aes67-daemon.service /etc/systemd/system
-      sudo systemctl enable aes67-daemon
-      sudo systemctl daemon-reexec
+You can install the daemon under _systemd_ by using the script [systemd/install.sh](install.sh):
+
+    cd systemd
+    sudo ./install.sh
+
+Before starting the daemon edit _/etc/daemon.conf_ and make sure the _interface_name_ parameter is set to your ethernet interface.
 
 To start the daemon use:
 
@@ -153,7 +155,6 @@ You can usally install the module using the following commands:
 
 If this doesn't work because you miss kernel certificate follow the instructions at: 
 [No OpenSSL sign-file signing_key.pem](https://superuser.com/questions/1214116/no-openssl-sign-file-signing-key-pem-leads-to-error-while-loading-kernel-modules)
-
 
 Finally use the command to load the modules:
 
@@ -320,8 +321,8 @@ and the specified buffer size cannot be used.
 
 **_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
 
-## Run the daemon regression tests ##
-To run daemon regression tests install the ALSA RAVENNA/AES67 kernel module with:
+## Run the daemon tests ##
+To run daemon tests install the ALSA RAVENNA/AES67 kernel module with:
 
       sudo insmod 3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko
 
@@ -332,8 +333,6 @@ setup the kernel parameters with:
 make sure that no instances of the aes67-daemon are running, enter the [tests](daemon/tests) subdirectory and run:
 
       ./daemon-test -p
-
-**_NOTE:_** when running regression tests make sure that no other Ravenna mDNS sources are advertised on the network because this will affect the results. Regression tests run on loopback interface but Avahi ignores the interface parameter set and will forward to the daemon the sources found on all network interfaces.
 
 ## Notes ##
 <a name="notes"></a>

@@ -86,7 +86,7 @@ struct PTPStatus {
 struct StreamInfo {
   TRTP_stream_info stream;
   uint64_t handle{0};
-  bool enabled{0};
+  bool enabled{false};
   bool refclk_ptp_traceable{false};
   bool ignore_refclk_gmid{false};
   std::string io;
@@ -109,7 +109,7 @@ class SessionManager {
   SessionManager() = delete;
   SessionManager(const SessionManager&) = delete;
   SessionManager& operator=(const SessionManager&) = delete;
-  virtual ~SessionManager() { terminate(); };
+  virtual ~SessionManager() = default;
 
   // session manager interface
   bool init() {
@@ -127,10 +127,10 @@ class SessionManager {
     if (running_) {
       running_ = false;
       auto ret = res_.get();
-      for (auto source : get_sources()) {
+      for (const auto& source : get_sources()) {
         remove_source(source.id);
       }
-      for (auto sink : get_sinks()) {
+      for (const auto& sink : get_sinks()) {
         remove_sink(sink.id);
       }
       return ret;
@@ -148,7 +148,7 @@ class SessionManager {
   enum class ObserverType { add_source, remove_source, update_source };
   using Observer = std::function<
       bool(uint8_t id, const std::string& name, const std::string& sdp)>;
-  void add_source_observer(ObserverType type, Observer cb);
+  void add_source_observer(ObserverType type, const Observer& cb);
 
   std::error_code add_sink(const StreamSink& sink);
   std::error_code get_sink(uint8_t id, StreamSink& sink) const;
@@ -158,13 +158,13 @@ class SessionManager {
   uint8_t get_sink_id(const std::string& name) const;
 
   std::error_code set_ptp_config(const PTPConfig& config);
-  std::error_code set_driver_config(const std::string& name,
+  std::error_code set_driver_config(std::string_view name,
                                     uint32_t value) const;
   void get_ptp_config(PTPConfig& config) const;
   void get_ptp_status(PTPStatus& status) const;
 
   bool load_status();
-  bool save_status();
+  bool save_status() const;
 
   size_t process_sap();
 
@@ -197,17 +197,18 @@ class SessionManager {
   bool sink_is_still_valid(const std::string sdp,
                            const std::list<RemoteSource> sources_list) const;
 
-  bool parse_sdp(const std::string sdp, StreamInfo& info) const;
+  bool parse_sdp(const std::string& sdp, StreamInfo& info) const;
   bool worker();
   // singleton, use create() to build
-  SessionManager(std::shared_ptr<DriverManager> driver,
-                 std::shared_ptr<Browser> browser,
-                 std::shared_ptr<Config> config)
+  explicit SessionManager(std::shared_ptr<DriverManager> driver,
+                          std::shared_ptr<Browser> browser,
+                          std::shared_ptr<Config> config)
       : browser_(browser), driver_(driver), config_(config) {
     ptp_config_.domain = config->get_ptp_domain();
     ptp_config_.dscp = config->get_ptp_dscp();
   };
 
+ private:
   std::shared_ptr<Browser> browser_;
   std::shared_ptr<DriverManager> driver_;
   std::shared_ptr<Config> config_;

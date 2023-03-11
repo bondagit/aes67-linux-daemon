@@ -44,10 +44,7 @@ class RtspSession : public std::enable_shared_from_this<RtspSession> {
               tcp::socket socket)
       : config_(config),
         session_manager_(session_manager),
-        socket_(std::move(socket)),
-        length_{0},
-        cseq_{-1},
-        consumed_{0} {}
+        socket_(std::move(socket)) {}
 
   virtual ~RtspSession() {
     BOOST_LOG_TRIVIAL(debug) << "rtsp_server:: session end";
@@ -87,18 +84,14 @@ class RtspServer {
                                            2};
 
   RtspServer() = delete;
-  RtspServer(std::shared_ptr<SessionManager> session_manager,
-             std::shared_ptr<Config> config)
+  explicit RtspServer(std::shared_ptr<SessionManager> session_manager,
+                      std::shared_ptr<Config> config)
       : session_manager_(session_manager),
         config_(config),
-        sessions_(session_num_max),
-        sessions_start_point_(session_num_max),
         acceptor_(io_service_,
                   tcp::endpoint(boost::asio::ip::address::from_string(
                                     config_->get_ip_addr_str()),
-                                config_->get_rtsp_port())),
-        socket_(io_service_) {}
-
+                                config_->get_rtsp_port())) {}
   bool init() {
     accept();
     /* start rtsp server on a separate thread */
@@ -135,8 +128,8 @@ class RtspServer {
   boost::asio::io_service io_service_;
   std::shared_ptr<SessionManager> session_manager_;
   std::shared_ptr<Config> config_;
-  std::vector<std::weak_ptr<RtspSession> > sessions_;
-  std::vector<time_point<steady_clock> > sessions_start_point_;
+  std::vector<std::weak_ptr<RtspSession> > sessions_{session_num_max};
+  std::vector<time_point<steady_clock> > sessions_start_point_{session_num_max};
   tcp::acceptor acceptor_;
   tcp::socket socket_{io_service_};
   std::future<void> res_;

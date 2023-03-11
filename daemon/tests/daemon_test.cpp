@@ -70,7 +70,8 @@ struct DaemonInstance {
     auto pid = daemon_.native_handle();
     /* trigger normal daemon termination */
     kill(pid, SIGTERM);
-    daemon_.wait();
+    std::error_code ec;
+    daemon_.wait(ec);
     BOOST_REQUIRE_MESSAGE(!daemon_.exit_code(), "daemon exited normally");
     ok = false;
   }

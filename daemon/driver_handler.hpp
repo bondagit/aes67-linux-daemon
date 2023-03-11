@@ -37,7 +37,7 @@ class DriverHandler {
   static constexpr size_t buffer_size =
       NLMSG_SPACE(max_payload) + sizeof(struct MT_ALSA_msg);
 
-  DriverHandler(){};
+  DriverHandler() = default;
   DriverHandler(const DriverHandler&) = delete;
   DriverHandler& operator=(const DriverHandler&) = delete;
   virtual ~DriverHandler(){};
@@ -67,7 +67,7 @@ class DriverHandler {
             NetlinkClient& client,
             uint8_t* buffer,
             size_t data_size,
-            const uint8_t* data);
+            const uint8_t* data) const;
   bool event_receiver();
 
   std::future<bool> res_;

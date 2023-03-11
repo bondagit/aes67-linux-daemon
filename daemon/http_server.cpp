@@ -31,7 +31,7 @@
 using namespace httplib;
 
 static inline void set_headers(Response& res,
-                               const std::string content_type = "") {
+                               const std::string& content_type = "") {
   res.set_header("Access-Control-Allow-Methods",
                  "GET, POST, PUT, DELETE, OPTIONS");
   res.set_header("Access-Control-Allow-Origin", "*");
@@ -57,7 +57,6 @@ static inline int get_http_error_status(const std::error_code& code) {
 
 static inline std::string get_http_error_message(const std::error_code& code) {
   std::stringstream ss;
-  ;
   ss << "(" << code.category().name() << ") " << code.message();
   return ss.str();
 }
@@ -352,11 +351,12 @@ bool HttpServer::init() {
   httplib::Client cli(config_->get_ip_addr_str().c_str(),
                       config_->get_http_port());
   int retry = 3;
-  while (retry--) {
+  while (retry) {
     auto res = cli.Get("/api/config");
     if (res && res->status == 200) {
       break;
     }
+    --retry;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   return retry;

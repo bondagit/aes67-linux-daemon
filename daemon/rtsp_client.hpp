@@ -41,7 +41,7 @@ class RtspClient {
                                       const std::string& domain,
                                       const RtspSource& source)>;
 
-  static std::pair<bool, RtspSource> process(Observer callback,
+  static std::pair<bool, RtspSource> process(const Observer& callback,
                                              const std::string& name,
                                              const std::string& domain,
                                              const std::string& path,
@@ -57,11 +57,11 @@ class RtspClient {
       const std::string& address,
       const std::string& port = dft_port);
 
-  inline static std::atomic<uint16_t> g_seq_number{0};
   inline static std::map<
       std::pair<std::string /*name*/, std::string /*domain*/>,
       boost::asio::ip::tcp::iostream* /*stream*/>
       g_active_clients;
+  inline static std::atomic<uint16_t> g_seq_number{0};
   inline static std::mutex g_mutex;
 };
 

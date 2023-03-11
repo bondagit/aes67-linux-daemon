@@ -106,7 +106,7 @@ bool SAP::receive(bool& is_announce,
     is_announce = (buffer[0] == 0x20);
     memcpy(&msg_id_hash, buffer + 2, sizeof(msg_id_hash));
     memcpy(&addr, buffer + 4, sizeof(addr));
-    for (int i = 8; buffer[i] != 0 && i < static_cast<int>(length); i++) {
+    for (int i = 8; i < static_cast<int>(length) && buffer[i] != 0; i++) {
       buffer[i] = std::tolower(buffer[i]);
     }
     if (!memcmp(buffer + 8, "application/sdp", 16)) {

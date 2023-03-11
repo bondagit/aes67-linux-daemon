@@ -19,4 +19,5 @@ sudo apt-get install -y libasound2-dev
 sudo apt-get install -y linuxptp
 sudo apt-get install -y libavahi-client-dev
 sudo apt install -y linux-headers-$(uname -r)
+sudo apt-get install -y libsystemd-dev
 

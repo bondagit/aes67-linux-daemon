@@ -98,20 +98,22 @@ struct RtspActiveClientRemover {
         domain_(domain),
         wait_for_updates_(wait_for_updates) {
     if (stream_ != nullptr && wait_for_updates_) {
-      RtspClient::g_mutex.lock();
+      std::scoped_lock<std::mutex> lock{RtspClient::g_mutex};
       RtspClient::g_active_clients[{name_, domain_}] = stream_;
-      RtspClient::g_mutex.unlock();
     }
   }
   ~RtspActiveClientRemover() {
     if (stream_ != nullptr && wait_for_updates_) {
-      std::lock_guard<std::mutex> lock(RtspClient::g_mutex);
+      std::scoped_lock<std::mutex> lock{RtspClient::g_mutex};
       auto it = RtspClient::g_active_clients.find({name_, domain_});
       if (it != RtspClient::g_active_clients.end() && it->second == stream_) {
         RtspClient::g_active_clients.erase(it);
       }
     }
   }
+
+  RtspActiveClientRemover(const RtspActiveClientRemover&) = delete;
+  RtspActiveClientRemover& operator=(const RtspActiveClientRemover&) = delete;
 
  private:
   ip::tcp::iostream* stream_{nullptr};
@@ -120,13 +122,14 @@ struct RtspActiveClientRemover {
   bool wait_for_updates_{false};
 };
 
-std::pair<bool, RtspSource> RtspClient::process(RtspClient::Observer callback,
-                                                const std::string& name,
-                                                const std::string& domain,
-                                                const std::string& path,
-                                                const std::string& address,
-                                                const std::string& port,
-                                                bool wait_for_updates) {
+std::pair<bool, RtspSource> RtspClient::process(
+    const RtspClient::Observer& callback,
+    const std::string& name,
+    const std::string& domain,
+    const std::string& path,
+    const std::string& address,
+    const std::string& port,
+    bool wait_for_updates) {
   RtspSource rtsp_source;
   ip::tcp::iostream s;
   RtspActiveClientRemover clientRemover(&s, name, domain, wait_for_updates);
@@ -258,9 +261,9 @@ std::pair<bool, RtspSource> RtspClient::process(RtspClient::Observer callback,
           if (std::get<0>(res)) {
             /* if we find a valid announced source name we use it
              * otherwise we try from SDP file or we use the mDNS name */
-            auto path = std::get<4>(res);
+            const auto& lpath = std::get<4>(res);
             if (path.rfind("/by-name/") != std::string::npos) {
-              announced_name = path.substr(9);
+              announced_name = lpath.substr(9);
               BOOST_LOG_TRIVIAL(debug)
                   << "rtsp_client:: found announced name " << announced_name;
             }
@@ -279,7 +282,7 @@ std::pair<bool, RtspSource> RtspClient::process(RtspClient::Observer callback,
 }
 
 void RtspClient::stop(const std::string& name, const std::string& domain) {
-  std::lock_guard<std::mutex> lock(g_mutex);
+  std::scoped_lock<std::mutex> lock{g_mutex};
   auto it = g_active_clients.find({name, domain});
   if (it != g_active_clients.end()) {
     BOOST_LOG_TRIVIAL(info)
@@ -294,12 +297,12 @@ void RtspClient::stop(const std::string& name, const std::string& domain) {
 }
 
 bool RtspClient::is_active(const std::string& name, const std::string& domain) {
-  std::lock_guard<std::mutex> lock(g_mutex);
+  std::scoped_lock<std::mutex> lock{g_mutex};
   return g_active_clients.find({name, domain}) != g_active_clients.end();
 }
 
 void RtspClient::stop_all() {
-  std::lock_guard<std::mutex> lock(g_mutex);
+  std::scoped_lock<std::mutex> lock{g_mutex};
   auto it = g_active_clients.begin();
   while (it != g_active_clients.end()) {
     BOOST_LOG_TRIVIAL(info) << "rtsp_client:: stopping client "

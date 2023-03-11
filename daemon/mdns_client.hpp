@@ -39,11 +39,11 @@
 
 class MDNSClient {
  public:
-  MDNSClient(std::shared_ptr<Config> config) : config_(config){};
+  explicit MDNSClient(std::shared_ptr<Config> config) : config_(config){};
   MDNSClient() = delete;
   MDNSClient(const MDNSClient&) = delete;
   MDNSClient& operator=(const MDNSClient&) = delete;
-  virtual ~MDNSClient() { terminate(); };
+  virtual ~MDNSClient() = default;
 
   virtual bool init();
   virtual bool terminate();
@@ -55,22 +55,7 @@ class MDNSClient {
   virtual void on_remove_rtsp_source(const std::string& name,
                                      const std::string& domain){};
 
-  void process_results();
-  std::list<std::future<void> > sources_res_;
-  std::mutex sources_res_mutex_;
-
-  std::atomic_bool running_{false};
-  std::shared_ptr<Config> config_;
-
 #ifdef _USE_AVAHI_
-  /* order is important here */
-  std::unique_ptr<AvahiThreadedPoll, decltype(&avahi_threaded_poll_free)> poll_{
-      nullptr, &avahi_threaded_poll_free};
-  std::unique_ptr<AvahiClient, decltype(&avahi_client_free)> client_{
-      nullptr, &avahi_client_free};
-  std::unique_ptr<AvahiServiceBrowser, decltype(&avahi_service_browser_free)>
-      sb_{nullptr, &avahi_service_browser_free};
-
   static void resolve_callback(AvahiServiceResolver* r,
                                AvahiIfIndex interface,
                                AvahiProtocol protocol,
@@ -96,10 +81,28 @@ class MDNSClient {
   static void client_callback(AvahiClient* c,
                               AvahiClientState state,
                               void* userdata);
+#endif
 
+  void process_results();
+
+  std::shared_ptr<Config> config_;
+
+ private:
+  std::list<std::future<void> > sources_res_;
+  std::mutex sources_res_mutex_;
+
+  std::atomic_bool running_{false};
+
+#ifdef _USE_AVAHI_
+  /* order is important here */
+  std::unique_ptr<AvahiThreadedPoll, decltype(&avahi_threaded_poll_free)> poll_{
+      nullptr, &avahi_threaded_poll_free};
+  std::unique_ptr<AvahiClient, decltype(&avahi_client_free)> client_{
+      nullptr, &avahi_client_free};
+  std::unique_ptr<AvahiServiceBrowser, decltype(&avahi_service_browser_free)>
+      sb_{nullptr, &avahi_service_browser_free};
   std::set<std::pair<std::string /*name*/, std::string /*domain */> >
       active_resolvers;
-
 #endif
 };
 

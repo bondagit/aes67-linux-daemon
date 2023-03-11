@@ -55,6 +55,6 @@ struct SDPOrigin {
   }
 };
 
-SDPOrigin sdp_get_origin(const std::string sdp);
+SDPOrigin sdp_get_origin(const std::string& sdp);
 
 #endif

@@ -35,7 +35,7 @@ using boost::asio::deadline_timer;
 class NetlinkClient {
  public:
   NetlinkClient() = delete;
-  NetlinkClient(const std::string& name) : name_(name) {}
+  explicit NetlinkClient(const std::string& name) : name_(name) {}
 
   void init(const nl_endpoint<nl_protocol>& listen_endpoint,
             const nl_protocol& protocol) {

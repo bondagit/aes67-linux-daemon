@@ -96,6 +96,8 @@ bool Browser::worker() {
           BOOST_LOG_TRIVIAL(debug)
               << "browser:: refreshing SAP source " << it->id;
           // annoucement, update last seen and announce period
+          last_update_ =
+              duration_cast<second_t>(steady_clock::now() - startup_).count();
           auto upd_source{*it};
           if ((last_update_ - upd_source.last_seen) != 0) {
             upd_source.announce_period = last_update_ - upd_source.last_seen;

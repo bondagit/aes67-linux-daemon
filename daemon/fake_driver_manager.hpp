@@ -52,13 +52,13 @@ class DriverManager {
   std::error_code get_number_of_inputs(int32_t& inputs);
   std::error_code get_number_of_outputs(int32_t& outputs);
 
-  int32_t get_current_output_volume() { return output_volume_; };
-  int32_t get_current_output_switch() { return output_switch_; };
-  uint32_t get_current_sample_rate() { return sample_rate_; };
+  int32_t get_current_output_volume() const { return output_volume_; };
+  int32_t get_current_output_switch() const { return output_switch_; };
+  uint32_t get_current_sample_rate() const { return sample_rate_; };
 
  protected:
   // singleton, use create to build
-  DriverManager(){};
+  DriverManager() = default;
 
   // these are used in init/terminate
   std::error_code hello();
