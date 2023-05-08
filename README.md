@@ -120,7 +120,7 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 * patch to enable the network loopback device
 * patch to compile with Linux Kernel v5
 
-See [ALSA RAVENNA/AES67 Driver README](https://github.com/bondagit/aes67-linux-daemon/blob/master/README.md) for additional information about the Merging Technologies module and for proper Linux Kernel configuration and tuning.
+See [ALSA RAVENNA/AES67 Driver README](https://bitbucket.org/MergingTechnologies/ravenna-alsa-lkm/src/master/README.md) for additional information about the Merging Technologies module and for proper Linux Kernel configuration and tuning.
 
 ### [systemd](systemd) directory ###
 
