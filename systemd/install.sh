@@ -5,9 +5,9 @@
 
 #create a user for the daemon
 sudo useradd -M -l aes67-daemon -c "AES67 Linux daemon"
-#copy the daemon binary
+#copy the daemon binary, make sure -DWITH_SYSTEMD=ON
 sudo cp ../daemon/aes67-daemon /usr/local/bin/aes67-daemon
-#create the daemon webui and scripts directories
+#create the daemon webui and script directories
 sudo install -d -o aes67-daemon /var/lib/aes67-daemon /usr/local/share/aes67-daemon/scripts/ /usr/local/share/aes67-daemon/webui/
 #copy the ptp script
 sudo install -o aes67-daemon ../daemon/scripts/ptp_status.sh /usr/local/share/aes67-daemon/scripts/
