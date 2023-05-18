@@ -11,7 +11,7 @@ TOPDIR=$(pwd)
 
 cd 3rdparty
 if [ ! -d ravenna-alsa-lkm ]; then
-  git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
+  git clone --single-branch --branch aes67-daemon-issue11 https://github.com/bondagit/ravenna-alsa-lkm.git
   cd ravenna-alsa-lkm/driver
   make
   cd ../..

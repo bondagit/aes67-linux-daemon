@@ -583,7 +583,7 @@ int main(int argc, char *argv[])
       break;
     case 'r':
       err = atoi(optarg);
-      rate = err >= 4000 && err < 200000 ? err : 44100;
+      rate = err >= 4000 && err < 400000 ? err : 44100;
       break;
     case 'B':
       err = atoi(optarg);
@@ -624,7 +624,7 @@ int main(int argc, char *argv[])
 
   loop_limit = loop_sec * rate;
   latency = latency_min - 4;
-  buffer = (char*)malloc((latency_max * 2 * snd_pcm_format_width(format) / 8) * channels);
+  buffer = (char*)malloc((latency_max * 4 * snd_pcm_format_width(format) / 8) * channels);
 
   setscheduler();
 
