@@ -103,6 +103,8 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
+* patch to support sample rates 192Khz and 384Khz (from driver version v1.7)
+* patch to compile with Linux Kernel v6.2 and above (from driver version v1.7)
 * patch to make the PTP slave status change from locked to unlocked if no announcement messages are received from the Master for more than 5 seconds (from driver version v1.6). See [issue 87](https://github.com/bondagit/aes67-linux-daemon/issues/87).
 * patch to fix issue causing the usage of wrong Sources and Sinks buffer offsets in case of reconfiguration or daemon restart (from driver version v1.5). See [issue 55](https://github.com/bondagit/aes67-linux-daemon/issues/55).
 * patch to enable the configuration of smaller ALSA buffer sizes to reduce end-to-end latency up to 8ms (from driver version v1.4). See [platform latency test](#latency) and See [issue 53](https://github.com/bondagit/aes67-linux-daemon/issues/53)
