@@ -276,36 +276,36 @@ The script allows a user to test the latency on a specific configuration and it 
            duration of the test in seconds
            frames buffer size in frames
 
-The specified buffer size in frames starts from _tic_frame_size_at_1fs_ * 2 (128 by default) in steps of _tic_frame_size_at_1fs_.
+The specified buffer size in frames starts from _tic_frame_size_at_1fs_ * 2 (96 by default) in steps of _tic_frame_size_at_1fs_.
 
-For example, to test the typical AES67 configuration for 1 minute and a buffer size of 128 frames run:
+For example, to test the typical AES67 configuration for 1 minute and a buffer size of 96 frames run:
 
-      ./run_latency_test.sh S24_3LE 48000 2 60 128
+      ./run_latency_test.sh S24_3LE 48000 2 60 96
       
 If no underrun errors occurred during the test the requested buffer size can be used and the end-to-end latency measured is printed at the end:
 
        Trying latency 128 frames, 2666.667us, 2.666667ms (375.0000Hz)
        Success
        Playback:
-       *** frames = 2880128 ***
+       *** frames = 480096 ***
          state       : RUNNING
-         trigger_time: 157745.455411
+         trigger_time: 134930.903591
          tstamp      : 0.000000
-         delay       : 128
+         delay       : 96
          avail       : 0
-         avail_max   : 64
+         avail_max   : 48
        Capture:
-       *** frames = 2880000 ***
+       *** frames = 480000 ***
          state       : RUNNING
-         trigger_time: 157745.455415
+         trigger_time: 134930.903592
          tstamp      : 0.000000
          delay       : 0
          avail       : 0
-         avail_max   : 64
-       Maximum read: 64 frames
-       Maximum read latency: 1333.333us, 1.333333ms (750.0000Hz)
-       Playback time = 157745.455411, Record time = 157745.455415, diff = -4
-       End to end latency: 7.997 msecs
+         avail_max   : 48
+       Maximum read: 48 frames
+       Maximum read latency: 1000.000us, 1.000000ms (1000.0000Hz)
+       Playback time = 134930.903591, Record time = 134930.903592, diff = -1
+       End to end latency: 5.999 msecs
        Terminating processes ...
        daemon exiting with code: 0
 

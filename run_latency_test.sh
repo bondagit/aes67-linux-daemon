@@ -64,7 +64,7 @@ DURATION=$4
 if [ "$#" -gt 4 ]; then
   FRAMES=$5
 else
-  FRAMES=128
+  FRAMES=96
 fi
 
 echo 'Using buffer size of '$FRAMES' frames'
