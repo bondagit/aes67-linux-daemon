@@ -33,13 +33,27 @@ class ConfigTabs extends Component {
     currentTab: PropTypes.string.isRequired
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      titleExtras: ''
+    };
+    this.setTitleExtras = this.setTitleExtras.bind(this);
+  }
+
+  setTitleExtras(extras) {
+    if (this.state.titleExtras != extras)
+        this.setState({titleExtras: extras});
+  }
+
   render() {
     return (
       <div>
         <h1>AES67 Daemon</h1>
+        <h3>Running on {this.state.titleExtras}</h3>
         <Tabs currentTab={this.props.currentTab}>
           <div label="Config">
-            <Config/>
+            <Config setTitleExtras={this.setTitleExtras} />
           </div>
           <div label="PTP">
             <PTP/>

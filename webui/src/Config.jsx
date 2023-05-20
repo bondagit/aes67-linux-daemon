@@ -19,12 +19,17 @@
 //
 
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 
 import RestAPI from './Services';
 import Loader from './Loader';
 
 class Config extends Component {
+  static propTypes = {
+    setTitleExtras: PropTypes.func.isRequired
+  };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -64,6 +69,7 @@ class Config extends Component {
     };
     this.onSubmit = this.onSubmit.bind(this);
     this.inputIsValid = this.inputIsValid.bind(this);
+    this.setTitleExtras = this.setTitleExtras.bind(this);
   }
 
   componentDidMount() {
@@ -111,6 +117,13 @@ class Config extends Component {
       .catch(err => this.setState({isConfigLoading: false}));
   }
 
+  setTitleExtras() {
+      if (!this.state.isConfigLoading) {
+	  var nodeId = this.state.customNodeId  === '' ? this.state.nodeId : this.state.customNodeId;
+          this.props.setTitleExtras(nodeId + " - " + this.state.ipAddr);
+      }
+  }
+
   inputIsValid() {
     return !this.state.playoutDelayErr &&
       !this.state.maxTicFrameSizeErr &&
@@ -149,6 +162,7 @@ class Config extends Component {
   render() {
     return (
       <div className='config'>
+        {this.setTitleExtras()}
 	{this.state.isVersionLoading ? <Loader/> : <h3>Version</h3>}
         <table><tbody>
           <tr>
