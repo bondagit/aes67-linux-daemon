@@ -284,30 +284,30 @@ For example, to test the typical AES67 configuration for 1 minute and a buffer s
       
 If no underrun errors occurred during the test the requested buffer size can be used and the end-to-end latency measured is printed at the end:
 
-       Trying latency 128 frames, 2666.667us, 2.666667ms (375.0000Hz)
-       Success
-       Playback:
-       *** frames = 480096 ***
-         state       : RUNNING
-         trigger_time: 134930.903591
-         tstamp      : 0.000000
-         delay       : 96
-         avail       : 0
-         avail_max   : 48
-       Capture:
-       *** frames = 480000 ***
-         state       : RUNNING
-         trigger_time: 134930.903592
-         tstamp      : 0.000000
-         delay       : 0
-         avail       : 0
-         avail_max   : 48
-       Maximum read: 48 frames
-       Maximum read latency: 1000.000us, 1.000000ms (1000.0000Hz)
-       Playback time = 134930.903591, Record time = 134930.903592, diff = -1
-       End to end latency: 5.999 msecs
-       Terminating processes ...
-       daemon exiting with code: 0
+      Trying latency 96 frames, 2000.000us, 2.000000ms (500.0000Hz)
+      Success
+      Playback:
+      *** frames = 480096 ***
+        state       : RUNNING
+        trigger_time: 170.196886
+        tstamp      : 0.000000
+        delay       : 96
+        avail       : 0
+        avail_max   : 48
+      Capture:
+      *** frames = 480000 ***
+        state       : RUNNING
+        trigger_time: 170.196887
+        tstamp      : 0.000000
+        delay       : 0
+        avail       : 0
+        avail_max   : 48
+      Maximum read: 48 frames
+      Maximum read latency: 1000.000us, 1.000000ms (1000.0000Hz)
+      Playback time = 170.196886, Record time = 170.196887, diff = -1
+      End to end latency: 5.999 msecs
+      Terminating processes ...
+      daemon exiting with code: 0
 
 The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
 
