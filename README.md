@@ -39,6 +39,66 @@ The daemon uses the following open source:
 * **Avahi common & client libraries** licensed under the [LGPL License](https://github.com/lathiat/avahi/blob/master/LICENSE)
 * **Boost libraries** licensed under the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt)
 
+## Prerequisite ##
+<a name="prerequisite"></a>
+The daemon and the test have been verified starting from **Ubuntu 18.04** distro onwards for **ARMv7** and **x86** platforms using:
+
+* Linux kernel version >= 4.10.x
+* GCC  version >= 7.x / clang >= 6.x (C++17 support required)
+* cmake version >= 3.7
+* boost libraries version >= 1.65
+* Avahi service discovery (if enabled) >= 0.7
+
+The following platforms have been used for testing:
+
+A NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
+See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional information about how to setup Ubuntu on this board.
+
+A Mini PC N40 with Intel® Celeron® Processor N4020 , 2 Cores/2 Threads (4M Cache, up to 2.80 GHz).
+See [Minisforum N40 Mini PC](https://store.minisforum.com/products/minisforum-n40-mini-pc) and [how to Install Ubuntu on a fanless Mini PC](https://www.youtube.com/watch?v=2djTPJ02xK0).
+
+The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
+
+**_Important_** CPU scaling events could affect daemon streams causing unexpected distortions, see [CPU scaling events and scripts notes](#notes).
+
+**_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
+
+**_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
+
+## How to build and setup the daemon ##
+Install on your target machine (both ARM or X86) an Ubuntu Linux distribution. **NO Virtual machines**. 
+The daemon should work on all Ubuntu starting from 18.04 onward, it's possible to use other distros.
+
+* Install all the required packages by running the script [ubuntu-packages.sh](ubuntu-packages.sh)
+* execute the [build.sh](build.sh) script to download and build the driver, the daemon and the WebUI, see [script notes](#notes).
+  The script performs the following operations:
+  * checkout, patch and build the Merging Technologies ALSA RAVENNA/AES67 module
+  * checkout the cpp-httplib
+  * build and deploy the WebUI
+  * build the AES67 daemon
+
+* edit the daemon configuration file _daemon/daemon.conf_ and change the _interface_name_ parameter to the ethernet network interface you want to use. Ex: _eth0_
+* install the driver by executing from the main folder:
+
+      cd 3rdparty/ravenna-alsa-lkm/driver
+      sudo insmod ./MergingRavennaALSA.ko
+* start the daemon by executing from the main folder:
+
+      cd daemon
+      ./aes67-daemon -c daemon.conf
+* open a browser and load the daemon configuration WebUI at http://[your_ip]:8080
+* on the WebUI use the Browser tab to see the other ASE67 Sources advertised on the network.
+* on the WebUI use the Sinks tab to create a receiver by specifying a remote Source manually or by selecting one of the remote Source discovered (check the Use SDP option to enable this).
+* on the WebUI use the Sources tab to create a daemon source
+* on the WebUI use the PTP tab to check the status of the daemon PTP slave. Receiving or sending audio via the ALSA RAVENNA device is only possible if the PTP slave status is locked.
+* playback on the RAVENNA ALSA device to send audio via a Source, for example for a stereo source use:
+
+      speaker-test -D plughw:RAVENNA -r 48000 -c 2 -t sine
+* record from the RAVENNA ALSA device to receive audio via a Sink, for example to record to a file a stereo sink use:
+
+      arecord -D plughw:RAVENNA -c 2 -f cd -d 30 -r 48000 -t wav sink.wav
+* to run interoperability tests with other AES67 devices, for example with Dante devices use instructions below.
+
 ## Devices and interoperability tests ##
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
@@ -77,7 +137,6 @@ To run the tests:
       
       docker run aes67-daemon-tests
       
-
 ### [webui](webui) directory ###
 
 This directory contains the AES67 daemon WebUI configuration implemented using React.
@@ -166,42 +225,6 @@ Finally use the command to load the modules:
 ### [test](test) directory ###
 
 This directory contains the files used to run the daemon platform compatibility test on the network loopback interface. The [test](#test) is described below.
-
-## Prerequisite ##
-<a name="prerequisite"></a>
-The daemon and the test have been verified starting from **Ubuntu 18.04** distro onwards for **ARMv7** and **x86** platforms using:
-
-* Linux kernel version >= 4.10.x
-* GCC  version >= 7.x / clang >= 6.x (C++17 support required)
-* cmake version >= 3.7
-* boost libraries version >= 1.65
-* Avahi service discovery (if enabled) >= 0.7
-
-The following platforms have been used for testing:
-
-A NanoPi NEO2 with Allwinner H5 Quad-core 64-bit Cortex A53 processor.
-See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional information about how to setup Ubuntu on this board.
-
-A Mini PC N40 with Intel® Celeron® Processor N4020 , 2 Cores/2 Threads (4M Cache, up to 2.80 GHz).
-See [Minisforum N40 Mini PC](https://store.minisforum.com/products/minisforum-n40-mini-pc) and [how to Install Ubuntu on a fanless Mini PC](https://www.youtube.com/watch?v=2djTPJ02xK0).
-
-The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
-
-**_Important_** CPU scaling events could affect daemon streams causing unexpected distortions, see [CPU scaling events and scripts notes](#notes).
-
-**_Important_** Starting from Linux kernel 5.10.x onwards a change in a kernel parameter is required to fix a problem with round robin scheduler causing the latency test to fail, see [Real Time Scheduler Throttling](#notes).
-
-**_Important_** _PulseAudio_ must be disabled or uninstalled for the daemon to work properly, see [PulseAudio and scripts notes](#notes).
-
-## How to build ##
-Make sure you have all the required packages installed, see [prerequisite](#prerequisite).
-To compile the AES67 daemon and the WebUI you can use the [build.sh](build.sh) script, see [script notes](#notes).
-The script performs the following operations:
-
-* checkout, patch and build the Merging Technologies ALSA RAVENNA/AES67 module
-* checkout the cpp-httplib
-* build and deploy the WebUI
-* build the AES67 daemon
 
 ## Run the platform compatibility test ##
 <a name="test"></a>
