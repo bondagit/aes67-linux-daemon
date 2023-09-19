@@ -23,10 +23,14 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <chrono>
 
 #include "log.hpp"
 #include "utils.hpp"
 #include "json.hpp"
+
+using namespace std::chrono;
+using second_t = duration<double, std::ratio<1> >;
 
 static inline std::string remove_undesired_chars(const std::string& s) {
   std::regex html_regex("[^ A-Za-z0-9:~.,_/=%()\\r\\n\\t\?#-]?");
@@ -253,7 +257,7 @@ std::string remote_source_to_json(const RemoteSource& source) {
      << ",\n    \"domain\": \"" << escape_json(source.domain) << "\""
      << ",\n    \"address\": \"" << escape_json(source.address) << "\""
      << ",\n    \"sdp\": \"" << escape_json(source.sdp) << "\""
-     << ",\n    \"last_seen\": " << unsigned(source.last_seen)
+     << ",\n    \"last_seen\": " << unsigned(duration_cast<second_t>(steady_clock::now() - source.last_seen_timepoint).count())
      << ",\n    \"announce_period\": " << unsigned(source.announce_period)
      << " \n  }";
   return ss.str();

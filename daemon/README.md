@@ -651,7 +651,7 @@ where:
 
 > **last\_seen**
 > JSON number specifying the last time the source was announced.
-> This time is expressed in seconds since the daemon startup.
+> This time is expressed in seconds since the source was announced.
 
 > **announce_period**
 > JSON number specifying the meausured period in seconds between the last source announcements.

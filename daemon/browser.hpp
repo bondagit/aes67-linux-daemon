@@ -38,6 +38,7 @@
 #include "utils.hpp"
 
 using namespace boost::multi_index;
+using namespace std::chrono;
 
 struct RemoteSource {
   std::string id;
@@ -49,6 +50,7 @@ struct RemoteSource {
   std::string sdp;
   uint32_t last_seen{0};       /* seconds from daemon startup */
   uint32_t announce_period{0}; /* period between annoucements */
+  time_point<steady_clock> last_seen_timepoint{steady_clock::now()};
 };
 
 class Browser : public MDNSClient {

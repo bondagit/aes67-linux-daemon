@@ -102,6 +102,7 @@ bool Browser::worker() {
           if ((last_update_ - upd_source.last_seen) != 0) {
             upd_source.announce_period = last_update_ - upd_source.last_seen;
             upd_source.last_seen = last_update_;
+            upd_source.last_seen_timepoint = steady_clock::now();
             sources_.replace(it, upd_source);
           }
         } else {
@@ -168,6 +169,7 @@ void Browser::on_change_rtsp_source(const std::string& name,
       upd_source.origin = sdp_get_origin(s.sdp);
       upd_source.sdp = s.sdp;
       upd_source.last_seen = last_update_;
+      upd_source.last_seen_timepoint = steady_clock::now();
       sources_.get<name_tag>().replace(it, upd_source);
       return;
     }
