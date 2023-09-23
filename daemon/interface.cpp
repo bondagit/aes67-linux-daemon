@@ -81,7 +81,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
   close(fd);
 
   uint8_t* sa = reinterpret_cast<uint8_t*>(ifr.ifr_hwaddr.sa_data);
-  std::copy(sa, sa + 8, std::begin(mac));
+  std::copy(sa, sa + 6, std::begin(mac));
 
   char str_mac[18];
   sprintf(str_mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac[0], mac[1], mac[2],
