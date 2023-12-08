@@ -442,10 +442,11 @@ where:
 
 > **source**
 > JSON string specifying the URL of the source SDP file. At present HTTP and RTSP protocols are supported.
-> This parameter is mandatory if **use\_sdp** is false.
+> This parameter is only used if **use\_sdp** is false. Even when not used it must be specified and an empty string can be provided.
 
 > **sdp**
-> JSON string specifying the SDP of the source. This parameter is mandatory if **use\_sdp** is true.
+> JSON string specifying the SDP of the source.
+> This parameter is only used if **use\_sdp** is true. Even when not used it must be specified and an empty string can be provided. 
 > See [example SDP file for a source](#rtp-source-sdp)
 
 > **ignore\_refclk\_gmid**
