@@ -825,9 +825,15 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   BOOST_LOG_TRIVIAL(info) << "session_manager:: playout delay "
                           << info.stream.m_ui32PlayOutDelay;
 
-  auto mcast_mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
-  std::copy(std::begin(mcast_mac_addr), std::end(mcast_mac_addr),
-            info.stream.m_ui8DestMAC);
+  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
+    auto mcast_mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
+    std::copy(std::begin(mcast_mac_addr), std::end(mcast_mac_addr),
+              info.stream.m_ui8DestMAC);
+  } else {
+    auto mac_addr = config_->get_mac_addr();
+    std::copy(std::begin(mac_addr), std::end(mac_addr),
+              info.stream.m_ui8DestMAC);
+  }
 
   std::unique_lock sinks_lock(sinks_mutex_);
   auto const it = sinks_.find(sink.id);
