@@ -346,8 +346,12 @@ Config json_to_config_(std::istream& js, Config& config) {
   } catch (boost::property_tree::json_parser::json_parser_error& je) {
     throw std::runtime_error("error parsing JSON at line " +
                              std::to_string(je.line()) + " :" + je.message());
-  } catch (...) {
-    throw std::runtime_error("failed to convert a number");
+  } catch (std::invalid_argument& e) {
+    throw std::runtime_error("error parsing JSON: cannot perform number conversion");
+  } catch (std::out_of_range& e) {
+    throw std::runtime_error("error parsing JSON: number conversion out of range");
+  } catch (std::exception& e) {
+    throw std::runtime_error("error parsing JSON: " + std::string(e.what()));
   }
   return config;
 }
@@ -412,8 +416,12 @@ StreamSource json_to_source(const std::string& id, const std::string& json) {
   } catch (boost::property_tree::json_parser::json_parser_error& je) {
     throw std::runtime_error("error parsing JSON at line " +
                              std::to_string(je.line()) + " :" + je.message());
-  } catch (...) {
-    throw std::runtime_error("failed to convert a number");
+  } catch (std::invalid_argument& e) {
+    throw std::runtime_error("error parsing JSON: cannot perform number conversion");
+  } catch (std::out_of_range& e) {
+    throw std::runtime_error("error parsing JSON: number conversion out of range");
+  } catch (std::exception& e) {
+    throw std::runtime_error("error parsing JSON: " + std::string(e.what()));
   }
   return source;
 }
@@ -452,8 +460,12 @@ StreamSink json_to_sink(const std::string& id, const std::string& json) {
   } catch (boost::property_tree::json_parser::json_parser_error& je) {
     throw std::runtime_error("error parsing JSON at line " +
                              std::to_string(je.line()) + " :" + je.message());
-  } catch (...) {
-    throw std::runtime_error("failed to convert a number");
+  } catch (std::invalid_argument& e) {
+    throw std::runtime_error("error parsing JSON: cannot perform number conversion");
+  } catch (std::out_of_range& e) {
+    throw std::runtime_error("error parsing JSON: number conversion out of range");
+  } catch (std::exception& e) {
+    throw std::runtime_error("error parsing JSON: " + std::string(e.what()));
   }
   return sink;
 }
