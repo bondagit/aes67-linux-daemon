@@ -61,10 +61,12 @@ int main(int argc, char* argv[]) {
   po::options_description desc("Options");
   desc.add_options()("version,v", "Print daemon version and exit")(
       "config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
-      "daemon configuration file")("http_port,p", po::value<int>(),
-                                   "HTTP server port")("help,h",
-                                                       "Print this help "
-                                                       "message");
+      "daemon configuration file")(
+          "http_addr,a",po::value<std::string>(),
+          "HTTP server addr")("http_port,p", po::value<int>(),
+                              "HTTP server port")("help,h",
+                                                  "Print this help "
+                                                  "message");
   int unix_style = postyle::unix_style | postyle::short_allow_next;
   bool driver_restart(true);
 
@@ -124,6 +126,8 @@ int main(int argc, char* argv[]) {
     if (config == nullptr) {
       return EXIT_FAILURE;
     }
+
+    config->set_http_addr_str(vm["http_addr"].as<std::string>());
     /* override configuration according to command line args */
     if (vm.count("http_port")) {
       config->set_http_port(vm["http_port"].as<int>());
