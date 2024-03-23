@@ -23,10 +23,13 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/console.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include <vector>
 
 #include "config.hpp"
 #include "log.hpp"
+
 
 namespace logging = boost::log;
 namespace src = boost::log::sources;
