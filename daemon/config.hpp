@@ -33,6 +33,7 @@ class Config {
                                        bool driver_restart);
 
   /* attributes retrieved from config json */
+  const std::string& get_http_addr_str() const { return http_addr_str_; };
   uint16_t get_http_port() const { return http_port_; };
   uint16_t get_rtsp_port() const { return rtsp_port_; };
   const std::string& get_http_base_dir() const { return http_base_dir_; };
@@ -69,6 +70,9 @@ class Config {
     return ptp_status_script_;
   }
 
+  void set_http_addr_str(std::string_view http_addr_str) {
+      http_addr_str_ = http_addr_str;
+  };
   void set_http_port(uint16_t http_port) { http_port_ = http_port; };
   void set_rtsp_port(uint16_t rtsp_port) { rtsp_port_ = rtsp_port; };
   void set_http_base_dir(std::string_view http_base_dir) {
@@ -129,7 +133,8 @@ class Config {
   void set_driver_restart(bool restart) { driver_restart_ = restart; }
 
   friend bool operator!=(const Config& lhs, const Config& rhs) {
-    return lhs.get_http_port() != rhs.get_http_port() ||
+    return lhs.get_http_addr_str() != rhs.get_http_addr_str() ||
+           lhs.get_http_port() != rhs.get_http_port() ||
            lhs.get_rtsp_port() != rhs.get_rtsp_port() ||
            lhs.get_http_base_dir() != rhs.get_http_base_dir() ||
            lhs.get_log_severity() != rhs.get_log_severity() ||
@@ -157,6 +162,7 @@ class Config {
 
  private:
   /* from json */
+  std::string http_addr_str_{""};
   uint16_t http_port_{8080};
   uint16_t rtsp_port_{8854};
   std::string http_base_dir_{"../webui/dist"};
