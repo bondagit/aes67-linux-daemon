@@ -333,19 +333,20 @@ bool HttpServer::init() {
     }
   });
 
+  std::string http_addr = config_->get_http_addr_str();
+  if (http_addr.empty())
+    http_addr = config_->get_ip_addr_str();
+  BOOST_LOG_TRIVIAL(info) << "http_server:: binding to " << http_addr << ":"
+                          << config_->get_http_port();
+
   /* start http server on a separate thread */
-  auto http_addr=config_->get_http_addr_str();
-  if(http_addr.empty())
-      http_addr=config_->get_ip_addr_str();
-  
   res_ = std::async(std::launch::async, [&]() {
     try {
-        svr_.listen(http_addr.c_str(), config_->get_http_port());
+      svr_.listen(http_addr.c_str(), config_->get_http_port());
     } catch (...) {
-      BOOST_LOG_TRIVIAL(fatal)
-          << "http_server:: "
-          << "failed to listen to " << http_addr << ":"
-          << config_->get_http_port();
+      BOOST_LOG_TRIVIAL(fatal) << "http_server:: "
+                               << "failed to listen to " << http_addr << ":"
+                               << config_->get_http_port();
       return false;
     }
     return true;

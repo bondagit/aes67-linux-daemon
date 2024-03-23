@@ -71,7 +71,7 @@ class Config {
   }
 
   void set_http_addr_str(std::string_view http_addr_str) {
-      http_addr_str_ = http_addr_str;
+    http_addr_str_ = http_addr_str;
   };
   void set_http_port(uint16_t http_port) { http_port_ = http_port; };
   void set_rtsp_port(uint16_t rtsp_port) { rtsp_port_ = rtsp_port; };

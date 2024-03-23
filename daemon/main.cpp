@@ -127,7 +127,9 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
-    config->set_http_addr_str(vm["http_addr"].as<std::string>());
+    if (vm.count("http_addr")) {
+      config->set_http_addr_str(vm["http_addr"].as<std::string>());
+    }
     /* override configuration according to command line args */
     if (vm.count("http_port")) {
       config->set_http_port(vm["http_port"].as<int>());
