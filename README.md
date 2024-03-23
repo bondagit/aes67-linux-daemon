@@ -86,6 +86,8 @@ The daemon should work on all Ubuntu starting from 18.04 onward, it's possible t
 
       cd daemon
       ./aes67-daemon -c daemon.conf
+
+* use the daemon option _-a_ if you want to bind the daemon HTTP server to another addrress. For example _-a 0.0.0.0_ to bind the daemon HTTP server to all the local network interfaces.
 * open a browser and load the daemon configuration WebUI at http://[your_ip]:8080
 * on the WebUI use the Browser tab to see the other ASE67 Sources advertised on the network.
 * on the WebUI use the Sinks tab to create a receiver by specifying a remote Source manually or by selecting one of the remote Source discovered (check the Use SDP option to enable this).
