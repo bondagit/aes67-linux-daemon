@@ -112,7 +112,7 @@ The HTTP Streamer was introduced with the daemon version 2.0 and it is used to r
 The HTTP Streamer can be enabled via the _streamer_enabled_ daemon parameter.
 When the Streamer is active the daemon starts capturing the configured _Sinks_ up to the maximum number of channels configured by the _streamer_channels_ parameters.
 The captured PCM samples are split into _streamer_files_num_ files of _streamer_file_duration_ duration (in seconds) for each sink, compressed using AAC LC codec and served via HTTP.
-
+![Screenshot 2024-06-15 at 15 36 48](https://github.com/bondagit/aes67-linux-daemon/assets/56439183/3341b05e-daed-4541-b0a1-28839d5b9a6b)
 The HTTP streamer requires the libfaac-dev package to compile.
 
 Please note that since the HTTP Streamer uses the RAVENNA ALSA device for capturing it's not possible to use such device for other audio captures.
