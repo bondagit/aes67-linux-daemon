@@ -10,22 +10,24 @@ WatchdogSec=10
 
 # Run as separate user created via sysusers.d
 User=aes67-daemon
-
 ExecStart=/usr/local/bin/aes67-daemon
+#ExecStart=strace -e trace=file -o /home/aes67-daemon/trace_erronly_fail.log -Z -f -tt /usr/local/bin/aes67-daemon
 
 # Security filters.
 CapabilityBoundingSet=
 DevicePolicy=closed
+DeviceAllow=char-alsa
+DeviceAllow=/dev/snd/*
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 NoNewPrivileges=yes
-PrivateDevices=yes
+PrivateDevices=no
 PrivateMounts=yes
 PrivateTmp=yes
 PrivateUsers=yes
 # interface::get_mac_from_arp_cache() reads from /proc/net/arp
 ProcSubset=all
-ProtectClock=yes
+ProtectClock=no
 ProtectControlGroups=yes
 ProtectHome=yes
 ProtectHostname=yes

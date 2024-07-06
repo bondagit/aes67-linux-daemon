@@ -100,7 +100,8 @@ class Browser : public MDNSClient {
 
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;
-  std::chrono::time_point<std::chrono::steady_clock> startup_{std::chrono::steady_clock::now()};
+  std::chrono::time_point<std::chrono::steady_clock> startup_{
+      std::chrono::steady_clock::now()};
   uint32_t last_update_{0}; /* seconds from daemon startup */
 };
 

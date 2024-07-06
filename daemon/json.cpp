@@ -111,6 +111,16 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str())
      << "\""
      << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
+     << ",\n  \"streamer_channels\": "
+     << unsigned(config.get_streamer_channels())
+     << ",\n  \"streamer_files_num\": "
+     << unsigned(config.get_streamer_files_num())
+     << ",\n  \"streamer_file_duration\": "
+     << unsigned(config.get_streamer_file_duration())
+     << ",\n  \"streamer_player_buffer_files_num\": "
+     << unsigned(config.get_streamer_player_buffer_files_num())
+     << ",\n  \"streamer_enabled\": " << std::boolalpha
+     << config.get_streamer_enabled()
      << ",\n  \"auto_sinks_update\": " << std::boolalpha
      << config.get_auto_sinks_update() << "\n}\n";
   return ss.str();
@@ -257,7 +267,10 @@ std::string remote_source_to_json(const RemoteSource& source) {
      << ",\n    \"domain\": \"" << escape_json(source.domain) << "\""
      << ",\n    \"address\": \"" << escape_json(source.address) << "\""
      << ",\n    \"sdp\": \"" << escape_json(source.sdp) << "\""
-     << ",\n    \"last_seen\": " << unsigned(duration_cast<second_t>(steady_clock::now() - source.last_seen_timepoint).count())
+     << ",\n    \"last_seen\": "
+     << unsigned(duration_cast<second_t>(steady_clock::now() -
+                                         source.last_seen_timepoint)
+                     .count())
      << ",\n    \"announce_period\": " << unsigned(source.announce_period)
      << " \n  }";
   return ss.str();
@@ -277,6 +290,21 @@ std::string remote_sources_to_json(const std::list<RemoteSource>& sources) {
   return ss.str();
 }
 
+std::string streamer_info_to_json(const StreamerInfo& info) {
+  std::stringstream ss;
+  ss << "{"
+     << "\n   \"status\": " << unsigned(info.status)
+     << ",\n   \"file_duration\": " << unsigned(info.file_duration)
+     << ",\n   \"files_num\": " << unsigned(info.files_num)
+     << ",\n   \"player_buffer_files_num\": " << unsigned(info.player_buffer_files_num)
+     << ",\n   \"start_file_id\": " << unsigned(info.start_file_id)
+     << ",\n   \"current_file_id\": " << unsigned(info.current_file_id)
+     << ",\n   \"channels\": " << unsigned(info.channels)
+     << ",\n   \"format\": \"" << info.format << "\""
+     << ",\n   \"rate\": " << unsigned(info.rate) << "\n}\n";
+  return ss.str();
+}
+
 Config json_to_config_(std::istream& js, Config& config) {
   try {
     boost::property_tree::ptree pt;
@@ -290,6 +318,16 @@ Config json_to_config_(std::istream& js, Config& config) {
       } else if (key == "http_base_dir") {
         config.set_http_base_dir(
             remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "streamer_channels") {
+        config.set_streamer_channels(val.get_value<uint8_t>());
+      } else if (key == "streamer_files_num") {
+        config.set_streamer_files_num(val.get_value<uint8_t>());
+      } else if (key == "streamer_file_duration") {
+        config.set_streamer_file_duration(val.get_value<uint16_t>());
+      } else if (key == "streamer_player_buffer_files_num") {
+        config.set_streamer_player_buffer_files_num(val.get_value<uint8_t>());
+      } else if (key == "streamer_enabled") {
+        config.set_streamer_enabled(val.get_value<bool>());
       } else if (key == "log_severity") {
         config.set_log_severity(val.get_value<int>());
       } else if (key == "interface_name") {
@@ -347,9 +385,11 @@ Config json_to_config_(std::istream& js, Config& config) {
     throw std::runtime_error("error parsing JSON at line " +
                              std::to_string(je.line()) + " :" + je.message());
   } catch (std::invalid_argument& e) {
-    throw std::runtime_error("error parsing JSON: cannot perform number conversion");
+    throw std::runtime_error(
+        "error parsing JSON: cannot perform number conversion");
   } catch (std::out_of_range& e) {
-    throw std::runtime_error("error parsing JSON: number conversion out of range");
+    throw std::runtime_error(
+        "error parsing JSON: number conversion out of range");
   } catch (std::exception& e) {
     throw std::runtime_error("error parsing JSON: " + std::string(e.what()));
   }
@@ -417,9 +457,11 @@ StreamSource json_to_source(const std::string& id, const std::string& json) {
     throw std::runtime_error("error parsing JSON at line " +
                              std::to_string(je.line()) + " :" + je.message());
   } catch (std::invalid_argument& e) {
-    throw std::runtime_error("error parsing JSON: cannot perform number conversion");
+    throw std::runtime_error(
+        "error parsing JSON: cannot perform number conversion");
   } catch (std::out_of_range& e) {
-    throw std::runtime_error("error parsing JSON: number conversion out of range");
+    throw std::runtime_error(
+        "error parsing JSON: number conversion out of range");
   } catch (std::exception& e) {
     throw std::runtime_error("error parsing JSON: " + std::string(e.what()));
   }
@@ -461,9 +503,11 @@ StreamSink json_to_sink(const std::string& id, const std::string& json) {
     throw std::runtime_error("error parsing JSON at line " +
                              std::to_string(je.line()) + " :" + je.message());
   } catch (std::invalid_argument& e) {
-    throw std::runtime_error("error parsing JSON: cannot perform number conversion");
+    throw std::runtime_error(
+        "error parsing JSON: cannot perform number conversion");
   } catch (std::out_of_range& e) {
-    throw std::runtime_error("error parsing JSON: number conversion out of range");
+    throw std::runtime_error(
+        "error parsing JSON: number conversion out of range");
   } catch (std::exception& e) {
     throw std::runtime_error("error parsing JSON: " + std::string(e.what()));
   }

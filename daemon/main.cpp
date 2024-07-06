@@ -30,6 +30,7 @@
 #include "mdns_server.hpp"
 #include "rtsp_server.hpp"
 #include "session_manager.hpp"
+#include "streamer.hpp"
 
 #ifdef _USE_SYSTEMD_
 #include <systemd/sd-daemon.h>
@@ -39,7 +40,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static const std::string version("bondagit-1.7.0");
+static const std::string version("bondagit-2.0.0");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -61,12 +62,11 @@ int main(int argc, char* argv[]) {
   po::options_description desc("Options");
   desc.add_options()("version,v", "Print daemon version and exit")(
       "config,c", po::value<std::string>()->default_value("/etc/daemon.conf"),
-      "daemon configuration file")(
-          "http_addr,a",po::value<std::string>(),
-          "HTTP server addr")("http_port,p", po::value<int>(),
-                              "HTTP server port")("help,h",
-                                                  "Print this help "
-                                                  "message");
+      "daemon configuration file")("http_addr,a", po::value<std::string>(),
+                                   "HTTP server addr")(
+      "http_port,p", po::value<int>(), "HTTP server port")("help,h",
+                                                           "Print this help "
+                                                           "message");
   int unix_style = postyle::unix_style | postyle::short_allow_next;
   bool driver_restart(true);
 
@@ -180,8 +180,15 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error(std::string("RtspServer:: init failed"));
       }
 
+      /* start streamer */
+      auto streamer = Streamer::create(session_manager, config);
+      if (config->get_streamer_enabled() &&
+          (streamer == nullptr || !streamer->init())) {
+        throw std::runtime_error(std::string("Streamer:: init failed"));
+      }
+
       /* start http server */
-      HttpServer http_server(session_manager, browser, config);
+      HttpServer http_server(session_manager, browser, streamer, config);
       if (!http_server.init()) {
         throw std::runtime_error(std::string("HttpServer:: init failed"));
       }
@@ -237,6 +244,13 @@ int main(int argc, char* argv[]) {
       /* stop http server */
       if (!http_server.terminate()) {
         throw std::runtime_error(std::string("HttpServer:: terminate failed"));
+      }
+
+      /* stop streamer */
+      if (config->get_streamer_enabled()) {
+        if (!streamer->terminate()) {
+          throw std::runtime_error(std::string("Streamer:: terminate failed"));
+        }
       }
 
       /* stop rtsp server */

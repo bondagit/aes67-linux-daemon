@@ -443,24 +443,40 @@ uint8_t SessionManager::get_source_id(const std::string& name) const {
   return it != source_names_.end() ? it->second : (stream_id_max + 1);
 }
 
-void SessionManager::add_source_observer(ObserverType type,
-                                         const Observer& cb) {
+void SessionManager::add_ptp_status_observer(const PtpStatusObserver& cb) {
+  ptp_status_observers_.push_back(cb);
+}
+
+void SessionManager::add_source_observer(SourceObserverType type,
+                                         const SourceObserver& cb) {
   switch (type) {
-    case ObserverType::add_source:
-      add_source_observers.push_back(cb);
+    case SourceObserverType::add_source:
+      add_source_observers_.push_back(cb);
       break;
-    case ObserverType::remove_source:
-      remove_source_observers.push_back(cb);
+    case SourceObserverType::remove_source:
+      remove_source_observers_.push_back(cb);
       break;
-    case ObserverType::update_source:
-      update_source_observers.push_back(cb);
+    case SourceObserverType::update_source:
+      update_source_observers_.push_back(cb);
+      break;
+  }
+}
+
+void SessionManager::add_sink_observer(SinkObserverType type,
+                                      const SinkObserver& cb) {
+  switch (type) {
+    case SinkObserverType::add_sink:
+      add_sink_observers_.push_back(cb);
+      break;
+    case SinkObserverType::remove_sink:
+      remove_sink_observers_.push_back(cb);
       break;
   }
 }
 
 void SessionManager::on_add_source(const StreamSource& source,
                                    const StreamInfo& info) {
-  for (const auto& cb : add_source_observers) {
+  for (const auto& cb : add_source_observers_) {
     cb(source.id, source.name, get_source_sdp_(source.id, info));
   }
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
@@ -471,7 +487,7 @@ void SessionManager::on_add_source(const StreamSource& source,
 }
 
 void SessionManager::on_remove_source(const StreamInfo& info) {
-  for (const auto& cb : remove_source_observers) {
+  for (const auto& cb : remove_source_observers_) {
     cb((uint8_t)info.stream.m_uiId, info.stream.m_cName, {});
   }
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
@@ -715,6 +731,9 @@ uint8_t SessionManager::get_sink_id(const std::string& name) const {
 
 void SessionManager::on_add_sink(const StreamSink& sink,
                                  const StreamInfo& info) {
+  for (const auto& cb : add_sink_observers_) {
+    cb(sink.id, sink.name);
+  }
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
     igmp_.join(config_->get_ip_addr_str(),
                ip::address_v4(info.stream.m_ui32DestIP).to_string());
@@ -723,6 +742,9 @@ void SessionManager::on_add_sink(const StreamSink& sink,
 }
 
 void SessionManager::on_remove_sink(const StreamInfo& info) {
+  for (const auto& cb : remove_sink_observers_) {
+    cb((uint8_t)info.stream.m_uiId, info.stream.m_cName);
+  }
   if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
     igmp_.leave(config_->get_ip_addr_str(),
                 ip::address_v4(info.stream.m_ui32DestIP).to_string());
@@ -858,8 +880,8 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     }
     return ret;
   }
-
   on_add_sink(sink, info);
+
   // update sinks map
   sinks_[sink.id] = info;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: added sink "
@@ -885,8 +907,6 @@ std::error_code SessionManager::remove_sink(uint32_t id) {
   const auto& info = (*it).second;
   auto ret = driver_->remove_rtp_stream(info.handle);
   if (!ret) {
-    igmp_.leave(config_->get_ip_addr_str(),
-                ip::address_v4(info.stream.m_ui32DestIP).to_string());
     on_remove_sink(info);
     sinks_.erase(id);
   }
@@ -1083,7 +1103,7 @@ void SessionManager::on_update_sources() {
   // trigger sources SDP file update
   sources_mutex_.lock();
   for (auto& [id, info] : sources_) {
-    for (const auto& cb : update_source_observers) {
+    for (const auto& cb : update_source_observers_) {
       info.session_version++;
       cb(id, info.stream.m_cName, get_source_sdp_(id, info));
     }
@@ -1096,6 +1116,10 @@ void SessionManager::on_ptp_status_changed(const std::string& status) const {
   if (status == "locked") {
     // set sample rate, this may require seconds
     (void)driver_->set_sample_rate(driver_->get_current_sample_rate());
+  }
+
+  for (const auto& cb : ptp_status_observers_) {
+    (void)cb(status);
   }
 
   static std::string g_ptp_status;

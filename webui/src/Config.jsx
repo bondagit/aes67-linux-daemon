@@ -53,6 +53,13 @@ class Config extends Component {
       sapInterval: '',
       sapIntervalErr: false,
       mdnsEnabled: false,
+      streamerEnabled: false,
+      streamerChannels: 0,
+      streamerChIntervalErr: false,
+      streamerFiles: 0,
+      streamerFilesIntervalErr: false,
+      streamerFileDuration: 0,
+      streamerFileDurationIntervalErr: false,
       syslogProto: '',
       syslogServer: '',
       syslogServerErr: false,
@@ -103,6 +110,11 @@ class Config extends Component {
             sapMcastAddr: data.sap_mcast_addr,
             sapInterval: data.sap_interval,
             mdnsEnabled: data.mdns_enabled,
+            streamerEnabled: data.streamer_enabled,
+            streamerChannels: data.streamer_channels,
+            streamerFiles: data.streamer_files_num,
+            streamerFileDuration: data.streamer_file_duration,
+            streamerPlayerBufferFiles: data.streamer_player_buffer_files_num,
             syslogProto: data.syslog_proto,
             syslogServer: data.syslog_server,
             statusFile: data.status_file,
@@ -132,6 +144,9 @@ class Config extends Component {
       !this.state.rtpPortErr &&
       !this.state.rtspPortErr &&
       !this.state.sapIntervalErr &&
+      !this.state.streamerChIntervalErr &&
+      !this.state.streamerFilesIntervalErr &&
+      !this.state.streamerFileDurationIntervalErr &&
       !this.state.syslogServerErr &&
       (!this.state.customNodeIdErr || this.state.customNodeId  === '') &&
       !this.state.isVersionLoading &&
@@ -155,7 +170,12 @@ class Config extends Component {
       this.state.sapInterval,
       this.state.mdnsEnabled,
       this.state.customNodeId,
-      this.state.autoSinksUpdate)
+      this.state.autoSinksUpdate,
+      this.state.streamerEnabled,
+      this.state.streamerChannels,
+      this.state.streamerFiles,
+      this.state.streamerFileDuration,
+      this.state.streamerPlayerBufferFiles)
     .then(response => toast.success('Applying new configuration ...'));
   }
 
@@ -204,6 +224,30 @@ class Config extends Component {
                 <option value="384000">384 kHz</option>
               </select>
             </th>
+          </tr>
+        </tbody></table>
+        <br/>
+	{this.state.isConfigLoading ? <Loader/> : <h3>HTTP Streamer Config</h3>}
+        <table><tbody>
+          <tr height="35">
+            <th align="left"> <label>Streamer enabled</label> </th>
+            <th align="left"> <input type="checkbox" onChange={e => this.setState({streamerEnabled: e.target.checked})} checked={this.state.streamerEnabled ? true : undefined}/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Streamer channels</label> </th>
+	    <th align="left"> <input type='number' min='2' max='16' className='input-number' value={this.state.streamerChannels} onChange={e => this.setState({streamerChannels: e.target.value, streamerChIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Streamer files</label> </th>
+	    <th align="left"> <input type='number' min='4' max='16' className='input-number' value={this.state.streamerFiles} onChange={e => this.setState({streamerFiles: e.target.value, streamerFilesIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Streamer file duration (secs)</label> </th>
+	    <th align="left"> <input type='number' min='1' max='4' className='input-number' value={this.state.streamerFileDuration} onChange={e => this.setState({streamerFileDuration: e.target.value, streamerFileDurationIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Streamer player buffer files</label> </th>
+	    <th align="left"> <input type='number' min='1' max='2' className='input-number' value={this.state.streamerPlayerBufferFiles} disabled required/> </th>
           </tr>
         </tbody></table>
         <br/>

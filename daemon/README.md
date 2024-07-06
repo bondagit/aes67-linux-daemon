@@ -148,13 +148,31 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body type** application/json    
 * **Body** [RTP Remote Sources params](#rtp-remote-sources)
 
+### Get streamer info for a Sink ###
+* **Description** retrieve the streamer info for the specified Sink
+* **URL** /api/streamer/info/:id
+* **Method** GET
+* **URL Params** id=[integer in the range (0-63)]
+* **Body Type** application/json
+* **Body** [Streamer info params](#streamer-info)
+
+### Get streamer AAC audio file ###
+* **Description** retrieve the AAC audio frames for the specified Sink and file id
+* **URL** /api/streamer/streamer/:sinkId/:fileId
+* **Method** GET
+* **URL Params** sinkId=[integer in the range (0-63)], fileId=[integer in the range (0-*streamer_files_num*)]
+* **HTTP headers** the headers _X-File-Count_, _X-File-Current-Id_, _X-File-Start-Id_ return the current global file count, the current file id and the start file id for the file returned
+* **Body Type** audio/aac
+* **Body** Binary body containing ADTS AAC LC audio frames
+
+
 ## HTTP REST API structures ##
 
 ### JSON Version<a name="version"></a> ###
 
 Example
     {
-      "version:" "bondagit-1.5"
+      "version:" "bondagit-2.0"
     }
 
 where:
@@ -189,7 +207,12 @@ Example
       "node_id": "AES67 daemon d9aca383",
       "custom_node_id": "",
       "ptp_status_script": "./scripts/ptp_status.sh",
-      "auto_sinks_update": true
+      "auto_sinks_update": true,
+      "streamer_enabled": false,
+      "streamer_channels": 8,
+      "streamer_files_num": 6,
+      "streamer_file_duration": 1,
+      "streamer_player_buffer_files_num": 1
     }
 
 where:
@@ -283,6 +306,23 @@ where:
 > **ptp\_status\_script**
 > JSON string specifying the path to the script executed in background when the PTP slave clock status changes.
 > The PTP clock status is passed as first parameter to the script and it can be *unlocked*, *locking* or *locked*.
+
+> **streamer\_enabled**
+> JSON boolean specifying whether the HTTP Streamer is enabled or disabled.
+> Once activated, the HTTP Streamer starts capturing samples for number of channels specified by *streamer_channels* starting from channel 0, then it splits them into *streamer_files_num* files of a *streamer_file_duration* duration for each configured Sink and it serves them via HTTP.
+
+> **streamer\_channels**
+> JSON number specifying the number of channels captured by the HTTP Streamer starting from channel 0, 8 by default.
+
+> **streamer\_files\_num**
+> JSON number specifying the number of files into which the stream gets split.
+
+> **streamer\_file\_duration**
+> JSON number specifying the maximum duration of each streamer file in seconds.
+
+> **streamer\_player\_buffer\_files\_num**
+> JSON number specifying the player buffer in number of files.
+
 
 ### JSON PTP Config<a name="ptp-config"></a> ###
 
@@ -658,3 +698,55 @@ where:
 > JSON number specifying the meausured period in seconds between the last source announcements.
 > A remote source is automatically removed if it doesn't get announced for **announce\_period** x 10 seconds.
 
+### JSON Streamer info<a name="streamer-info"></a> ###
+
+Example:
+
+    {
+       "status": 0,
+       "file_duration": 1,
+       "files_num": 8,
+       "player_buffer_files_num": 1,
+       "start_file_id": 3,
+       "current_file_id": 0,
+       "channels": 2,
+       "format": "s16",
+       "rate": 48000
+    }
+
+where:
+
+> **status**
+> JSON number containing the streamer status code.
+> Status is 0 in case the streamer is able to provide the audio samples, othrewise the specific error code is returned.
+> 0 - OK
+> 1 - PTP clock not locked
+> 2 - Channel/s not captured
+> 3 - Buffering
+> 4 - Streamer not enabled
+> 5 - Invalid Sink
+> 6 - Cannot retrieve Sink
+
+> **file_duration_sec**
+> JSON number specifying the duration of each file.
+
+> **files_num**
+> JSON number specifying the number of files. The streamer will use these files as a circular buffer.
+
+> **start_file_id**
+> JSON number specifying the file id to use to start the playback.
+
+> **current_file_id**
+> JSON number specifying the file id that is beeing created by the daemon.
+
+> **player_buffer_files_num**
+> JSON number specifying the number of files to use for buffering.
+
+> **channels**
+> JSON number specifying the number of channels of the stream.
+
+> **format**
+> JSON string specifying the PCM encoding of the AAC compressed stream.
+
+> **rate**
+> JSON number specifying the sample rate of the stream.

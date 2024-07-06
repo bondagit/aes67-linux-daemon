@@ -145,10 +145,18 @@ class SessionManager {
   std::error_code remove_source(uint32_t id);
   uint8_t get_source_id(const std::string& name) const;
 
-  enum class ObserverType { add_source, remove_source, update_source };
-  using Observer = std::function<
+  enum class SourceObserverType { add_source, remove_source, update_source };
+  using SourceObserver = std::function<
       bool(uint8_t id, const std::string& name, const std::string& sdp)>;
-  void add_source_observer(ObserverType type, const Observer& cb);
+  void add_source_observer(SourceObserverType type, const SourceObserver& cb);
+
+  enum class SinkObserverType { add_sink, remove_sink };
+  using SinkObserver = std::function<
+      bool(uint8_t id, const std::string& name)>;
+  void add_sink_observer(SinkObserverType type, const SinkObserver& cb);
+
+  using PtpStatusObserver = std::function<bool(const std::string& status)>;
+  void add_ptp_status_observer(const PtpStatusObserver& cb);
 
   std::error_code add_sink(const StreamSink& sink);
   std::error_code get_sink(uint8_t id, StreamSink& sink) const;
@@ -240,9 +248,13 @@ class SessionManager {
   PTPStatus ptp_status_;
   mutable std::shared_mutex ptp_mutex_;
 
-  std::list<Observer> add_source_observers;
-  std::list<Observer> remove_source_observers;
-  std::list<Observer> update_source_observers;
+  std::list<SourceObserver> add_source_observers_;
+  std::list<SourceObserver> remove_source_observers_;
+  std::list<SourceObserver> update_source_observers_;
+  std::list<PtpStatusObserver> ptp_status_observers_;
+  std::list<SinkObserver> add_sink_observers_;
+  std::list<SinkObserver> remove_sink_observers_;
+  std::list<SinkObserver> update_sink_observers_;
 
   SAP sap_{config_->get_sap_mcast_addr()};
   IGMP igmp_;

@@ -98,12 +98,12 @@ class RtspServer {
     res_ = std::async([this]() { io_service_.run(); });
 
     session_manager_->add_source_observer(
-        SessionManager::ObserverType::add_source,
+        SessionManager::SourceObserverType::add_source,
         std::bind(&RtspServer::update_source, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
 
     session_manager_->add_source_observer(
-        SessionManager::ObserverType::update_source,
+        SessionManager::SourceObserverType::update_source,
         std::bind(&RtspServer::update_source, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
 

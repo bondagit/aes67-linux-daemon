@@ -53,12 +53,15 @@ enum class DaemonErrc {
   cannot_parse_sdp = 45,      // daemon cannot parse SDP
   stream_name_in_use = 46,    // daemon source or sink name in use
   cannot_retrieve_mac = 47,   // daemon cannot retrieve MAC for IP
-  send_invalid_size = 50,     // daemon data size too big for buffer
-  send_u2k_failed = 51,       // daemon failed to send command to driver
-  send_k2u_failed = 52,       // daemon failed to send event response to driver
-  receive_u2k_failed = 53,    // daemon failed to receive response from driver
-  receive_k2u_failed = 54,    // daemon failed to receive event from driver
-  invalid_driver_response = 55  // unexpected driver command response code
+  streamer_invalid_ch = 48,   // daemon streamer sink channel not captured
+  streamer_retry_later = 49,  // daemon streamer not enough samples buffered
+  streamer_not_running = 50,  // daemon streamer not running
+  send_invalid_size = 60,     // daemon data size too big for buffer
+  send_u2k_failed = 61,       // daemon failed to send command to driver
+  send_k2u_failed = 62,       // daemon failed to send event response to driver
+  receive_u2k_failed = 63,    // daemon failed to receive response from driver
+  receive_k2u_failed = 64,    // daemon failed to receive event from driver
+  invalid_driver_response = 65  // unexpected driver command response code
 };
 
 namespace std {

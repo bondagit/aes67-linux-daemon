@@ -51,7 +51,7 @@ class MDNSServer {
   virtual bool init();
   virtual bool terminate();
 
-  bool add_service(const std::string& name, const std::string &sdp);
+  bool add_service(const std::string& name, const std::string& sdp);
   bool remove_service(const std::string& name);
 
  protected:

@@ -323,12 +323,12 @@ bool MDNSServer::init() {
 #endif
 
   session_manager_->add_source_observer(
-      SessionManager::ObserverType::add_source,
+      SessionManager::SourceObserverType::add_source,
       std::bind(&MDNSServer::add_service, this, std::placeholders::_2,
                 std::placeholders::_3));
 
   session_manager_->add_source_observer(
-      SessionManager::ObserverType::remove_source,
+      SessionManager::SourceObserverType::remove_source,
       std::bind(&MDNSServer::remove_service, this, std::placeholders::_2));
 
   running_ = true;

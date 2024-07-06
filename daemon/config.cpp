@@ -66,6 +66,15 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
     config.max_tic_frame_size_ = 1024;
   if (config.sample_rate_ == 0)
     config.sample_rate_ = 48000;
+  if (config.streamer_channels_ < 2 || config.streamer_channels_ > 16)
+    config.streamer_channels_ = 8;
+  if (config.streamer_file_duration_ < 1 || config.streamer_file_duration_ > 4)
+    config.streamer_file_duration_ = 1;
+  if (config.streamer_files_num_ < 4 || config.streamer_files_num_ > 16)
+    config.streamer_files_num_ = 8;
+  if (config.streamer_player_buffer_files_num_ < 1 || config.streamer_player_buffer_files_num_ > 2)
+    config.streamer_player_buffer_files_num_ = 1;
+
   boost::system::error_code ec;
   ip::address_v4::from_string(config.rtp_mcast_base_.c_str(), ec);
   if (ec) {
@@ -126,16 +135,22 @@ bool Config::save(const Config& config) {
         get_max_tic_frame_size() != config.get_max_tic_frame_size() ||
         get_interface_name() != config.get_interface_name();
 
-    daemon_restart_ = driver_restart_ ||
-                      get_http_port() != config.get_http_port() ||
-                      get_rtsp_port() != config.get_rtsp_port() ||
-                      get_http_base_dir() != config.get_http_base_dir() ||
-                      get_rtp_mcast_base() != config.get_rtp_mcast_base() ||
-                      get_sap_mcast_addr() != config.get_sap_mcast_addr() ||
-                      get_rtp_port() != config.get_rtp_port() ||
-                      get_status_file() != config.get_status_file() ||
-                      get_mdns_enabled() != config.get_mdns_enabled() ||
-                      get_custom_node_id() != config.get_custom_node_id();
+    daemon_restart_ =
+        driver_restart_ || get_http_port() != config.get_http_port() ||
+        get_rtsp_port() != config.get_rtsp_port() ||
+        get_http_base_dir() != config.get_http_base_dir() ||
+        get_rtp_mcast_base() != config.get_rtp_mcast_base() ||
+        get_sap_mcast_addr() != config.get_sap_mcast_addr() ||
+        get_rtp_port() != config.get_rtp_port() ||
+        get_status_file() != config.get_status_file() ||
+        get_mdns_enabled() != config.get_mdns_enabled() ||
+        get_custom_node_id() != config.get_custom_node_id() ||
+        get_streamer_channels() != config.get_streamer_channels() ||
+        get_streamer_file_duration() != config.get_streamer_file_duration() ||
+        get_streamer_files_num() != config.get_streamer_files_num() ||
+        get_streamer_player_buffer_files_num() !=
+            config.get_streamer_player_buffer_files_num() ||
+        get_streamer_enabled() != config.get_streamer_enabled();
 
     if (!daemon_restart_)
       *this = config;

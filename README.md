@@ -38,6 +38,7 @@ The daemon uses the following open source:
 * **cpp-httplib** licensed under the [MIT License](https://github.com/yhirose/cpp-httplib/blob/master/LICENSE)
 * **Avahi common & client libraries** licensed under the [LGPL License](https://github.com/lathiat/avahi/blob/master/LICENSE)
 * **Boost libraries** licensed under the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt)
+* **Freeware Advanced Audio Coder** licensed under the [LGPL License](https://github.com/knik0/faac?tab=License-1-ov-file)
 
 ## Prerequisite ##
 <a name="prerequisite"></a>
@@ -48,6 +49,7 @@ The daemon and the test have been verified starting from **Ubuntu 18.04** distro
 * cmake version >= 3.7
 * boost libraries version >= 1.65
 * Avahi service discovery (if enabled) >= 0.7
+* Freeware Advanced Audio Coder (if streamer enabled) libfaac >= 1.30
 
 The following platforms have been used for testing:
 
@@ -104,8 +106,20 @@ The daemon should work on all Ubuntu starting from 18.04 onward, it's possible t
 ## Devices and interoperability tests ##
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
+## HTTP Streamer ##
+The HTTP Streamer was introduced with the daemon version 2.0 and it is used to receive AES67 audio streams via HTTP file streaming.
+
+The HTTP Streamer can be enabled via the _streamer_enabled_ daemon parameter.
+When the Streamer is active the daemon starts capturing the configured _Sinks_ up to the maximum number of channels configured by the _streamer_channels_ parameters.
+The captured PCM samples are split into _streamer_files_num_ files of _streamer_file_duration_ duration (in seconds) for each sink, compressed using AAC LC codec and served via HTTP.
+
+The HTTP streamer requires the libfaac-dev package to compile.
+
+Please note that since the HTTP Streamer uses the RAVENNA ALSA device for capturing it's not possible to use such device for other audio captures.
+
 ## AES67 USB Receiver and Transmitter ##
 See [Use your board as AES67 USB Receiver and Transmitter](USB_GADGET.md)
+
 
 ## Repository content ##
 
