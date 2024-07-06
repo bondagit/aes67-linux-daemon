@@ -150,7 +150,6 @@ bool Streamer::pcm_suspend() {
 
 ssize_t Streamer::pcm_read(uint8_t* data, size_t rcount) {
   ssize_t r;
-  size_t result = 0;
   size_t count = rcount;
 
   if (count != chunk_samples_) {
@@ -174,7 +173,6 @@ ssize_t Streamer::pcm_read(uint8_t* data, size_t rcount) {
       return -1;
     }
     if (r > 0) {
-      result += r;
       count -= r;
       data += r * bytes_per_frame_;
     }
@@ -443,6 +441,7 @@ void Streamer::close_files(uint8_t files_id) {
                 std::ostream_iterator<uint8_t>(
                     output_streams_[std::make_pair(sink.id, files_id)]));
       output_ids_[files_id] = file_counter_;
+      return true;
     }));
   }
 
