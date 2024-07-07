@@ -258,7 +258,7 @@ std::error_code DriverManager::get_number_of_outputs(int32_t& outputs) {
 void DriverManager::on_command_done(enum MT_ALSA_msg_id id,
                                     size_t size,
                                     const uint8_t* data) {
-  BOOST_LOG_TRIVIAL(info) << "driver_manager:: cmd " << alsa_msg_str[id]
+  BOOST_LOG_TRIVIAL(debug) << "driver_manager:: cmd " << alsa_msg_str[id]
                           << " done data len " << size;
   memcpy(recv_data_, data, size);
   retcode_ = std::error_code{};

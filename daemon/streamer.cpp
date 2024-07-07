@@ -446,7 +446,6 @@ void Streamer::close_files(uint8_t files_id) {
   }
 
   for (auto& res : ress) {
-    res.wait();
     (void)res.get();
   }
 }
