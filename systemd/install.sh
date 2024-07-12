@@ -4,7 +4,7 @@
 #
 
 #create a user for the daemon
-sudo useradd -M -l aes67-daemon -c "AES67 Linux daemon"
+sudo useradd -g audio -M -l aes67-daemon -c "AES67 Linux daemon"
 #copy the daemon binary, make sure -DWITH_SYSTEMD=ON
 sudo cp ../daemon/aes67-daemon /usr/local/bin/aes67-daemon
 #create the daemon webui and script directories

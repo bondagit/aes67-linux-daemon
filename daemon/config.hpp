@@ -37,6 +37,15 @@ class Config {
   uint16_t get_http_port() const { return http_port_; };
   uint16_t get_rtsp_port() const { return rtsp_port_; };
   const std::string& get_http_base_dir() const { return http_base_dir_; };
+  uint8_t get_streamer_files_num() const { return streamer_files_num_; };
+  uint16_t get_streamer_file_duration() const {
+    return streamer_file_duration_;
+  };
+  uint8_t get_streamer_player_buffer_files_num() const {
+    return streamer_player_buffer_files_num_;
+  };
+  uint8_t get_streamer_channels() const { return streamer_channels_; };
+  bool get_streamer_enabled() const { return streamer_enabled_; };
   int get_log_severity() const { return log_severity_; };
   uint32_t get_playout_delay() const { return playout_delay_; };
   uint32_t get_tic_frame_size_at_1fs() const { return tic_frame_size_at_1fs_; };
@@ -77,6 +86,22 @@ class Config {
   void set_rtsp_port(uint16_t rtsp_port) { rtsp_port_ = rtsp_port; };
   void set_http_base_dir(std::string_view http_base_dir) {
     http_base_dir_ = http_base_dir;
+  };
+  void set_streamer_channels(uint8_t streamer_channels) {
+    streamer_channels_ = streamer_channels;
+  };
+  void set_streamer_files_num(uint8_t streamer_files_num) {
+    streamer_files_num_ = streamer_files_num;
+  };
+  void set_streamer_file_duration(uint16_t streamer_file_duration) {
+    streamer_file_duration_ = streamer_file_duration;
+  };
+  void set_streamer_player_buffer_files_num(
+      uint8_t streamer_player_buffer_files_num) {
+    streamer_player_buffer_files_num_ = streamer_player_buffer_files_num;
+  };
+  void set_streamer_enabled(uint8_t streamer_enabled) {
+    streamer_enabled_ = streamer_enabled;
   };
   void set_log_severity(int log_severity) { log_severity_ = log_severity; };
   void set_playout_delay(uint32_t playout_delay) {
@@ -137,6 +162,13 @@ class Config {
            lhs.get_http_port() != rhs.get_http_port() ||
            lhs.get_rtsp_port() != rhs.get_rtsp_port() ||
            lhs.get_http_base_dir() != rhs.get_http_base_dir() ||
+           lhs.get_streamer_channels() != rhs.get_streamer_channels() ||
+           lhs.get_streamer_files_num() != rhs.get_streamer_files_num() ||
+           lhs.get_streamer_file_duration() !=
+               rhs.get_streamer_file_duration() ||
+           lhs.get_streamer_player_buffer_files_num() !=
+               rhs.get_streamer_player_buffer_files_num() ||
+           lhs.get_streamer_enabled() != rhs.get_streamer_enabled() ||
            lhs.get_log_severity() != rhs.get_log_severity() ||
            lhs.get_playout_delay() != rhs.get_playout_delay() ||
            lhs.get_tic_frame_size_at_1fs() != rhs.get_tic_frame_size_at_1fs() ||
@@ -166,6 +198,11 @@ class Config {
   uint16_t http_port_{8080};
   uint16_t rtsp_port_{8854};
   std::string http_base_dir_{"../webui/dist"};
+  uint8_t streamer_channels_{8};
+  uint8_t streamer_files_num_{8};
+  uint16_t streamer_file_duration_{1};
+  uint8_t streamer_player_buffer_files_num_{1};
+  bool streamer_enabled_{false};
   int log_severity_{2};
   uint32_t playout_delay_{0};
   uint32_t tic_frame_size_at_1fs_{48};

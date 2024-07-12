@@ -84,7 +84,7 @@ export default class RestAPI {
     });
   }
 
-  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id, auto_sinks_update) {
+  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id, auto_sinks_update, streamer_enabled, streamer_channels, streamer_files_num, streamer_file_duration, streamer_player_buffer_files_num) {
     return this.doFetch(config, {
       body: JSON.stringify({
         log_severity: parseInt(log_severity, 10),
@@ -101,7 +101,12 @@ export default class RestAPI {
         sap_interval: parseInt(sap_interval, 10),
         custom_node_id: custom_node_id,
         mdns_enabled: mdns_enabled,
-        auto_sinks_update: auto_sinks_update
+        auto_sinks_update: auto_sinks_update,
+        streamer_enabled: streamer_enabled,
+        streamer_channels: parseInt(streamer_channels, 10),
+        streamer_files_num: parseInt(streamer_files_num, 10),
+        streamer_file_duration: parseInt(streamer_file_duration, 10),
+        streamer_player_buffer_files_num: parseInt(streamer_player_buffer_files_num, 10),
       }),
       method: 'POST'
     }).catch(err => {

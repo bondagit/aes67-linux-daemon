@@ -322,6 +322,97 @@ bool HttpServer::init() {
              res.body = remote_sources_to_json(sources);
            });
 
+  /* retrieve streamer info and position */
+  svr_.Get("/api/streamer/info/([0-9]+)", [this](const Request& req,
+                                                 Response& res) {
+    uint32_t id;
+    StreamerInfo info;
+    enum class streamer_info_status {
+      ok,
+      ptp_not_locked,
+      invalid_channels,
+      buffering,
+      not_enabled,
+      invalid_sink,
+      cannot_retrieve
+    };
+
+    info.status = static_cast<uint8_t>(streamer_info_status::ok);
+    if (!config_->get_streamer_enabled()) {
+      info.status = static_cast<uint8_t>(streamer_info_status::not_enabled);
+    } else {
+      try {
+        id = std::stoi(req.matches[1]);
+      } catch (...) {
+        info.status = static_cast<uint8_t>(streamer_info_status::invalid_sink);
+      }
+    }
+
+    if (info.status == static_cast<uint8_t>(streamer_info_status::ok)) {
+      StreamSink sink;
+      auto ret = session_manager_->get_sink(id, sink);
+      if (ret) {
+        info.status =
+            static_cast<uint8_t>(streamer_info_status::cannot_retrieve);
+      } else {
+        ret = streamer_->get_info(sink, info);
+        switch (ret.value()) {
+          case static_cast<int>(DaemonErrc::streamer_not_running):
+            info.status =
+                static_cast<uint8_t>(streamer_info_status::ptp_not_locked);
+            break;
+          case static_cast<int>(DaemonErrc::streamer_invalid_ch):
+            info.status =
+                static_cast<uint8_t>(streamer_info_status::invalid_channels);
+            break;
+          case static_cast<int>(DaemonErrc::streamer_retry_later):
+            info.status = static_cast<uint8_t>(streamer_info_status::buffering);
+            break;
+          default:
+            info.status = static_cast<uint8_t>(streamer_info_status::ok);
+            break;
+        }
+      }
+    }
+    set_headers(res, "application/json");
+    res.body = streamer_info_to_json(info);
+  });
+
+  /* retrieve streamer file */
+  svr_.Get("/api/streamer/stream/([0-9]+)/([0-9]+)", [this](const Request& req,
+                                                            Response& res) {
+    if (!config_->get_streamer_enabled()) {
+      set_error(400, "streamer not enabled", res);
+      return;
+    }
+    uint8_t sinkId, fileId;
+    try {
+      sinkId = std::stoi(req.matches[1]);
+      fileId = std::stoi(req.matches[2]);
+    } catch (...) {
+      set_error(400, "failed to convert id", res);
+      return;
+    }
+    StreamSink sink;
+    auto ret = session_manager_->get_sink(sinkId, sink);
+    if (ret) {
+      set_error(ret, "failed to retrieve sink " + std::to_string(sinkId), res);
+      return;
+    }
+    uint8_t currentFileId, startFileId;
+    uint32_t fileCount;
+    ret = streamer_->get_stream(sink, fileId, currentFileId, startFileId,
+                                fileCount, res.body);
+    if (ret) {
+      set_error(ret, "failed to fetch stream " + std::to_string(sinkId), res);
+      return;
+    }
+    set_headers(res, "audio/aac");
+    res.set_header("X-File-Count", std::to_string(fileCount));
+    res.set_header("X-File-Current-Id", std::to_string(currentFileId));
+    res.set_header("X-File-Start-Id", std::to_string(startFileId));
+  });
+
   svr_.set_logger([](const Request& req, const Response& res) {
     if (res.status == 200) {
       BOOST_LOG_TRIVIAL(info) << "http_server:: " << req.method << " "

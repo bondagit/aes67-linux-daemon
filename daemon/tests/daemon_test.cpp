@@ -1,7 +1,6 @@
-//
 //  daemon_test.cpp
 //
-//  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
+//  Copyright (c) 2019 2024 Andrea Bondavalli. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -400,6 +399,12 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto mac_addr = pt.get<std::string>("mac_addr");
   auto ip_addr = pt.get<std::string>("ip_addr");
   auto auto_sinks_update = pt.get<bool>("auto_sinks_update");
+  auto mdns_enabled = pt.get<bool>("mdns_enabled");
+  auto streamer_enabled = pt.get<bool>("streamer_enabled");
+  auto streamer_channels = pt.get<int>("streamer_channels");
+  auto streamer_files_num = pt.get<int>("streamer_files_num");
+  auto streamer_file_duration = pt.get<int>("streamer_file_duration");
+  auto streamer_player_buffer_files_num = pt.get<int>("streamer_player_buffer_files_num");
   BOOST_CHECK_MESSAGE(http_port == 9999, "config as excepcted");
   // BOOST_CHECK_MESSAGE(log_severity == 5, "config as excepcted");
   BOOST_CHECK_MESSAGE(playout_delay == 0, "config as excepcted");
@@ -422,6 +427,12 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(custom_node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(auto_sinks_update == true, "config as excepcted");
+  BOOST_CHECK_MESSAGE(mdns_enabled == true, "config as excepcted");
+  BOOST_CHECK_MESSAGE(streamer_enabled == false, "config as excepcted");
+  BOOST_CHECK_MESSAGE(streamer_channels == 8, "config as excepcted");
+  BOOST_CHECK_MESSAGE(streamer_files_num == 6, "config as excepcted");
+  BOOST_CHECK_MESSAGE(streamer_file_duration == 3, "config as excepcted");
+  BOOST_CHECK_MESSAGE(streamer_player_buffer_files_num == 2, "config as excepcted");
 }
 
 BOOST_AUTO_TEST_CASE(get_ptp_status) {
