@@ -26,11 +26,8 @@ fi
 cd ..
 
 cd webui
-if  [ -f webui.tar.gz ]; then
-  rm -f webui.tar.gz
-fi
 echo "Downloading current webui release ..."
-wget https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
+wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
 if [ -f webui.tar.gz ]; then
   tar -xzvf webui.tar.gz
 else
