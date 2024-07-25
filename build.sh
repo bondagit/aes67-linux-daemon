@@ -26,11 +26,8 @@ fi
 cd ..
 
 cd webui
-if  [ -f webui.tar.gz ]; then
-  rm -f webui.tar.gz
-fi
 echo "Downloading current webui release ..."
-wget https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
+wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
 if [ -f webui.tar.gz ]; then
   tar -xzvf webui.tar.gz
 else
@@ -43,7 +40,14 @@ cd ..
 
 cd daemon
 echo "Building aes67-daemon ..."
-cmake -DCPP_HTTPLIB_DIR="$TOPDIR"/3rdparty/cpp-httplib -DRAVENNA_ALSA_LKM_DIR="$TOPDIR"/3rdparty/ravenna-alsa-lkm -DENABLE_TESTS=ON -DWITH_AVAHI=ON -DFAKE_DRIVER=OFF -DWITH_SYSTEMD=ON .
+cmake \
+	-DCPP_HTTPLIB_DIR="${TOPDIR}/3rdparty/cpp-httplib" \
+	-DRAVENNA_ALSA_LKM_DIR="${TOPDIR}/3rdparty/ravenna-alsa-lkm" \
+	-DENABLE_TESTS=ON \
+	-DWITH_AVAHI=ON \
+	-DFAKE_DRIVER=OFF \
+	-DWITH_SYSTEMD=ON \
+	.
 make -j
 cd ..
 

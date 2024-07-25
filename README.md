@@ -82,8 +82,8 @@ The daemon should work on all Ubuntu starting from 18.04 onward, it's possible t
 * edit the daemon configuration file _daemon/daemon.conf_ and change the _interface_name_ parameter to the ethernet network interface you want to use. Ex: _eth0_
 * install the driver by executing from the main folder:
 
-      cd 3rdparty/ravenna-alsa-lkm/driver
-      sudo insmod ./MergingRavennaALSA.ko
+      (cd 3rdparty/ravenna-alsa-lkm/driver && sudo insmod ./MergingRavennaALSA.ko)
+
 * start the daemon by executing from the main folder:
 
       cd daemon
