@@ -48,6 +48,6 @@ cmake \
 	-DFAKE_DRIVER=OFF \
 	-DWITH_SYSTEMD=ON \
 	.
-make
+make -j
 cd ..
 
