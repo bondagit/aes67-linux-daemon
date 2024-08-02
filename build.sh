@@ -17,14 +17,6 @@ if [ ! -d ravenna-alsa-lkm ]; then
   cd ../..
 fi
 
-if [ ! -d cpp-httplib ]; then
-  git clone https://github.com/bondagit/cpp-httplib.git
-  cd cpp-httplib
-  git checkout 42f9f9107f87ad2ee04be117dbbadd621c449552
-  cd ..
-fi
-cd ..
-
 cd webui
 echo "Downloading current webui release ..."
 wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz

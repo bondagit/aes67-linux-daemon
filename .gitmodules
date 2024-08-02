@@ -1,0 +1,3 @@
+[submodule "3rdparty/cpp-httplib"]
+	path = 3rdparty/cpp-httplib
+	url = git@github.com:bondagit/cpp-httplib.git
