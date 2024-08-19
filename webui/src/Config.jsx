@@ -219,6 +219,7 @@ class Config extends Component {
 	      <select value={this.state.sampleRate} onChange={e => this.setState({sampleRate: e.target.value})}>
                 <option value="44100">44.1 kHz</option>
                 <option value="48000">48 kHz</option>
+                <option value="88200">88.2 kHz</option>
                 <option value="96000">96 kHz</option>
                 <option value="192000">192 kHz</option>
                 <option value="384000">384 kHz</option>

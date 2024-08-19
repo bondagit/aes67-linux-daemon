@@ -45,7 +45,7 @@ echo 'Creating test file ...' >&2
 if ! ./createtest $1 $2 $3 $4 ; then
   echo 'Usage run_test.sh sample_format sample_rate channels duration' >&2
   echo '  sample_format can be one of S16_LE, S24_3LE, S32_LE' >&2
-  echo '  sample_rate can be one of 44100, 48000, 96000, 192000, 384000' >&2
+  echo '  sample_rate can be one of 44100, 48000, 88200, 96000, 192000, 384000' >&2
   echo '  channels can be one of 2, 4, 6, up to 64' >&2
   echo '  duration is in the range 1 to 10 minutes' >&2
   exit 1
@@ -72,6 +72,8 @@ if [ $SAMPLE_RATE == "44100" ]; then
   PTIME="1.08843537415"
 elif  [ $SAMPLE_RATE == "48000" ]; then
   PTIME="1"
+elif [ $SAMPLE_RATE == "88200" ]; then
+  PTIME="0.54421768707"
 elif  [ $SAMPLE_RATE == "96000" ]; then
   PTIME="0.5"
 elif  [ $SAMPLE_RATE == "192000" ]; then

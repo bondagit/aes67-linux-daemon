@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
   }
 
   int rate(atoi(argv[2]));
-  if (rate != 44100 && rate != 48000 && rate != 96000 && rate != 192000 && rate != 384000) {
+  if (rate != 44100 && rate != 48000 && rate != 88200 && rate != 96000 && rate != 192000 && rate != 384000) {
     cerr << "Unsupported rate " << rate << endl;
     exit(1);
   }
