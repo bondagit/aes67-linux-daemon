@@ -290,6 +290,7 @@ std::string remote_sources_to_json(const std::list<RemoteSource>& sources) {
   return ss.str();
 }
 
+#ifdef USE_STREAMER
 std::string streamer_info_to_json(const StreamerInfo& info) {
   std::stringstream ss;
   ss << "{"
@@ -304,6 +305,7 @@ std::string streamer_info_to_json(const StreamerInfo& info) {
      << ",\n   \"rate\": " << unsigned(info.rate) << "\n}\n";
   return ss.str();
 }
+#endif
 
 Config json_to_config_(std::istream& js, Config& config) {
   try {

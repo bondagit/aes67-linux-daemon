@@ -323,6 +323,7 @@ bool HttpServer::init() {
            });
 
   /* retrieve streamer info and position */
+#ifdef USE_STREAMER
   svr_.Get("/api/streamer/info/([0-9]+)", [this](const Request& req,
                                                  Response& res) {
     uint32_t id;
@@ -377,10 +378,12 @@ bool HttpServer::init() {
     set_headers(res, "application/json");
     res.body = streamer_info_to_json(info);
   });
+#endif
 
   /* retrieve streamer file */
   svr_.Get("/api/streamer/stream/([0-9]+)/([0-9]+)", [this](const Request& req,
                                                             Response& res) {
+#ifdef USE_STREAMER
     if (!config_->get_streamer_enabled()) {
       set_error(400, "streamer not enabled", res);
       return;
@@ -411,6 +414,9 @@ bool HttpServer::init() {
     res.set_header("X-File-Count", std::to_string(fileCount));
     res.set_header("X-File-Current-Id", std::to_string(currentFileId));
     res.set_header("X-File-Start-Id", std::to_string(startFileId));
+#else
+    set_error(400, "streamer support not compiled-in", res);
+#endif
   });
 
   svr_.set_logger([](const Request& req, const Response& res) {

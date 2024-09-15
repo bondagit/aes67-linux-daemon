@@ -30,7 +30,10 @@
 #include "mdns_server.hpp"
 #include "rtsp_server.hpp"
 #include "session_manager.hpp"
+
+#ifdef USE_STREAMER
 #include "streamer.hpp"
+#endif
 
 #ifdef _USE_SYSTEMD_
 #include <systemd/sd-daemon.h>
@@ -181,6 +184,7 @@ int main(int argc, char* argv[]) {
       }
 
       /* start streamer */
+#ifdef USE_STREAMER
       auto streamer = Streamer::create(session_manager, config);
       if (config->get_streamer_enabled() &&
           (streamer == nullptr || !streamer->init())) {
@@ -189,6 +193,9 @@ int main(int argc, char* argv[]) {
 
       /* start http server */
       HttpServer http_server(session_manager, browser, streamer, config);
+#else
+      HttpServer http_server(session_manager, browser, config);
+#endif
       if (!http_server.init()) {
         throw std::runtime_error(std::string("HttpServer:: init failed"));
       }
@@ -247,11 +254,13 @@ int main(int argc, char* argv[]) {
       }
 
       /* stop streamer */
+#ifdef USE_STREAMER
       if (config->get_streamer_enabled()) {
         if (!streamer->terminate()) {
           throw std::runtime_error(std::string("Streamer:: terminate failed"));
         }
       }
+#endif
 
       /* stop rtsp server */
       if (!rtsp_server.terminate()) {

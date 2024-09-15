@@ -25,18 +25,25 @@
 #include "browser.hpp"
 #include "config.hpp"
 #include "session_manager.hpp"
+
+#ifdef USE_STREAMER
 #include "streamer.hpp"
+#endif
 
 class HttpServer {
  public:
   HttpServer() = delete;
   explicit HttpServer(std::shared_ptr<SessionManager> session_manager,
                       std::shared_ptr<Browser> browser,
+#ifdef USE_STREAMER
                       std::shared_ptr<Streamer> streamer,
+#endif
                       std::shared_ptr<Config> config)
       : session_manager_(session_manager),
         browser_(browser),
+#ifdef USE_STREAMER
         streamer_(streamer),
+#endif
         config_(config){};
   bool init();
   bool terminate();
@@ -44,7 +51,9 @@ class HttpServer {
  private:
   std::shared_ptr<SessionManager> session_manager_;
   std::shared_ptr<Browser> browser_;
+#ifdef USE_STREAMER
   std::shared_ptr<Streamer> streamer_;
+#endif
   std::shared_ptr<Config> config_;
   httplib::Server svr_;
   std::future<bool> res_;

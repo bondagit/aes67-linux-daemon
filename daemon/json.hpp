@@ -24,7 +24,10 @@
 
 #include "browser.hpp"
 #include "session_manager.hpp"
+
+#ifdef USE_STREAMER
 #include "streamer.hpp"
+#endif
 
 /* JSON serializers */
 std::string config_to_json(const Config& config);
@@ -39,7 +42,9 @@ std::string streams_to_json(const std::list<StreamSource>& sources,
                             const std::list<StreamSink>& sinks);
 std::string remote_source_to_json(const RemoteSource& source);
 std::string remote_sources_to_json(const std::list<RemoteSource>& sources);
+#ifdef USE_STREAMER
 std::string streamer_info_to_json(const StreamerInfo& info);
+#endif
 
 /* JSON deserializers */
 Config json_to_config(std::istream& jstream, const Config& curCconfig);
