@@ -12,12 +12,6 @@ TOPDIR=$(pwd)
 git config --global http.sslverify false
 git submodule update --init --recursive
 
-cd 3rdparty
-if [ ! -d ravenna-alsa-lkm ]; then
-  git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
-fi
-cd ..
-
 cd daemon
 echo "Building aes67-daemon ..."
 cmake \
@@ -26,6 +20,7 @@ cmake \
 	-DENABLE_TESTS=ON \
 	-DWITH_AVAHI=OFF \
 	-DFAKE_DRIVER=ON \
+	-DWITH_STREAMER=OFF \
 	.
 make
 cd ..

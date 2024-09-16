@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(custom_node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(auto_sinks_update == true, "config as excepcted");
-  BOOST_CHECK_MESSAGE(mdns_enabled == true, "config as excepcted");
+  BOOST_CHECK_MESSAGE(mdns_enabled == false, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_enabled == false, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_channels == 8, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_files_num == 6, "config as excepcted");

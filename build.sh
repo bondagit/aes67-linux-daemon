@@ -12,14 +12,6 @@ TOPDIR=$(pwd)
 echo "Init git submodules ..."
 git submodule update --init --recursive
 
-cd 3rdparty
-if [ ! -d ravenna-alsa-lkm ]; then
-  git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
-  cd ravenna-alsa-lkm/driver
-  make
-  cd ../..
-fi
-
 cd webui
 echo "Downloading current webui release ..."
 wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
