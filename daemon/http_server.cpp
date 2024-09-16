@@ -17,6 +17,8 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -323,7 +325,7 @@ bool HttpServer::init() {
            });
 
   /* retrieve streamer info and position */
-#ifdef USE_STREAMER
+#ifdef _USE_STREAMER_
   svr_.Get("/api/streamer/info/([0-9]+)", [this](const Request& req,
                                                  Response& res) {
     uint32_t id;
@@ -383,7 +385,7 @@ bool HttpServer::init() {
   /* retrieve streamer file */
   svr_.Get("/api/streamer/stream/([0-9]+)/([0-9]+)", [this](const Request& req,
                                                             Response& res) {
-#ifdef USE_STREAMER
+#ifdef _USE_STREAMER_
     if (!config_->get_streamer_enabled()) {
       set_error(400, "streamer not enabled", res);
       return;

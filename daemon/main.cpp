@@ -31,7 +31,7 @@
 #include "rtsp_server.hpp"
 #include "session_manager.hpp"
 
-#ifdef USE_STREAMER
+#ifdef _USE_STREAMER_
 #include "streamer.hpp"
 #endif
 
@@ -43,7 +43,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static const std::string version("bondagit-2.0.1");
+static const std::string version("bondagit-2.0.2");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
       }
 
       /* start streamer */
-#ifdef USE_STREAMER
+#ifdef _USE_STREAMER_
       auto streamer = Streamer::create(session_manager, config);
       if (config->get_streamer_enabled() &&
           (streamer == nullptr || !streamer->init())) {
@@ -254,7 +254,7 @@ int main(int argc, char* argv[]) {
       }
 
       /* stop streamer */
-#ifdef USE_STREAMER
+#ifdef _USE_STREAMER_
       if (config->get_streamer_enabled()) {
         if (!streamer->terminate()) {
           throw std::runtime_error(std::string("Streamer:: terminate failed"));

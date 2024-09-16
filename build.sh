@@ -39,6 +39,7 @@ cmake \
 	-DWITH_AVAHI=ON \
 	-DFAKE_DRIVER=OFF \
 	-DWITH_SYSTEMD=ON \
+	-DWITH_STREAMER=ON \
 	.
 make
 cd ..

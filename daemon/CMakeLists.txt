@@ -39,7 +39,7 @@ set(SOURCES error_code.cpp json.cpp main.cpp session_manager.cpp http_server.cpp
 
 if(WITH_STREAMER)
   MESSAGE(STATUS "WITH_STREAMER")
-  add_definitions(-DUSE_STREAMER)
+  add_definitions(-D_USE_STREAMER_)
   list(APPEND SOURCES streamer.cpp)
 endif()
 
