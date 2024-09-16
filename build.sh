@@ -9,6 +9,9 @@ export CXX=/usr/bin/clang++
 
 TOPDIR=$(pwd)
 
+echo "Init git submodules ..."
+git submodule update --init --recursive
+
 cd 3rdparty
 if [ ! -d ravenna-alsa-lkm ]; then
   git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
