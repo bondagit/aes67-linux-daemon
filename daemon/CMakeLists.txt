@@ -12,6 +12,7 @@ option(FAKE_DRIVER "Use fake driver instead of RAVENNA" OFF)
 set(CMAKE_CXX_STANDARD 17)
 
 option(WITH_SYSTEMD "Include systemd notify and watchdog support" OFF)
+option(WITH_STREAMER "Enable streamer support" ON)
 
 # ravena lkm _should_ be provided by the CLI. Nonetheless, we should be able
 # to find it in system dirs too...
@@ -24,9 +25,6 @@ if (NOT CPP_HTTPLIB_DIR)
     find_path( CPP_HTTPLIB_DIR "httplib.h" REQUIRED)
 endif()
 
-find_library(ALSA_LIBRARY NAMES asound)
-find_library(AAC_LIBRARY NAMES faac)
-
 find_library(AVAHI_LIBRARY-COMMON NAMES avahi-common)
 find_library(AVAHI_LIBRARY-CLIENT NAMES avahi-client)
 find_path(AVAHI_INCLUDE_DIR avahi-client/publish.h)
@@ -37,7 +35,13 @@ find_package(Boost COMPONENTS system thread log program_options REQUIRED)
 include_directories(aes67-daemon ${RAVENNA_ALSA_LKM_DIR}/common ${RAVENNA_ALSA_LKM_DIR}/driver ${CPP_HTTPLIB_DIR} ${Boost_INCLUDE_DIR})
 add_definitions( -DBOOST_LOG_DYN_LINK -DBOOST_LOG_USE_NATIVE_SYSLOG )
 add_compile_options( -Wall )
-set(SOURCES error_code.cpp json.cpp main.cpp session_manager.cpp http_server.cpp config.cpp interface.cpp log.cpp sap.cpp browser.cpp rtsp_client.cpp mdns_client.cpp mdns_server.cpp rtsp_server.cpp utils.cpp streamer.cpp)
+set(SOURCES error_code.cpp json.cpp main.cpp session_manager.cpp http_server.cpp config.cpp interface.cpp log.cpp sap.cpp browser.cpp rtsp_client.cpp mdns_client.cpp mdns_server.cpp rtsp_server.cpp utils.cpp)
+
+if(WITH_STREAMER)
+  MESSAGE(STATUS "WITH_STREAMER")
+  add_definitions(-DUSE_STREAMER)
+  list(APPEND SOURCES streamer.cpp)
+endif()
 
 if(FAKE_DRIVER)
   MESSAGE(STATUS "FAKE_DRIVER")
@@ -52,7 +56,7 @@ if(ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
 
-target_link_libraries(aes67-daemon ${Boost_LIBRARIES} ${ALSA_LIBRARY} ${AAC_LIBRARY})
+target_link_libraries(aes67-daemon ${Boost_LIBRARIES})
 if(WITH_AVAHI)
   MESSAGE(STATUS "WITH_AVAHI")
   add_definitions(-D_USE_AVAHI_)
@@ -64,4 +68,10 @@ if(WITH_SYSTEMD)
   MESSAGE(STATUS "WITH_SYSTEMD")
   add_definitions(-D_USE_SYSTEMD_)
   target_link_libraries(aes67-daemon systemd)
+endif()
+
+if(WITH_STREAMER)
+  find_library(ALSA_LIBRARY NAMES asound)
+  find_library(AAC_LIBRARY NAMES faac)
+  target_link_libraries(aes67-daemon ${ALSA_LIBRARY} ${AAC_LIBRARY})
 endif()
