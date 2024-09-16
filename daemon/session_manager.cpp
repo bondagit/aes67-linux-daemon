@@ -18,6 +18,7 @@
 //
 
 #define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096  // max for SDP file
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 #include <stdlib.h>
 #include <httplib.h>
@@ -463,7 +464,7 @@ void SessionManager::add_source_observer(SourceObserverType type,
 }
 
 void SessionManager::add_sink_observer(SinkObserverType type,
-                                      const SinkObserver& cb) {
+                                       const SinkObserver& cb) {
   switch (type) {
     case SinkObserverType::add_sink:
       add_sink_observers_.push_back(cb);

@@ -1,0 +1,7 @@
+[submodule "3rdparty/cpp-httplib"]
+	path = 3rdparty/cpp-httplib
+	url = https://github.com/bondagit/cpp-httplib.git
+[submodule "3rdparty/ravenna-alsa-lkm"]
+	path = 3rdparty/ravenna-alsa-lkm
+	url = https://github.com/bondagit/ravenna-alsa-lkm.git
+	branch = aes67-daemon

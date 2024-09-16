@@ -45,7 +45,7 @@ class Config {
     return streamer_player_buffer_files_num_;
   };
   uint8_t get_streamer_channels() const { return streamer_channels_; };
-  bool get_streamer_enabled() const { return streamer_enabled_; };
+  bool get_streamer_enabled() const;
   int get_log_severity() const { return log_severity_; };
   uint32_t get_playout_delay() const { return playout_delay_; };
   uint32_t get_tic_frame_size_at_1fs() const { return tic_frame_size_at_1fs_; };
@@ -73,7 +73,7 @@ class Config {
   const std::string& get_ip_addr_str() const { return ip_str_; };
   bool get_daemon_restart() const { return daemon_restart_; };
   bool get_driver_restart() const { return driver_restart_; };
-  bool get_mdns_enabled() const { return mdns_enabled_; };
+  bool get_mdns_enabled() const;
   int get_interface_idx() const { return interface_idx_; };
   const std::string& get_ptp_status_script() const {
     return ptp_status_script_;

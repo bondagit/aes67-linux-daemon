@@ -17,6 +17,8 @@
 //
 
 #define CPPHTTPLIB_PAYLOAD_MAX_LENGTH 4096  // max for SDP file
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+
 #include <httplib.h>
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
@@ -404,7 +406,8 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto streamer_channels = pt.get<int>("streamer_channels");
   auto streamer_files_num = pt.get<int>("streamer_files_num");
   auto streamer_file_duration = pt.get<int>("streamer_file_duration");
-  auto streamer_player_buffer_files_num = pt.get<int>("streamer_player_buffer_files_num");
+  auto streamer_player_buffer_files_num =
+      pt.get<int>("streamer_player_buffer_files_num");
   BOOST_CHECK_MESSAGE(http_port == 9999, "config as excepcted");
   // BOOST_CHECK_MESSAGE(log_severity == 5, "config as excepcted");
   BOOST_CHECK_MESSAGE(playout_delay == 0, "config as excepcted");
@@ -427,12 +430,17 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(custom_node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(auto_sinks_update == true, "config as excepcted");
+#ifdef _USE_AVAHI_
   BOOST_CHECK_MESSAGE(mdns_enabled == true, "config as excepcted");
+#else
+  BOOST_CHECK_MESSAGE(mdns_enabled == false, "config as excepcted");
+#endif
   BOOST_CHECK_MESSAGE(streamer_enabled == false, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_channels == 8, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_files_num == 6, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_file_duration == 3, "config as excepcted");
-  BOOST_CHECK_MESSAGE(streamer_player_buffer_files_num == 2, "config as excepcted");
+  BOOST_CHECK_MESSAGE(streamer_player_buffer_files_num == 2,
+                      "config as excepcted");
 }
 
 BOOST_AUTO_TEST_CASE(get_ptp_status) {

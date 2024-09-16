@@ -23,13 +23,14 @@
 #include <boost/asio.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/io_service.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <cstdlib>
 #include <iostream>
 
 #include "netlink.hpp"
 
+using namespace boost::placeholders;
 using boost::asio::deadline_timer;
 
 class NetlinkClient {
