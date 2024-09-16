@@ -16,6 +16,7 @@ cd 3rdparty
 if [ ! -d ravenna-alsa-lkm ]; then
   git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
 fi
+cd ..
 
 cd daemon
 echo "Building aes67-daemon ..."
