@@ -12,6 +12,10 @@ TOPDIR=$(pwd)
 echo "Init git submodules ..."
 git submodule update --init --recursive
 
+cd 3rdparty/ravenna-alsa-lkm/driver
+make
+cd -
+
 cd webui
 echo "Downloading current webui release ..."
 wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
