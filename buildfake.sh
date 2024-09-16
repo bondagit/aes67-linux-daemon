@@ -10,19 +10,12 @@ export CXX=/usr/bin/clang++
 TOPDIR=$(pwd)
 
 git config --global http.sslverify false
+git submodule update --init --recursive
 
 cd 3rdparty
 if [ ! -d ravenna-alsa-lkm ]; then
   git clone --single-branch --branch aes67-daemon https://github.com/bondagit/ravenna-alsa-lkm.git
 fi
-
-if [ ! -d cpp-httplib ]; then
-  git clone https://github.com/bondagit/cpp-httplib.git
-  cd cpp-httplib
-  git checkout 42f9f9107f87ad2ee04be117dbbadd621c449552
-  cd ..
-fi
-cd ..
 
 cd daemon
 echo "Building aes67-daemon ..."
