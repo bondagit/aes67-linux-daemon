@@ -178,6 +178,7 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
+* patch to compile with Linux Kernel v6.11 and above (from driver version v1.11)
 * patch to support sample rates 192Khz and 384Khz (from driver version v1.7)
 * patch to compile with Linux Kernel v6.2 and above (from driver version v1.7)
 * patch to make the PTP slave status change from locked to unlocked if no announcement messages are received from the Master for more than 5 seconds (from driver version v1.6). See [issue 87](https://github.com/bondagit/aes67-linux-daemon/issues/87).
