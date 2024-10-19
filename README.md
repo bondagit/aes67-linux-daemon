@@ -208,7 +208,7 @@ The daemon integrates with systemd watchdog.
 
 To enable it recompile the daemon with the CMake option _-DWITH_SYSTEMD=ON_
 
-You can install the daemon under _systemd_ by using the script [systemd/install.sh](install.sh):
+You can install the daemon under _systemd_ by using the script [systemd/install.sh](systemd/install.sh):
 
     cd systemd
     sudo ./install.sh
