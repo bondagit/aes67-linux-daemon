@@ -4,8 +4,8 @@
 #
 
 #we need clang when compiling on ARMv7
-export CC=/usr/bin/clang
-export CXX=/usr/bin/clang++
+#export CC=/usr/bin/clang
+#export CXX=/usr/bin/clang++
 
 TOPDIR=$(pwd)
 
@@ -13,6 +13,7 @@ echo "Init git submodules ..."
 git submodule update --init --recursive
 
 cd 3rdparty/ravenna-alsa-lkm/driver
+git checkout aes67-daemon
 make
 cd -
 
