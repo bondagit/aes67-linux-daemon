@@ -4,8 +4,8 @@
 #
 
 #we need clang when compiling on ARMv7
-#export CC=/usr/bin/clang
-#export CXX=/usr/bin/clang++
+export CC=/usr/bin/clang
+export CXX=/usr/bin/clang++
 
 TOPDIR=$(pwd)
 
