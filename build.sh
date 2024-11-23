@@ -25,7 +25,7 @@ if [ -f webui.tar.gz ]; then
 else
   echo "Building and installing webui ..."
   # npm install react-modal react-toastify react-router-dom
-  npm install
+  npm ci
   npm run build
 fi
 cd ..
