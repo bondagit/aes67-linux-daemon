@@ -65,9 +65,9 @@ class SAP {
   io_context io_service_;
   ip::udp::socket socket_{io_service_};
   ip::udp::endpoint remote_endpoint_{
-      ip::udp::endpoint(ip::address::from_string(addr_), port)};
+      ip::udp::endpoint(ip::make_address(addr_), port)};
   ip::udp::endpoint listen_endpoint_{
-      ip::udp::endpoint(ip::address::from_string("0.0.0.0"), port)};
+      ip::udp::endpoint(ip::make_address("0.0.0.0"), port)};
   deadline_timer deadline_{io_service_};
 };
 

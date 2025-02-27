@@ -40,7 +40,7 @@ class IGMP {
 
   bool join(const std::string& interface_ip, const std::string& mcast_ip) {
     uint32_t mcast_ip_addr =
-        ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
+        ip::make_address(mcast_ip.c_str()).to_v4().to_ulong();
     std::scoped_lock<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
@@ -50,9 +50,8 @@ class IGMP {
     }
 
     error_code ec;
-    ip::multicast::join_group option(
-        ip::address::from_string(mcast_ip).to_v4(),
-        ip::address::from_string(interface_ip).to_v4());
+    ip::multicast::join_group option(ip::make_address(mcast_ip).to_v4(),
+                                     ip::make_address(interface_ip).to_v4());
     socket_.set_option(option, ec);
     if (ec) {
       BOOST_LOG_TRIVIAL(error) << "igmp:: failed to joined multicast group "
@@ -75,7 +74,7 @@ class IGMP {
 
   bool leave(const std::string& interface_ip, const std::string& mcast_ip) {
     uint32_t mcast_ip_addr =
-        ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
+        ip::make_address(mcast_ip.c_str()).to_v4().to_ulong();
     std::scoped_lock<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
@@ -88,9 +87,8 @@ class IGMP {
     }
 
     error_code ec;
-    ip::multicast::leave_group option(
-        ip::address::from_string(mcast_ip).to_v4(),
-        ip::address::from_string(interface_ip).to_v4());
+    ip::multicast::leave_group option(ip::make_address(mcast_ip).to_v4(),
+                                      ip::make_address(interface_ip).to_v4());
     socket_.set_option(option, ec);
     if (ec) {
       BOOST_LOG_TRIVIAL(error) << "igmp:: failed to leave multicast group "

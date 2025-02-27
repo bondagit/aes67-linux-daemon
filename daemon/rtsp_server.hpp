@@ -89,9 +89,9 @@ class RtspServer {
       : session_manager_(session_manager),
         config_(config),
         acceptor_(io_service_,
-                  tcp::endpoint(boost::asio::ip::address::from_string(
-                                    config_->get_ip_addr_str()),
-                                config_->get_rtsp_port())) {}
+                  tcp::endpoint(
+                      boost::asio::ip::make_address(config_->get_ip_addr_str()),
+                      config_->get_rtsp_port())) {}
   bool init() {
     accept();
     /* start rtsp server on a separate thread */

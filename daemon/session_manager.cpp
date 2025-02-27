@@ -255,7 +255,7 @@ bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
               return false;
             }
             info.stream.m_ui32DestIP =
-                ip::address_v4::from_string(fields[2].c_str()).to_ulong();
+                ip::make_address(fields[2].c_str()).to_v4().to_ulong();
             if (info.stream.m_ui32DestIP == INADDR_NONE) {
               BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid IPv4 "
                                           "connection address in SDP at line "
@@ -524,13 +524,14 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();
   info.stream.m_ui32SrcIP = config_->get_ip_addr();  // only for Source
   boost::system::error_code ec;
-  ip::address_v4::from_string(source.address, ec);
+  ip::make_address(source.address, ec);
   if (!ec) {
     info.stream.m_ui32DestIP =
-        ip::address_v4::from_string(source.address).to_ulong();
+        ip::make_address(source.address).to_v4().to_ulong();
   } else {
     info.stream.m_ui32DestIP =
-        ip::address_v4::from_string(config_->get_rtp_mcast_base().c_str())
+        ip::make_address(config_->get_rtp_mcast_base().c_str())
+            .to_v4()
             .to_ulong() +
         source.id;
   }
