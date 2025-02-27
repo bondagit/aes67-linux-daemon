@@ -97,8 +97,8 @@ struct Client {
     socket_.set_option(udp::socket::reuse_address(true));
     socket_.bind(listen_endpoint_);
     socket_.set_option(
-        multicast::join_group(address::from_string(g_sap_address).to_v4(),
-                              address::from_string(g_daemon_address).to_v4()));
+        multicast::join_group(make_address(g_sap_address).to_v4(),
+                              make_address(g_daemon_address).to_v4()));
 
     cli_.set_connection_timeout(30);
     cli_.set_read_timeout(30);
@@ -362,10 +362,10 @@ struct Client {
 
  private:
   httplib::Client cli_{g_daemon_address, g_daemon_port};
-  io_service io_service_;
+  io_context io_service_;
   udp::socket socket_{io_service_};
   udp::endpoint listen_endpoint_{
-      udp::endpoint(address::from_string("0.0.0.0"), g_sap_port)};
+      udp::endpoint(make_address("0.0.0.0"), g_sap_port)};
 };
 
 BOOST_AUTO_TEST_CASE(is_alive) {
