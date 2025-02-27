@@ -125,7 +125,7 @@ class RtspServer {
   void accept();
 
   std::mutex mutex_;
-  boost::asio::io_service io_service_;
+  boost::asio::io_context io_service_;
   std::shared_ptr<SessionManager> session_manager_;
   std::shared_ptr<Config> config_;
   std::vector<std::weak_ptr<RtspSession> > sessions_{session_num_max};
