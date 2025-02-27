@@ -168,7 +168,7 @@ bool ping(const std::string& ip) {
 
   // this requires root priv
   try {
-    io_service io_service;
+    io_context io_service;
     icmp::socket socket{io_service, icmp::v4()};
     ip::icmp::endpoint destination(ip::icmp::v4(),
                                    ip::address_v4::from_string(ip).to_ulong());

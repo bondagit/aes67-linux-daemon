@@ -22,7 +22,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/deadline_timer.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <cstdlib>
@@ -94,7 +93,7 @@ class NetlinkClient {
   }
 
  private:
-  boost::asio::io_service io_service_;
+  boost::asio::io_context io_service_;
   boost::asio::basic_raw_socket<nl_protocol> socket_{io_service_};
   deadline_timer deadline_{io_service_};
   std::string name_;

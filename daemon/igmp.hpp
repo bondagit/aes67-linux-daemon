@@ -104,7 +104,7 @@ class IGMP {
   }
 
  private:
-  io_service io_service_;
+  io_context io_service_;
   ip::udp::socket socket_{io_service_};
   udp::endpoint listen_endpoint_{udp::endpoint(address_v4::any(), 0)};
   std::unordered_map<uint32_t, int> mcast_ref;
