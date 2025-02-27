@@ -206,7 +206,7 @@ std::pair<bool, RtspSource> RtspClient::process(
            << crc16(reinterpret_cast<const uint8_t*>(res.body.c_str()),
                     res.body.length());
         /*<< std::hex <<
-         * ip::make_address(address.c_str()).to_ulong();*/
+         * ip::make_address(address.c_str()).to_uint();*/
         rtsp_source.id = ss.str();
         rtsp_source.source = "mDNS";
         rtsp_source.address = address;
