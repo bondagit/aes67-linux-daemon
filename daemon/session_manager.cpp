@@ -255,7 +255,12 @@ bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
               return false;
             }
             info.stream.m_ui32DestIP =
+#if BOOST_VERSION < 108700
+                ip::address_v4::from_string(fields[2].c_str()).to_ulong();
+#else
+
                 ip::make_address(fields[2].c_str()).to_v4().to_uint();
+#endif
             if (info.stream.m_ui32DestIP == INADDR_NONE) {
               BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid IPv4 "
                                           "connection address in SDP at line "
@@ -524,15 +529,28 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();
   info.stream.m_ui32SrcIP = config_->get_ip_addr();  // only for Source
   boost::system::error_code ec;
+#if BOOST_VERSION < 108700
+  ip::address_v4::from_string(source.address, ec);
+#else
   ip::make_address(source.address, ec);
+#endif
   if (!ec) {
     info.stream.m_ui32DestIP =
+#if BOOST_VERSION < 108700
+        ip::address_v4::from_string(source.address).to_ulong();
+#else
         ip::make_address(source.address).to_v4().to_uint();
+#endif
   } else {
     info.stream.m_ui32DestIP =
+#if BOOST_VERSION < 108700
+        ip::address_v4::from_string(config_->get_rtp_mcast_base().c_str())
+            .to_ulong() +
+#else
         ip::make_address(config_->get_rtp_mcast_base().c_str())
             .to_v4()
             .to_uint() +
+#endif
         source.id;
   }
   info.stream.m_usSrcPort = config_->get_rtp_port();

@@ -40,7 +40,11 @@ class IGMP {
 
   bool join(const std::string& interface_ip, const std::string& mcast_ip) {
     uint32_t mcast_ip_addr =
+#if BOOST_VERSION < 108700
+        ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
+#else
         ip::make_address(mcast_ip.c_str()).to_v4().to_uint();
+#endif
     std::scoped_lock<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
@@ -50,8 +54,14 @@ class IGMP {
     }
 
     error_code ec;
+#if BOOST_VERSION < 108700
+    ip::multicast::join_group option(
+        ip::address::from_string(mcast_ip).to_v4(),
+        ip::address::from_string(interface_ip).to_v4());
+#else
     ip::multicast::join_group option(ip::make_address(mcast_ip).to_v4(),
                                      ip::make_address(interface_ip).to_v4());
+#endif
     socket_.set_option(option, ec);
     if (ec) {
       BOOST_LOG_TRIVIAL(error) << "igmp:: failed to joined multicast group "
@@ -74,7 +84,11 @@ class IGMP {
 
   bool leave(const std::string& interface_ip, const std::string& mcast_ip) {
     uint32_t mcast_ip_addr =
+#if BOOST_VERSION < 108700
+        ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
+#else
         ip::make_address(mcast_ip.c_str()).to_v4().to_uint();
+#endif
     std::scoped_lock<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
@@ -87,8 +101,15 @@ class IGMP {
     }
 
     error_code ec;
+
+#if BOOST_VERSION < 108700
+    ip::multicast::leave_group option(
+        ip::address::from_string(mcast_ip).to_v4(),
+        ip::address::from_string(interface_ip).to_v4());
+#else
     ip::multicast::leave_group option(ip::make_address(mcast_ip).to_v4(),
                                       ip::make_address(interface_ip).to_v4());
+#endif
     socket_.set_option(option, ec);
     if (ec) {
       BOOST_LOG_TRIVIAL(error) << "igmp:: failed to leave multicast group "
@@ -102,7 +123,11 @@ class IGMP {
   }
 
  private:
+#if BOOST_VERSION < 108700
+  io_service io_service_;
+#else
   io_context io_service_;
+#endif
   ip::udp::socket socket_{io_service_};
   udp::endpoint listen_endpoint_{udp::endpoint(address_v4::any(), 0)};
   std::unordered_map<uint32_t, int> mcast_ref;

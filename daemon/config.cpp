@@ -79,11 +79,19 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
     config.streamer_player_buffer_files_num_ = 1;
 
   boost::system::error_code ec;
+#if BOOST_VERSION < 108700
+  ip::address_v4::from_string(config.rtp_mcast_base_.c_str(), ec);
+#else
   ip::make_address(config.rtp_mcast_base_.c_str(), ec);
+#endif
   if (ec) {
     config.rtp_mcast_base_ = "239.1.0.1";
   }
+#if BOOST_VERSION < 108700
+  ip::address_v4::from_string(config.sap_mcast_addr_.c_str(), ec);
+#else
   ip::make_address(config.sap_mcast_addr_.c_str(), ec);
+#endif
   if (ec) {
     config.sap_mcast_addr_ = "224.2.127.254";
   }

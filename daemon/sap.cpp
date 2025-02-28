@@ -25,10 +25,7 @@ using namespace boost::placeholders;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-SAP::SAP(const std::string& sap_mcast_addr)
-    : addr_(sap_mcast_addr)
-//  remote_endpoint_(ip::make_address(addr_), port)
-{
+SAP::SAP(const std::string& sap_mcast_addr) : addr_(sap_mcast_addr) {
   socket_.open(boost::asio::ip::udp::v4());
   socket_.set_option(udp::socket::reuse_address(true));
   socket_.bind(listen_endpoint_);
@@ -36,7 +33,11 @@ SAP::SAP(const std::string& sap_mcast_addr)
 }
 
 bool SAP::set_multicast_interface(const std::string& interface_ip) {
+#if BOOST_VERSION < 108700
+  ip::address_v4 local_interface = ip::address_v4::from_string(interface_ip);
+#else
   ip::address_v4 local_interface = ip::make_address(interface_ip).to_v4();
+#endif
   ip::multicast::outbound_interface oi_option(local_interface);
   boost::system::error_code ec;
   socket_.set_option(oi_option, ec);

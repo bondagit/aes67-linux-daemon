@@ -171,7 +171,11 @@ bool ping(const std::string& ip) {
     io_context io_service;
     icmp::socket socket{io_service, icmp::v4()};
     ip::icmp::endpoint destination(ip::icmp::v4(),
+#if BOOST_VERSION < 108700
+                                   ip::address_v4::from_string(ip).to_ulong());
+#else
                                    ip::make_address(ip).to_v4().to_uint());
+#endif
     socket.send_to(boost::asio::buffer(buffer, sizeof buffer), destination);
   } catch (...) {
     BOOST_LOG_TRIVIAL(error) << "ping:: send_to() failed";

@@ -62,12 +62,27 @@ class SAP {
             const std::string& sdp);
 
   std::string addr_;
+#if BOOST_VERSION < 108700
+  io_service io_service_;
+#else
   io_context io_service_;
+#endif
   ip::udp::socket socket_{io_service_};
-  ip::udp::endpoint remote_endpoint_{
-      ip::udp::endpoint(ip::make_address(addr_), port)};
-  ip::udp::endpoint listen_endpoint_{
-      ip::udp::endpoint(ip::make_address("0.0.0.0"), port)};
+  ip::udp::endpoint remote_endpoint_ {
+#if BOOST_VERSION < 108700
+    ip::udp::endpoint(ip::address::from_string(addr_), port)
+#else
+    ip::udp::endpoint(ip::make_address(addr_), port)
+#endif
+  };
+  ip::udp::endpoint listen_endpoint_ {
+#if BOOST_VERSION < 108700
+    ip::udp::endpoint(ip::address::from_string("0.0.0.0"), port)
+  };
+#else
+    ip::udp::endpoint(ip::make_address("0.0.0.0"), port)
+  };
+#endif
   deadline_timer deadline_{io_service_};
 };
 
