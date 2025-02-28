@@ -97,9 +97,14 @@ struct Client {
     socket_.set_option(udp::socket::reuse_address(true));
     socket_.bind(listen_endpoint_);
     socket_.set_option(
+#if BOOST_VERSION < 108700
+        multicast::join_group(address::from_string(g_sap_address).to_v4(),
+                              address::from_string(g_daemon_address).to_v4())
+#else
         multicast::join_group(make_address(g_sap_address).to_v4(),
-                              make_address(g_daemon_address).to_v4()));
-
+                              make_address(g_daemon_address).to_v4())
+#endif
+    );
     cli_.set_connection_timeout(30);
     cli_.set_read_timeout(30);
     cli_.set_write_timeout(30);
@@ -362,10 +367,18 @@ struct Client {
 
  private:
   httplib::Client cli_{g_daemon_address, g_daemon_port};
+#if BOOST_VERSION < 108700
+  io_service io_service_;
+#else
   io_context io_service_;
+#endif
   udp::socket socket_{io_service_};
   udp::endpoint listen_endpoint_{
+#if BOOST_VERSION < 108700
+      udp::endpoint(address::from_string("0.0.0.0"), g_sap_port)};
+#else
       udp::endpoint(make_address("0.0.0.0"), g_sap_port)};
+#endif
 };
 
 BOOST_AUTO_TEST_CASE(is_alive) {
