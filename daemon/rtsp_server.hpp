@@ -89,9 +89,13 @@ class RtspServer {
       : session_manager_(session_manager),
         config_(config),
         acceptor_(io_service_,
-                  tcp::endpoint(boost::asio::ip::address::from_string(
-                                    config_->get_ip_addr_str()),
-                                config_->get_rtsp_port())) {}
+                  tcp::endpoint(
+#if BOOST_VERSION < 108700
+                      boost::asio::ip::address::from_string(config_->get_ip_addr_str()),
+#else
+                      boost::asio::ip::make_address(config_->get_ip_addr_str()),
+#endif
+                      config_->get_rtsp_port())) {}
   bool init() {
     accept();
     /* start rtsp server on a separate thread */
@@ -125,7 +129,11 @@ class RtspServer {
   void accept();
 
   std::mutex mutex_;
+#if BOOST_VERSION < 108700
   boost::asio::io_service io_service_;
+#else
+  boost::asio::io_context io_service_;
+#endif
   std::shared_ptr<SessionManager> session_manager_;
   std::shared_ptr<Config> config_;
   std::vector<std::weak_ptr<RtspSession> > sessions_{session_num_max};
