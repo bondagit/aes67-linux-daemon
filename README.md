@@ -178,7 +178,7 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
  
-* patch to properly release the network device preveting reboot and shutdown (from ddriver v1.14)
+* patch to properly release the network device, that on some Linux Kernels was preventing device reboot and shutdown (from driver v1.14)
 * patch to use ALSA managed buffer allocation and compile with Linux Kernel v6.12 and above (from driver version v1.13)
 * patch to compile with Linux Kernel v6.11 and above (from driver version v1.11)
 * patch to support sample rates 192Khz and 384Khz (from driver version v1.7)
