@@ -1,7 +1,7 @@
 //
 //  main.cpp
 //
-//  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
+//  Copyright (c) 2019 2025 Andrea Bondavalli. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static const std::string version("bondagit-2.0.3");
+static const std::string version("bondagit-2.0.4");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {

@@ -43,4 +43,7 @@ cmake \
 	.
 make
 cd ..
+cd test
+make
+cd ..
 
