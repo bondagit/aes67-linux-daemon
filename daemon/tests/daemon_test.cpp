@@ -22,6 +22,16 @@
 #include <httplib.h>
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
+#if BOOST_VERSION < 108800
+#include <boost/process.hpp>
+namespace process = boost::process;
+#else
+#include <boost/process/v1/child.hpp>
+#include <boost/process/v1/io.hpp>
+#include <boost/process/v1/pipe.hpp>
+#include <boost/process/v1/start_dir.hpp>
+namespace process = boost::process::v1;
+#endif
 #include <boost/process.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -45,7 +55,7 @@ constexpr static uint16_t g_udp_size = 1024;
 constexpr static uint16_t g_sap_header_len = 24;
 constexpr static uint16_t g_stream_num_max = 64;
 
-using namespace boost::process;
+using namespace process;
 using namespace boost::asio::ip;
 using namespace boost::asio;
 
