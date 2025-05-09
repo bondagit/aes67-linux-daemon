@@ -127,7 +127,12 @@ class SourceEdit extends Component {
   }
 
   getMaxChannels(codec, samples) {
-    let maxChannels = Math.floor(max_packet_size / (samples * (codec === 'L16' ? 2 : 3)));
+    let sampleSize = 4
+    if (codec === 'L16')
+      sampleSize = 2
+    if (codec === 'L24')
+      sampleSize = 3
+    let maxChannels = Math.floor(max_packet_size / (samples * sampleSize));
     return maxChannels > 64 ? 64 : maxChannels;
   }
 
@@ -139,7 +144,7 @@ class SourceEdit extends Component {
 
   onChangeCodec(e) {
     let codec = e.target.value;
-    let maxChannels = this.getMaxChannels(this.state.codec, this.state.maxSamplesPerPacket);
+    let maxChannels = this.getMaxChannels(codec, this.state.maxSamplesPerPacket);
     this.setState({ codec: codec, maxChannels: maxChannels, channelsErr: this.state.channels > maxChannels });
   }
 
