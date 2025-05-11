@@ -25,10 +25,32 @@
 #include <fstream>
 #include <utility>
 
+#include <ifaddrs.h>
 #include "log.hpp"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
+
+bool is_interface_ip(const std::string& interface_name,
+                     const std::string& addr) {
+  struct ifaddrs *ifap, *ifa;
+  struct sockaddr_in* sa;
+  char* saddr;
+  bool found(false);
+
+  getifaddrs(&ifap);
+  for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+    if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
+      sa = (struct sockaddr_in*)ifa->ifa_addr;
+      saddr = inet_ntoa(sa->sin_addr);
+      if (interface_name == ifa->ifa_name && addr == saddr)
+        found = true;
+    }
+  }
+
+  freeifaddrs(ifap);
+  return found;
+}
 
 std::pair<uint32_t, std::string> get_interface_ip(
     const std::string& interface_name) {
@@ -57,6 +79,22 @@ std::pair<uint32_t, std::string> get_interface_ip(
                              << " IP address " << str_addr;*/
 
   return {addr, str_addr};
+}
+
+std::tuple<uint32_t, std::string, bool> get_new_interface_ip(
+    const std::string& interface_name,
+    const std::string& curr_addr) {
+  if (is_interface_ip(interface_name, curr_addr))
+  {
+    uint32_t ip_addr;
+    inet_pton(AF_INET, curr_addr.c_str(), &ip_addr);
+    return { ip_addr, curr_addr, false };
+  }
+
+  auto [ip_addr, ip_str] = get_interface_ip(interface_name);
+  BOOST_LOG_TRIVIAL(info) << "interface " << interface_name
+                          << " new IP address " << ip_str;
+  return { ip_addr, ip_str, true };
 }
 
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(

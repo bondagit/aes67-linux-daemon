@@ -285,7 +285,7 @@ where:
 
 > **ip\_addr**
 > JSON string specifying the IP address of the specified network device.
-> **_NOTE:_** This parameter is read-only and cannot be set. The server will determine the IP address of the network device at startup time and will monitor it periodically.
+> This parameter can be set to specify the prefferred IP address to use. In case such address is not valid, the server will determine the IP address of the network device at startup time and will monitor it periodically.
 
 > **mdns\_enabled**
 > JSON boolean specifying whether the mDNS discovery is enabled or disabled.
