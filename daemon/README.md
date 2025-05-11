@@ -186,6 +186,7 @@ Example
 
     {
       "interface_name": "lo",
+      "http_addr": "127.0.0.1",
       "http_port": 8080,
       "rtsp_port": 8854,
       "log_severity": 2,
@@ -285,7 +286,12 @@ where:
 
 > **ip\_addr**
 > JSON string specifying the IP address of the specified network device.
-> This parameter can be set to specify the prefferred IP address to use. In case such address is not valid, the server will determine the IP address of the network device at startup time and will monitor it periodically.
+> This parameter can be set to specify the prefferred IP address to use. 
+> In case such address is not valid, the server will determine the IP address of the network device at startup time and will monitor it periodically.
+
+> **http\_addr**
+> JSON string specifying the alternate IP address used for the daemon HTTP interface. 
+> If this address is specified the HTTP interface will bind to this IP instead of the one specified by the *ip_addr* parameter.
 
 > **mdns\_enabled**
 > JSON boolean specifying whether the mDNS discovery is enabled or disabled.
