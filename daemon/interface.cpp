@@ -1,7 +1,7 @@
 //
 //  interface.cpp
 //
-//  Copyright (c) 2019 2020 Andrea Bondavalli. All rights reserved.
+//  Copyright (c) 2019 2025 Andrea Bondavalli. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ std::tuple<uint32_t, std::string, bool> get_new_interface_ip(
   {
     uint32_t ip_addr;
     inet_pton(AF_INET, curr_addr.c_str(), &ip_addr);
-    return { ip_addr, curr_addr, false };
+    return { ntohl(ip_addr), curr_addr, false };
   }
 
   auto [ip_addr, ip_str] = get_interface_ip(interface_name);
