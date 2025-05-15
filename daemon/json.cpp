@@ -379,7 +379,9 @@ Config json_to_config_(std::istream& js, Config& config) {
             remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "auto_sinks_update") {
         config.set_auto_sinks_update(val.get_value<bool>());
-      } else if (key == "mac_addr" || key == "ip_addr" || key == "node_id") {
+      } else if (key == "ip_addr") {
+        config.set_ip_addr_str(val.get_value<std::string>());
+      } else if (key == "mac_addr" || key == "node_id") {
         /* ignored */
       } else {
         std::cerr << "Warning: unkown configuration option " << key

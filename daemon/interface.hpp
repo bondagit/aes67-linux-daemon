@@ -20,6 +20,11 @@
 #ifndef _INTERFACE_HPP_
 #define _INTERFACE_HPP_
 
+std::tuple<uint32_t, std::string, bool> get_new_interface_ip(
+    const std::string& interface_name,
+    const std::string& curr_addr);
+bool is_interface_ip(const std::string& interface_name,
+                     const std::string& addr);
 std::pair<uint32_t, std::string> get_interface_ip(
     const std::string& interface_name);
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(

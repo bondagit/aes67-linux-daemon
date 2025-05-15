@@ -43,7 +43,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static const std::string version("bondagit-2.0.5");
+static const std::string version("bondagit-2.1.0");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -220,8 +220,9 @@ int main(int argc, char* argv[]) {
           sd_notify(0, "WATCHDOG=1");
 #endif
 
-        auto [ip_addr, ip_str] = get_interface_ip(config->get_interface_name());
-        if (config->get_ip_addr_str() != ip_str) {
+        auto [ip_addr, ip_str, is_new] = get_new_interface_ip(
+            config->get_interface_name(), config->get_ip_addr_str());
+        if (is_new) {
           BOOST_LOG_TRIVIAL(warning)
               << "main:: IP address changed, restarting ...";
           break;

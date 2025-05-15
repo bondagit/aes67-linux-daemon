@@ -115,7 +115,8 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
     config.interface_idx_ = interface_idx;
   }
 
-  auto [ip_addr, ip_str] = get_interface_ip(config.interface_name_);
+  auto [ip_addr, ip_str, is_new] =
+      get_new_interface_ip(config.interface_name_, config.ip_str_);
   if (ip_str.empty()) {
     std::cerr << "Cannot retrieve IPv4 address for interface "
               << config.interface_name_ << std::endl;
