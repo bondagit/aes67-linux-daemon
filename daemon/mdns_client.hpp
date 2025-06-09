@@ -51,9 +51,9 @@ class MDNSClient {
  protected:
   virtual void on_change_rtsp_source(const std::string& name,
                                      const std::string& domain,
-                                     const RtspSource& source){};
+                                     const RtspSource& source) {};
   virtual void on_remove_rtsp_source(const std::string& name,
-                                     const std::string& domain){};
+                                     const std::string& domain) {};
 
 #ifdef _USE_AVAHI_
   static void resolve_callback(AvahiServiceResolver* r,

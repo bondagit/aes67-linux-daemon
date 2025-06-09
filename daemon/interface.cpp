@@ -84,17 +84,16 @@ std::pair<uint32_t, std::string> get_interface_ip(
 std::tuple<uint32_t, std::string, bool> get_new_interface_ip(
     const std::string& interface_name,
     const std::string& curr_addr) {
-  if (is_interface_ip(interface_name, curr_addr))
-  {
+  if (is_interface_ip(interface_name, curr_addr)) {
     uint32_t ip_addr;
     inet_pton(AF_INET, curr_addr.c_str(), &ip_addr);
-    return { ntohl(ip_addr), curr_addr, false };
+    return {ntohl(ip_addr), curr_addr, false};
   }
 
   auto [ip_addr, ip_str] = get_interface_ip(interface_name);
   BOOST_LOG_TRIVIAL(info) << "interface " << interface_name
                           << " new IP address " << ip_str;
-  return { ip_addr, ip_str, true };
+  return {ip_addr, ip_str, true};
 }
 
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(

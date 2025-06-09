@@ -184,8 +184,8 @@ void DriverHandler::send_command(enum MT_ALSA_msg_id id,
 
       if (id != palsa_msg->id) {
         BOOST_LOG_TRIVIAL(warning)
-            << "driver_handler:: unexpected cmd response:"
-            << "sent " << id << " received " << palsa_msg->id;
+            << "driver_handler:: unexpected cmd response:" << "sent " << id
+            << " received " << palsa_msg->id;
         on_command_error(palsa_msg->id, DaemonErrc::invalid_driver_response);
       } else {
         if (palsa_msg->errCode == 0) {

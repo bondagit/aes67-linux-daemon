@@ -110,12 +110,20 @@ See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 The HTTP Streamer was introduced with the daemon version 2.0 and it is used to receive AES67 audio streams via HTTP file streaming.
 
 The HTTP Streamer can be enabled via the _streamer_enabled_ daemon parameter.
-When the Streamer is active the daemon starts capturing the configured _Sinks_ up to the maximum number of channels configured by the _streamer_channels_ parameters.
+When the Streamer is active the daemon starts capturing the configured _Sinks_ up to the maximum number of channels configured by the _streamer_channels_ parameter.
 The captured PCM samples are split into _streamer_files_num_ files of _streamer_file_duration_ duration (in seconds) for each sink, compressed using AAC LC codec and served via HTTP.
 ![Screenshot 2024-06-15 at 15 36 48](https://github.com/bondagit/aes67-linux-daemon/assets/56439183/3341b05e-daed-4541-b0a1-28839d5b9a6b)
 The HTTP streamer requires the libfaac-dev package to compile.
 
 Please note that since the HTTP Streamer uses the RAVENNA ALSA device for capturing it's not possible to use such device for other audio captures.
+
+## Transcription ##
+The support for audio transcription was introduced with the daemon version 3.0 and it is used for real-time speech to text conversion.
+
+The transcription can be enabled via the _transcriber_enabled_ daemon parameter.
+When the Transcriber is active the daemon starts capturing the configured _Sinks_ up to the maximum number of channels configured by the _transcriber_channels_ parameter and perform speech to text for all the configured _Sinks_.
+
+See [Transcription](TRANSCRIPTION.md)
 
 ## AES67 USB Receiver and Transmitter ##
 See [Use your board as AES67 USB Receiver and Transmitter](USB_GADGET.md)

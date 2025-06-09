@@ -213,7 +213,14 @@ Example
       "streamer_channels": 8,
       "streamer_files_num": 6,
       "streamer_file_duration": 1,
-      "streamer_player_buffer_files_num": 1
+      "streamer_player_buffer_files_num": 1,
+      "transcriber_enabled": true,
+      "transcriber_channels": 4,
+	  "transcriber_files_num": 4,
+      "transcriber_file_duration": 5,
+      "transcriber_model": "../3rdparty/whisper.cpp/models/ggml-base.en.bin",
+      "transcriber_language": "en",
+      "transcriber_openvino_device": "CPU"
     }
 
 where:
@@ -329,6 +336,26 @@ where:
 > **streamer\_player\_buffer\_files\_num**
 > JSON number specifying the player buffer in number of files.
 
+> **transcriber\_enabled**
+> JSON boolean Enables or disables transcription for all Sinks. Set to true to enable.
+
+> **transcriber\_channels**
+> JSON number specifying the number of audio channels captured by the ALSA capture thread.
+
+> **transcriber\_files\_num**
+> JSON number specifying the number of buffers in the rotating audio buffers pool.
+
+> **transcriber\_file\_duration**: 
+> JSON number specifying the duration (in seconds) of each audio buffer.
+
+> **transcriber\_model**: 
+> JSON string specifying the path to the Whisper model file. The default is the base English model.
+
+> **transcriber\_language**: 
+> JSON string specifying the language setting for Whisper. Default is English "en".
+
+> **transcriber\_openvino\_device**: 
+> JSON string specifying the OpenVINO device for transcription inference, if supported by the current model. Default is "CPU".
 
 ### JSON PTP Config<a name="ptp-config"></a> ###
 

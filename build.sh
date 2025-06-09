@@ -17,6 +17,16 @@ git checkout aes67-daemon
 make
 cd -
 
+cd 3rdparty/whisper.cpp/models
+if [ ! -f ggml-base.en.bin ]; then
+./download-ggml-model.sh base.en
+fi
+cd -
+cd 3rdparty/whisper.cpp
+cmake -B build
+cmake --build build --config Release
+cd -
+
 cd webui
 echo "Downloading current webui release ..."
 wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
@@ -35,11 +45,13 @@ echo "Building aes67-daemon ..."
 cmake \
 	-DCPP_HTTPLIB_DIR="${TOPDIR}/3rdparty/cpp-httplib" \
 	-DRAVENNA_ALSA_LKM_DIR="${TOPDIR}/3rdparty/ravenna-alsa-lkm" \
+	-DWHISPER_CPP_DIR="${TOPDIR}/3rdparty/whisper.cpp" \
 	-DENABLE_TESTS=ON \
 	-DWITH_AVAHI=ON \
 	-DFAKE_DRIVER=OFF \
 	-DWITH_SYSTEMD=ON \
 	-DWITH_STREAMER=ON \
+	-DWITH_TRANSCRIBER=ON \
 	.
 make
 cd ..

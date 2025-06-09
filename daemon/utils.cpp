@@ -129,8 +129,8 @@ SDPOrigin sdp_get_origin(const std::string& sdp) {
       }
     }
   } catch (...) {
-    BOOST_LOG_TRIVIAL(fatal) << "session_manager:: invalid SDP"
-                             << ", cannot extract SDP identifier";
+    BOOST_LOG_TRIVIAL(fatal)
+        << "session_manager:: invalid SDP" << ", cannot extract SDP identifier";
   }
 
   return origin;

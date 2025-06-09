@@ -421,6 +421,73 @@ bool HttpServer::init() {
 #endif
   });
 
+  /* retrieve transcriber text */
+  svr_.Get("/api/transcriber/text/([0-9]+)", [this](const Request& req,
+                                                    Response& res) {
+#ifdef _USE_TRANSCRIBER_
+    if (!config_->get_transcriber_enabled()) {
+      set_error(400, "transcriber not enabled", res);
+      return;
+    }
+    uint8_t sinkId;
+    try {
+      sinkId = std::stoi(req.matches[1]);
+    } catch (...) {
+      set_error(400, "failed to convert id", res);
+      return;
+    }
+    StreamSink sink;
+    auto ret = session_manager_->get_sink(sinkId, sink);
+    if (ret) {
+      set_error(ret, "failed to retrieve sink " + std::to_string(sinkId), res);
+      return;
+    }
+    ret = transcriber_->get_text(sink, res.body);
+    if (ret) {
+      set_error(ret,
+                "failed to fetch transcription text " + std::to_string(sinkId),
+                res);
+      return;
+    }
+    set_headers(res, "text/plain; charset=utf-8");
+#else
+    set_error(400, "transcriber support not compiled-in", res);
+#endif
+  });
+
+  /* clear transcriber text */
+  svr_.Get("/api/transcriber/clear/([0-9]+)", [this](const Request& req,
+                                                     Response& res) {
+#ifdef _USE_TRANSCRIBER_
+    if (!config_->get_transcriber_enabled()) {
+      set_error(400, "transcriber not enabled", res);
+      return;
+    }
+    uint8_t sinkId;
+    try {
+      sinkId = std::stoi(req.matches[1]);
+    } catch (...) {
+      set_error(400, "failed to convert id", res);
+      return;
+    }
+    StreamSink sink;
+    auto ret = session_manager_->get_sink(sinkId, sink);
+    if (ret) {
+      set_error(ret, "failed to retrieve sink " + std::to_string(sinkId), res);
+      return;
+    }
+    ret = transcriber_->clear_text(sink);
+    if (ret) {
+      set_error(ret,
+                "failed to clear transcription text " + std::to_string(sinkId),
+                res);
+      return;
+    }
+#else
+    set_error(400, "transcriber support not compiled-in", res);
+#endif
+  });
+
   svr_.set_logger([](const Request& req, const Response& res) {
     if (res.status == 200) {
       BOOST_LOG_TRIVIAL(info) << "http_server:: " << req.method << " "
@@ -443,9 +510,8 @@ bool HttpServer::init() {
     try {
       svr_.listen(http_addr.c_str(), config_->get_http_port());
     } catch (...) {
-      BOOST_LOG_TRIVIAL(fatal) << "http_server:: "
-                               << "failed to listen to " << http_addr << ":"
-                               << config_->get_http_port();
+      BOOST_LOG_TRIVIAL(fatal) << "http_server:: " << "failed to listen to "
+                               << http_addr << ":" << config_->get_http_port();
       return false;
     }
     return true;

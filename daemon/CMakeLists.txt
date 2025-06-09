@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.7.0)
 
 project(aes67-daemon CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+
 option(ENABLE_TESTS "Enable tests. Not recommended when cross-compiling." OFF)
 if( ENABLE_TESTS )
     enable_testing()
@@ -9,10 +11,9 @@ endif()
 
 option(WITH_AVAHI "Include mDNS support via Avahi" OFF)
 option(FAKE_DRIVER "Use fake driver instead of RAVENNA" OFF)
-set(CMAKE_CXX_STANDARD 17)
-
 option(WITH_SYSTEMD "Include systemd notify and watchdog support" OFF)
 option(WITH_STREAMER "Enable streamer support" ON)
+option(WITH_TRANSCRIBER "Enable transcriber support" ON)
 
 # ravena lkm _should_ be provided by the CLI. Nonetheless, we should be able
 # to find it in system dirs too...
@@ -20,9 +21,15 @@ if (NOT RAVENNNA_ALSA_LKM_DIR)
     find_path(RAVENNA_ALSA_LKM_DIR "common/MergingRAVENNACommon.h" REQUIRED)
 endif()
 
-# use sysroot cpp-http lib unless one was explicitly provided  in cmdline
+# use sysroot cpp-http lib unless one was explicitly provided in cmdline
 if (NOT CPP_HTTPLIB_DIR)
-    find_path( CPP_HTTPLIB_DIR "httplib.h" REQUIRED)
+    find_path(CPP_HTTPLIB_DIR "httplib.h" REQUIRED)
+endif()
+
+if(WITH_TRANSCRIBER)
+    if (NOT WHISPER_CPP_DIR)
+        find_path(WHISPER_CPP_DIR "whisper.h" REQUIRED)
+    endif()
 endif()
 
 find_library(AVAHI_LIBRARY-COMMON NAMES avahi-common)
@@ -34,13 +41,23 @@ set(AVAHI_INCLUDE_DIRS ${AVAHI_INCLUDE_DIR})
 find_package(Boost COMPONENTS system thread log program_options REQUIRED)
 include_directories(aes67-daemon ${RAVENNA_ALSA_LKM_DIR}/common ${RAVENNA_ALSA_LKM_DIR}/driver ${CPP_HTTPLIB_DIR} ${Boost_INCLUDE_DIR})
 add_definitions( -DBOOST_LOG_DYN_LINK -DBOOST_LOG_USE_NATIVE_SYSLOG )
-add_compile_options( -Wall )
+add_compile_options( -Wall -g )
 set(SOURCES error_code.cpp json.cpp main.cpp session_manager.cpp http_server.cpp config.cpp interface.cpp log.cpp sap.cpp browser.cpp rtsp_client.cpp mdns_client.cpp mdns_server.cpp rtsp_server.cpp utils.cpp)
+
+if(WITH_STREAMER OR WITH_TRANSCRIBER)
+  list(APPEND SOURCES capture.cpp)
+endif()
 
 if(WITH_STREAMER)
   MESSAGE(STATUS "WITH_STREAMER")
   add_definitions(-D_USE_STREAMER_)
   list(APPEND SOURCES streamer.cpp)
+endif()
+
+if(WITH_TRANSCRIBER)
+  MESSAGE(STATUS "WITH_TRANSCRIBER")
+  add_definitions(-D_USE_TRANSCRIBER_)
+  list(APPEND SOURCES transcriber.cpp whisper.cpp)
 endif()
 
 if(FAKE_DRIVER)
@@ -50,6 +67,7 @@ if(FAKE_DRIVER)
 else()
   list(APPEND SOURCES driver_handler.cpp driver_manager.cpp)
 endif()
+
 add_executable(aes67-daemon ${SOURCES})
 
 if(ENABLE_TESTS)
@@ -57,6 +75,7 @@ if(ENABLE_TESTS)
 endif()
 
 target_link_libraries(aes67-daemon ${Boost_LIBRARIES})
+
 if(WITH_AVAHI)
   MESSAGE(STATUS "WITH_AVAHI")
   add_definitions(-D_USE_AVAHI_)
@@ -71,7 +90,20 @@ if(WITH_SYSTEMD)
 endif()
 
 if(WITH_STREAMER)
+  MESSAGE(STATUS "WITH_STREAMER")
   find_library(ALSA_LIBRARY NAMES asound)
   find_library(AAC_LIBRARY NAMES faac)
   target_link_libraries(aes67-daemon ${ALSA_LIBRARY} ${AAC_LIBRARY})
 endif()
+
+if(WITH_TRANSCRIBER)
+  MESSAGE(STATUS "WITH_TRASNCRIBER")
+  include_directories(aes67-daemon ${WHISPER_CPP_DIR}/include ${WHISPER_CPP_DIR}/ggml/include)
+  find_library(ALSA_LIBRARY NAMES asound)
+  find_library(WHISPER_LIBRARY HINTS ${WHISPER_CPP_DIR}/build/src NAMES whisper)
+  find_library(GGML_BASE_LIBRARY HINTS ${WHISPER_CPP_DIR}/build/ggml/src NAMES ggml-base)
+  find_library(GGML_LIBRARY HINTS ${WHISPER_CPP_DIR}/build/ggml/src NAMES ggml)
+  find_library(GGML_CPU_LIBRARY HINTS ${WHISPER_CPP_DIR}/build/ggml/src NAMES ggml-cpu)
+  target_link_libraries(aes67-daemon ${ALSA_LIBRARY} ${WHISPER_LIBRARY} ${GGML_BASE_LIBRARY} ${GGML_LIBRARY} ${GGML_CPU_LIBRARY})
+endif()
+

@@ -24,6 +24,9 @@
 
 #include <cstddef>
 #include <iostream>
+#include <chrono>
+
+#include "log.hpp"
 
 uint16_t crc16(const uint8_t* p, size_t len);
 
@@ -56,5 +59,28 @@ struct SDPOrigin {
 };
 
 SDPOrigin sdp_get_origin(const std::string& sdp);
+
+class TimeElapsed {
+ public:
+  TimeElapsed() = delete;
+  TimeElapsed(const std::string& desc) {
+    desc_ = desc;
+    start_ = std::chrono::high_resolution_clock::now();
+  }
+
+  uint32_t elapsed() {
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start_;
+    return elapsed.count();
+  }
+
+  ~TimeElapsed() {
+    BOOST_LOG_TRIVIAL(info) << desc_ << " returned in " << elapsed() << " ms";
+  }
+
+ private:
+  std::chrono::_V2::system_clock::time_point start_;
+  std::string desc_;
+};
 
 #endif

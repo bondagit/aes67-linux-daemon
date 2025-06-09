@@ -46,6 +46,21 @@ class Config {
   };
   uint8_t get_streamer_channels() const { return streamer_channels_; };
   bool get_streamer_enabled() const;
+  bool get_transcriber_enabled() const;
+  uint8_t get_transcriber_channels() const { return transcriber_channels_; }
+  uint8_t get_transcriber_files_num() const { return transcriber_files_num_; }
+  uint16_t get_transcriber_file_duration() const {
+    return transcriber_file_duration_;
+  }
+  const std::string& get_transcriber_model() const {
+    return transcriber_model_;
+  }
+  const std::string& get_transcriber_language() const {
+    return transcriber_language_;
+  }
+  const std::string& get_transcriber_openvino_device() const {
+    return transcriber_openvino_device_;
+  }
   int get_log_severity() const { return log_severity_; };
   uint32_t get_playout_delay() const { return playout_delay_; };
   uint32_t get_tic_frame_size_at_1fs() const { return tic_frame_size_at_1fs_; };
@@ -103,6 +118,28 @@ class Config {
   void set_streamer_enabled(uint8_t streamer_enabled) {
     streamer_enabled_ = streamer_enabled;
   };
+  void set_transcriber_enabled(uint8_t transcriber_enabled) {
+    transcriber_enabled_ = transcriber_enabled;
+  };
+  void set_transcriber_channels(uint8_t transcriber_channels) {
+    transcriber_channels_ = transcriber_channels;
+  }
+  void set_transcriber_files_num(uint8_t transcriber_files_num) {
+    transcriber_files_num_ = transcriber_files_num;
+  }
+  void set_transcriber_file_duration(uint8_t transcriber_file_duration) {
+    transcriber_file_duration_ = transcriber_file_duration;
+  }
+  void set_transcriber_model(const std::string& transcriber_model) {
+    transcriber_model_ = transcriber_model;
+  }
+  void set_transcriber_language(const std::string& transcriber_language) {
+    transcriber_language_ = transcriber_language;
+  }
+  void set_transcriber_openvino_device(
+      const std::string& transcriber_openvino_device) {
+    transcriber_openvino_device_ = transcriber_openvino_device;
+  }
   void set_log_severity(int log_severity) { log_severity_ = log_severity; };
   void set_playout_delay(uint32_t playout_delay) {
     playout_delay_ = playout_delay;
@@ -169,6 +206,15 @@ class Config {
            lhs.get_streamer_player_buffer_files_num() !=
                rhs.get_streamer_player_buffer_files_num() ||
            lhs.get_streamer_enabled() != rhs.get_streamer_enabled() ||
+           lhs.get_transcriber_channels() != rhs.get_transcriber_channels() ||
+           lhs.get_transcriber_files_num() != rhs.get_transcriber_files_num() ||
+           lhs.get_transcriber_file_duration() !=
+               rhs.get_transcriber_file_duration() ||
+           lhs.get_transcriber_model() != rhs.get_transcriber_model() ||
+           lhs.get_transcriber_language() != rhs.get_transcriber_language() ||
+           lhs.get_transcriber_openvino_device() !=
+               rhs.get_transcriber_openvino_device() ||
+           lhs.get_transcriber_enabled() != rhs.get_transcriber_enabled() ||
            lhs.get_log_severity() != rhs.get_log_severity() ||
            lhs.get_playout_delay() != rhs.get_playout_delay() ||
            lhs.get_tic_frame_size_at_1fs() != rhs.get_tic_frame_size_at_1fs() ||
@@ -203,6 +249,14 @@ class Config {
   uint16_t streamer_file_duration_{1};
   uint8_t streamer_player_buffer_files_num_{1};
   bool streamer_enabled_{false};
+  bool transcriber_enabled_{false};
+  uint8_t transcriber_channels_{4};
+  uint8_t transcriber_files_num_{4};
+  uint16_t transcriber_file_duration_{5};
+  std::string transcriber_model_{
+      "../3rdparty/whisper.cpp/models/ggml-base.en.bin"};
+  std::string transcriber_language_{"en"};
+  std::string transcriber_openvino_device_{"CPU"};
   int log_severity_{2};
   uint32_t playout_delay_{0};
   uint32_t tic_frame_size_at_1fs_{48};

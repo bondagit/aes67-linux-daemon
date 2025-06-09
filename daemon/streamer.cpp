@@ -78,188 +78,25 @@ bool Streamer::on_ptp_status_change(const std::string& status) {
   return true;
 }
 
-#ifndef timersub
-#define timersub(a, b, result)                       \
-  do {                                               \
-    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;    \
-    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec; \
-    if ((result)->tv_usec < 0) {                     \
-      --(result)->tv_sec;                            \
-      (result)->tv_usec += 1000000;                  \
-    }                                                \
-  } while (0)
-#endif
-
-bool Streamer::pcm_xrun() {
-  snd_pcm_status_t* status;
-  int res;
-  snd_pcm_status_alloca(&status);
-  if ((res = snd_pcm_status(capture_handle_, status)) < 0) {
-    BOOST_LOG_TRIVIAL(error)
-        << "streamer:: pcm_xrun status error: " << snd_strerror(res);
-    return false;
-  }
-  if (snd_pcm_status_get_state(status) == SND_PCM_STATE_XRUN) {
-    struct timeval now, diff, tstamp;
-    gettimeofday(&now, 0);
-    snd_pcm_status_get_trigger_tstamp(status, &tstamp);
-    timersub(&now, &tstamp, &diff);
-    BOOST_LOG_TRIVIAL(error)
-        << "streamer:: pcm_xrun overrun!!! (at least "
-        << diff.tv_sec * 1000 + diff.tv_usec / 1000.0 << " ms long";
-
-    if ((res = snd_pcm_prepare(capture_handle_)) < 0) {
-      BOOST_LOG_TRIVIAL(error)
-          << "streamer:: pcm_xrun prepare error: " << snd_strerror(res);
-      return false;
-    }
-    return true; /* ok, data should be accepted again */
-  }
-  if (snd_pcm_status_get_state(status) == SND_PCM_STATE_DRAINING) {
-    BOOST_LOG_TRIVIAL(error)
-        << "streamer:: capture stream format change? attempting recover...";
-    if ((res = snd_pcm_prepare(capture_handle_)) < 0) {
-      BOOST_LOG_TRIVIAL(error)
-          << "streamer:: pcm_xrun xrun(DRAINING) error: " << snd_strerror(res);
-      return false;
-    }
-    return true;
-  }
-  BOOST_LOG_TRIVIAL(error) << "streamer:: read/write error, state = "
-                           << snd_pcm_state_name(
-                                  snd_pcm_status_get_state(status));
-  return false;
-}
-
-/* I/O suspend handler */
-bool Streamer::pcm_suspend() {
-  int res;
-  BOOST_LOG_TRIVIAL(info) << "streamer:: Suspended. Trying resume. ";
-  while ((res = snd_pcm_resume(capture_handle_)) == -EAGAIN)
-    sleep(1); /* wait until suspend flag is released */
-  if (res < 0) {
-    BOOST_LOG_TRIVIAL(error) << "streamer:: Failed. Restarting stream. ";
-    if ((res = snd_pcm_prepare(capture_handle_)) < 0) {
-      BOOST_LOG_TRIVIAL(error)
-          << "streamer:: suspend: prepare error:  " << snd_strerror(res);
-      return false;
-    }
-  }
-  return true;
-}
-
-ssize_t Streamer::pcm_read(uint8_t* data, size_t rcount) {
-  ssize_t r;
-  size_t count = rcount;
-
-  if (count != chunk_samples_) {
-    count = chunk_samples_;
-  }
-
-  while (count > 0) {
-    r = snd_pcm_readi(capture_handle_, data, count);
-    if (r == -EAGAIN || (r >= 0 && (size_t)r < count)) {
-      if (!running_)
-        return -1;
-      snd_pcm_wait(capture_handle_, 1000);
-    } else if (r == -EPIPE) {
-      if (!pcm_xrun())
-        return -1;
-    } else if (r == -ESTRPIPE) {
-      if (!pcm_suspend())
-        return -1;
-    } else if (r < 0) {
-      BOOST_LOG_TRIVIAL(error) << "streamer:: read error: " << snd_strerror(r);
-      return -1;
-    }
-    if (r > 0) {
-      count -= r;
-      data += r * bytes_per_frame_;
-    }
-  }
-  return rcount;
-}
-
 bool Streamer::start_capture() {
   if (running_)
     return true;
 
-  BOOST_LOG_TRIVIAL(info) << "Streamer: starting audio capture ... ";
-  int err;
-  if ((err = snd_pcm_open(&capture_handle_, device_name, SND_PCM_STREAM_CAPTURE,
-                          SND_PCM_NONBLOCK)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot open audio device "
-                             << device_name << " : " << snd_strerror(err);
-    return false;
-  }
-
-  snd_pcm_hw_params_t* hw_params;
-  if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot allocate hardware parameter structure: "
-        << snd_strerror(err);
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_any(capture_handle_, hw_params)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot initialize hardware parameter structure: "
-        << snd_strerror(err);
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_set_access(capture_handle_, hw_params,
-                                          SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot set access type: " << snd_strerror(err);
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_set_format(capture_handle_, hw_params, format)) <
-      0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot set sample format: " << snd_strerror(err);
-    return false;
-  }
-
-  rate_ = config_->get_sample_rate();
-  if ((err = snd_pcm_hw_params_set_rate_near(capture_handle_, hw_params, &rate_,
-                                             0)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot set sample rate: " << snd_strerror(err);
-    return false;
-  }
+  BOOST_LOG_TRIVIAL(info) << "streamer: starting audio capture ... ";
 
   channels_ = config_->get_streamer_channels();
-  if ((err = snd_pcm_hw_params_set_channels(capture_handle_, hw_params,
-                                            channels_)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot set channel count: " << snd_strerror(err);
-    return false;
-  }
-
   files_num_ = config_->get_streamer_files_num();
   file_duration_ = config_->get_streamer_file_duration();
-  player_buffer_files_num_ = config_->get_streamer_player_buffer_files_num();
+  rate_ = config_->get_sample_rate();
 
-  if ((err = snd_pcm_hw_params(capture_handle_, hw_params)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot set parameters: " << snd_strerror(err);
+  if (!capture_.open(rate_, channels_)) {
+    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot open capture";
     return false;
   }
 
-  snd_pcm_hw_params_get_period_size(hw_params, &chunk_samples_, 0);
-  chunk_samples_ = 6144;  // AAC 6 channels input
-  bytes_per_frame_ = snd_pcm_format_physical_width(format) * channels_ / 8;
-
-  snd_pcm_hw_params_free(hw_params);
-
-  if ((err = snd_pcm_prepare(capture_handle_)) < 0) {
-    BOOST_LOG_TRIVIAL(fatal)
-        << "streamer:: cannot prepare audio interface for use: "
-        << snd_strerror(err);
-    return false;
-  }
+  bytes_per_frame_ = capture_.get_bytes_per_frame();
+  capture_.set_chunk_samples(6144);  // AAC 6 channels input
+  chunk_samples_ = capture_.get_chunk_samples();
 
   buffer_samples_ = rate_ * file_duration_ / chunk_samples_ * chunk_samples_;
   BOOST_LOG_TRIVIAL(info) << "streamer: buffer_samples " << buffer_samples_;
@@ -280,11 +117,11 @@ bool Streamer::start_capture() {
   /* start capturing on a separate thread */
   res_ = std::async(std::launch::async, [&]() {
     BOOST_LOG_TRIVIAL(debug)
-        << "streamer: audio capture loop start, chunk_samples_ = "
+        << "streamer: audio capture loop start, chunk_samples = "
         << chunk_samples_;
     while (running_) {
-      if ((pcm_read(buffer_.get() + buffer_offset_ * bytes_per_frame_,
-                    chunk_samples_)) < 0) {
+      if ((capture_.read(buffer_.get() + buffer_offset_ * bytes_per_frame_)) <
+          0) {
         break;
       }
 
@@ -463,7 +300,7 @@ bool Streamer::stop_capture() {
       faac_[sink.id] = 0;
     }
   }
-  snd_pcm_close(capture_handle_);
+  capture_.close();
   return ret;
 }
 
@@ -496,7 +333,7 @@ std::error_code Streamer::get_info(const StreamSink& sink, StreamerInfo& info) {
   auto file_id = file_id_.load();
   uint8_t start_file_id = (file_id + files_num_ / 2) % files_num_;
 
-  switch (format) {
+  switch (capture_.get_format()) {
     case SND_PCM_FORMAT_S16_LE:
       info.format = "s16";
       break;

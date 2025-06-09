@@ -33,6 +33,8 @@ const sdp = '/sdp';
 const sink = '/sink';
 const status = '/status';
 const browseSources = '/browse/sources/all';
+const transciptionText = '/transcriber/text';
+const transciptionClear = '/transcriber/clear';
 
 const defaultParams = {
   credentials: 'same-origin',
@@ -84,7 +86,7 @@ export default class RestAPI {
     });
   }
 
-  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id, auto_sinks_update, streamer_enabled, streamer_channels, streamer_files_num, streamer_file_duration, streamer_player_buffer_files_num) {
+  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_port, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id, auto_sinks_update, streamer_enabled, streamer_channels, streamer_files_num, streamer_file_duration, streamer_player_buffer_files_num, transcriber_enabled, transcriber_channels, transcriber_files_num, transcriber_file_duration, transcriber_model, transcriber_language) {
     return this.doFetch(config, {
       body: JSON.stringify({
         log_severity: parseInt(log_severity, 10),
@@ -107,6 +109,12 @@ export default class RestAPI {
         streamer_files_num: parseInt(streamer_files_num, 10),
         streamer_file_duration: parseInt(streamer_file_duration, 10),
         streamer_player_buffer_files_num: parseInt(streamer_player_buffer_files_num, 10),
+        transcriber_enabled: transcriber_enabled,
+        transcriber_channels: parseInt(transcriber_channels, 10),
+        transcriber_files_num: parseInt(transcriber_files_num, 10),
+        transcriber_file_duration: parseInt(transcriber_file_duration, 10),
+        transcriber_model: transcriber_model,
+        transcriber_language: transcriber_language
       }),
       method: 'POST'
     }).catch(err => {
@@ -246,5 +254,19 @@ export default class RestAPI {
       return Promise.reject(Error(err.message));
     });
   }
+
+  static getTranscription(id) {
+    return this.doFetch(transciptionText + '/' + id).catch(err => {
+      toast.error('Transcription text get failed: ' + err.message)
+      return Promise.reject(Error(err.message));
+    });
+  }
+
+  static clearTranscription(id) {
+    return this.doFetch(transciptionClear + '/' + id).catch(err => {
+      toast.error('Transcription clear failed: ' + err.message)
+      return Promise.reject(Error(err.message));
+    });
+  }  
 
 }

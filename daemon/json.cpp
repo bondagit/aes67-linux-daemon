@@ -79,8 +79,7 @@ static std::string escape_json(const std::string& js) {
 
 std::string config_to_json(const Config& config) {
   std::stringstream ss;
-  ss << "{"
-     << "\n  \"http_port\": " << config.get_http_port()
+  ss << "{" << "\n  \"http_port\": " << config.get_http_port()
      << ",\n  \"rtsp_port\": " << config.get_rtsp_port()
      << ",\n  \"http_base_dir\": \"" << config.get_http_base_dir() << "\""
      << ",\n  \"log_severity\": " << config.get_log_severity()
@@ -97,12 +96,10 @@ std::string config_to_json(const Config& config) {
      << escape_json(config.get_sap_mcast_addr()) << "\""
      << ",\n  \"sap_interval\": " << config.get_sap_interval()
      << ",\n  \"syslog_proto\": \"" << escape_json(config.get_syslog_proto())
-     << "\""
-     << ",\n  \"syslog_server\": \"" << escape_json(config.get_syslog_server())
-     << "\""
+     << "\"" << ",\n  \"syslog_server\": \""
+     << escape_json(config.get_syslog_server()) << "\""
      << ",\n  \"status_file\": \"" << escape_json(config.get_status_file())
-     << "\""
-     << ",\n  \"interface_name\": \""
+     << "\"" << ",\n  \"interface_name\": \""
      << escape_json(config.get_interface_name()) << "\""
      << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
      << ",\n  \"custom_node_id\": \""
@@ -111,9 +108,8 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"ptp_status_script\": \""
      << escape_json(config.get_ptp_status_script()) << "\""
      << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str())
-     << "\""
-     << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
-     << ",\n  \"streamer_channels\": "
+     << "\"" << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str())
+     << "\"" << ",\n  \"streamer_channels\": "
      << unsigned(config.get_streamer_channels())
      << ",\n  \"streamer_files_num\": "
      << unsigned(config.get_streamer_files_num())
@@ -123,6 +119,19 @@ std::string config_to_json(const Config& config) {
      << unsigned(config.get_streamer_player_buffer_files_num())
      << ",\n  \"streamer_enabled\": " << std::boolalpha
      << config.get_streamer_enabled()
+     << ",\n  \"transcriber_enabled\": " << std::boolalpha
+     << config.get_transcriber_enabled() << ",\n  \"transcriber_channels\": "
+     << unsigned(config.get_transcriber_channels())
+     << ",\n  \"transcriber_files_num\": "
+     << unsigned(config.get_transcriber_files_num())
+     << ",\n  \"transcriber_file_duration\": "
+     << unsigned(config.get_transcriber_file_duration())
+     << ",\n  \"transcriber_model\": \""
+     << escape_json(config.get_transcriber_model()) << "\""
+     << ",\n  \"transcriber_language\": \""
+     << escape_json(config.get_transcriber_language()) << "\""
+     << ",\n  \"transcriber_openvino_device\": \""
+     << escape_json(config.get_transcriber_openvino_device()) << "\""
      << ",\n  \"auto_sinks_update\": " << std::boolalpha
      << config.get_auto_sinks_update() << "\n}\n";
   return ss.str();
@@ -130,8 +139,7 @@ std::string config_to_json(const Config& config) {
 
 std::string source_to_json(const StreamSource& source) {
   std::stringstream ss;
-  ss << "\n  {"
-     << "\n    \"id\": " << unsigned(source.id)
+  ss << "\n  {" << "\n    \"id\": " << unsigned(source.id)
      << ",\n    \"enabled\": " << std::boolalpha << source.enabled
      << ",\n    \"name\": \"" << escape_json(source.name) << "\""
      << ",\n    \"io\": \"" << escape_json(source.io) << "\""
@@ -155,9 +163,8 @@ std::string source_to_json(const StreamSource& source) {
 
 std::string sink_to_json(const StreamSink& sink) {
   std::stringstream ss;
-  ss << "\n  {"
-     << "\n    \"id\": " << unsigned(sink.id) << ",\n    \"name\": \""
-     << escape_json(sink.name) << "\""
+  ss << "\n  {" << "\n    \"id\": " << unsigned(sink.id)
+     << ",\n    \"name\": \"" << escape_json(sink.name) << "\""
      << ",\n    \"io\": \"" << escape_json(sink.io) << "\""
      << ",\n    \"use_sdp\": " << std::boolalpha << sink.use_sdp
      << ",\n    \"source\": \"" << escape_json(sink.source) << "\""
@@ -194,16 +201,14 @@ std::string sink_status_to_json(const SinkStreamStatus& status) {
 
 std::string ptp_config_to_json(const PTPConfig& ptp_config) {
   std::stringstream ss;
-  ss << "{"
-     << " \"domain\": " << unsigned(ptp_config.domain)
+  ss << "{" << " \"domain\": " << unsigned(ptp_config.domain)
      << ", \"dscp\": " << unsigned(ptp_config.dscp) << " }\n";
   return ss.str();
 }
 
 std::string ptp_status_to_json(const PTPStatus& status) {
   std::stringstream ss;
-  ss << "{"
-     << " \"status\": \"" << escape_json(status.status) << "\""
+  ss << "{" << " \"status\": \"" << escape_json(status.status) << "\""
      << ", \"gmid\": \"" << escape_json(status.gmid) << "\""
      << ", \"jitter\": " << status.jitter << " }\n";
   return ss.str();
@@ -262,8 +267,7 @@ std::string streams_to_json(const std::list<StreamSource>& sources,
 
 std::string remote_source_to_json(const RemoteSource& source) {
   std::stringstream ss;
-  ss << "\n  {"
-     << "\n    \"source\": \"" << escape_json(source.source) << "\""
+  ss << "\n  {" << "\n    \"source\": \"" << escape_json(source.source) << "\""
      << ",\n    \"id\": \"" << escape_json(source.id) << "\""
      << ",\n    \"name\": \"" << escape_json(source.name) << "\""
      << ",\n    \"domain\": \"" << escape_json(source.domain) << "\""
@@ -295,8 +299,7 @@ std::string remote_sources_to_json(const std::list<RemoteSource>& sources) {
 #ifdef _USE_STREAMER_
 std::string streamer_info_to_json(const StreamerInfo& info) {
   std::stringstream ss;
-  ss << "{"
-     << "\n   \"status\": " << unsigned(info.status)
+  ss << "{" << "\n   \"status\": " << unsigned(info.status)
      << ",\n   \"file_duration\": " << unsigned(info.file_duration)
      << ",\n   \"files_num\": " << unsigned(info.files_num)
      << ",\n   \"player_buffer_files_num\": "
@@ -333,6 +336,25 @@ Config json_to_config_(std::istream& js, Config& config) {
         config.set_streamer_player_buffer_files_num(val.get_value<uint8_t>());
       } else if (key == "streamer_enabled") {
         config.set_streamer_enabled(val.get_value<bool>());
+      } else if (key == "transcriber_enabled") {
+        config.set_transcriber_enabled(val.get_value<bool>());
+      } else if (key == "transcriber_channels") {
+        config.set_transcriber_channels(val.get_value<uint8_t>());
+      } else if (key == "transcriber_files_num") {
+        config.set_transcriber_files_num(val.get_value<uint8_t>());
+      } else if (key == "transcriber_file_duration") {
+        config.set_transcriber_file_duration(val.get_value<uint16_t>());
+      } else if (key == "transcriber_model") {
+        config.set_transcriber_model(
+            remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "transcriber_language") {
+        config.set_transcriber_language(
+            remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "transcriber_openvino_device") {
+        config.set_transcriber_openvino_device(
+            remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "streamer_player_buffer_files_num") {
+        config.set_streamer_player_buffer_files_num(val.get_value<uint8_t>());
       } else if (key == "log_severity") {
         config.set_log_severity(val.get_value<int>());
       } else if (key == "interface_name") {

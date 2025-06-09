@@ -196,7 +196,7 @@ class SinkEdit extends Component {
             <tr>
               <th align="left"> <label>Delay (samples) </label> </th>
               <th align="left">
-	        <select value={this.state.delay} onChange={e => this.setState({delay: e.target.value})}>
+	              <select value={this.state.delay} onChange={e => this.setState({delay: e.target.value})}>
                   <option value="192">192 - 4ms@48kHz</option>
                   <option value="384">384 - 8ms@48kHz</option>
                   <option value="576">576 - 12ms@48kHz</option>
@@ -226,7 +226,7 @@ class SinkEdit extends Component {
             </tr>
           </tbody></table>
           <br/>
-	  <div style={{textAlign: 'center'}}>
+	        <div style={{textAlign: 'center'}}>
             <button onClick={this.onSubmit} disabled={this.inputIsValid() ? undefined : true}>Submit</button>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <button onClick={this.onCancel}>Cancel</button>

@@ -118,11 +118,15 @@ std::string DaemonErrCategory::message(int ev) const {
     case DaemonErrc::invalid_driver_response:
       return "unexpected driver command response code";
     case DaemonErrc::streamer_invalid_ch:
-      return "sink channel not captured";
+      return "sink channel/s not captured";
     case DaemonErrc::streamer_retry_later:
       return "not enough samples buffered, retry later";
     case DaemonErrc::streamer_not_running:
-      return "not running, check PTP lock";
+      return "sink channel/s not captured";
+    case DaemonErrc::transcriber_invalid_ch:
+      return "sink channel not captured";
+    case DaemonErrc::transcriber_not_running:
+      return "transcriber not running ";
     default:
       return "(unrecognized daemon error)";
   }

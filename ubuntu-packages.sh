@@ -21,4 +21,3 @@ sudo apt-get install -y libavahi-client-dev
 sudo apt install -y linux-headers-$(uname -r)
 sudo apt-get install -y libsystemd-dev
 sudo apt-get install -y libfaac-dev
-

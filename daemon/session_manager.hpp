@@ -151,8 +151,7 @@ class SessionManager {
   void add_source_observer(SourceObserverType type, const SourceObserver& cb);
 
   enum class SinkObserverType { add_sink, remove_sink };
-  using SinkObserver = std::function<
-      bool(uint8_t id, const std::string& name)>;
+  using SinkObserver = std::function<bool(uint8_t id, const std::string& name)>;
   void add_sink_observer(SinkObserverType type, const SinkObserver& cb);
 
   using PtpStatusObserver = std::function<bool(const std::string& status)>;

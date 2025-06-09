@@ -29,6 +29,9 @@
 #ifdef _USE_STREAMER_
 #include "streamer.hpp"
 #endif
+#ifdef _USE_TRANSCRIBER_
+#include "transcriber.hpp"
+#endif
 
 class HttpServer {
  public:
@@ -38,11 +41,17 @@ class HttpServer {
 #ifdef _USE_STREAMER_
                       std::shared_ptr<Streamer> streamer,
 #endif
+#ifdef _USE_TRANSCRIBER_
+                      std::shared_ptr<Transcriber> transcriber,
+#endif
                       std::shared_ptr<Config> config)
       : session_manager_(session_manager),
         browser_(browser),
 #ifdef _USE_STREAMER_
         streamer_(streamer),
+#endif
+#ifdef _USE_TRANSCRIBER_
+        transcriber_(transcriber),
 #endif
         config_(config){};
   bool init();
@@ -53,6 +62,9 @@ class HttpServer {
   std::shared_ptr<Browser> browser_;
 #ifdef _USE_STREAMER_
   std::shared_ptr<Streamer> streamer_;
+#endif
+#ifdef _USE_TRANSCRIBER_
+  std::shared_ptr<Transcriber> transcriber_;
 #endif
   std::shared_ptr<Config> config_;
   httplib::Server svr_;

@@ -5,3 +5,6 @@
 	path = 3rdparty/ravenna-alsa-lkm
 	url = https://github.com/bondagit/ravenna-alsa-lkm.git
 	branch = aes67-daemon
+[submodule "3rdparty/whisper.cpp"]
+	path = 3rdparty/whisper.cpp
+	url = https://github.com/ggml-org/whisper.cpp.git

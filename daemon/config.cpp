@@ -68,6 +68,8 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
     config.max_tic_frame_size_ = 1024;
   if (config.sample_rate_ == 0)
     config.sample_rate_ = 48000;
+  if (config.streamer_enabled_ && config.transcriber_enabled_)
+    config.streamer_enabled_ = false;
   if (config.streamer_channels_ < 2 || config.streamer_channels_ > 16)
     config.streamer_channels_ = 8;
   if (config.streamer_file_duration_ < 1 || config.streamer_file_duration_ > 4)
@@ -77,6 +79,13 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
   if (config.streamer_player_buffer_files_num_ < 1 ||
       config.streamer_player_buffer_files_num_ > 2)
     config.streamer_player_buffer_files_num_ = 1;
+  if (config.transcriber_channels_ < 2 || config.transcriber_channels_ > 16)
+    config.transcriber_channels_ = 4;
+  if (config.transcriber_file_duration_ < 2 ||
+      config.transcriber_file_duration_ > 5)
+    config.transcriber_file_duration_ = 5;
+  if (config.transcriber_files_num_ < 4 || config.transcriber_files_num_ > 16)
+    config.transcriber_files_num_ = 4;
 
   boost::system::error_code ec;
 #if BOOST_VERSION < 108700
@@ -162,12 +171,21 @@ bool Config::save(const Config& config) {
         get_streamer_files_num() != config.get_streamer_files_num() ||
         get_streamer_player_buffer_files_num() !=
             config.get_streamer_player_buffer_files_num() ||
-        get_streamer_enabled() != config.get_streamer_enabled();
+        get_streamer_enabled() != config.get_streamer_enabled() ||
+        get_transcriber_channels() != config.get_transcriber_channels() ||
+        get_transcriber_file_duration() !=
+            config.get_transcriber_file_duration() ||
+        get_transcriber_files_num() != config.get_transcriber_files_num() ||
+        get_transcriber_model() != config.get_transcriber_model() ||
+        get_transcriber_openvino_device() !=
+            config.get_transcriber_openvino_device() ||
+        get_transcriber_language() != config.get_transcriber_language() ||
+        get_transcriber_enabled() != config.get_transcriber_enabled();
 
     if (!daemon_restart_)
       *this = config;
-
-    BOOST_LOG_TRIVIAL(info) << "Config:: file saved";
+    BOOST_LOG_TRIVIAL(info)
+        << "Config:: file saved " << (daemon_restart_ ? "daemon restart" : "");
   } else {
     BOOST_LOG_TRIVIAL(info) << "Config:: unchanged";
   }
@@ -187,6 +205,13 @@ bool Config::get_streamer_enabled() const {
   return false;
 #endif
   return streamer_enabled_;
+}
+
+bool Config::get_transcriber_enabled() const {
+#ifndef _USE_TRANSCRIBER_
+  return false;
+#endif
+  return transcriber_enabled_;
 }
 
 bool Config::get_mdns_enabled() const {

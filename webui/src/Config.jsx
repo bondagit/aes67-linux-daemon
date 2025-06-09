@@ -60,6 +60,17 @@ class Config extends Component {
       streamerFilesIntervalErr: false,
       streamerFileDuration: 0,
       streamerFileDurationIntervalErr: false,
+      transcriberEnabled: false,
+      transcriberChannels: 0,
+      transcriberChIntervalErr: false,
+      transcriberFiles: 0,
+      transcriberFilesIntervalErr: false,
+      transcriberFileDuration: 0,
+      transcriberFileDurationIntervalErr: false,
+      transcriberModel: '',
+      transcriberModelErr: false,
+      transcriberLanguage: '',
+      transcriberLanguageErr: false,
       syslogProto: '',
       syslogServer: '',
       syslogServerErr: false,
@@ -115,6 +126,12 @@ class Config extends Component {
             streamerFiles: data.streamer_files_num,
             streamerFileDuration: data.streamer_file_duration,
             streamerPlayerBufferFiles: data.streamer_player_buffer_files_num,
+            transcriberEnabled: data.transcriber_enabled,
+            transcriberChannels: data.transcriber_channels,
+            transcriberFiles: data.transcriber_files_num,
+            transcriberFileDuration: data.transcriber_file_duration,
+            transcriberModel: data.transcriber_model,
+            transcriberLanguage: data.transcriber_language,
             syslogProto: data.syslog_proto,
             syslogServer: data.syslog_server,
             statusFile: data.status_file,
@@ -147,6 +164,11 @@ class Config extends Component {
       !this.state.streamerChIntervalErr &&
       !this.state.streamerFilesIntervalErr &&
       !this.state.streamerFileDurationIntervalErr &&
+      !this.state.transcriberChIntervalErr &&
+      !this.state.transcriberFilesIntervalErr &&
+      !this.state.transcriberFileDurationIntervalErr &&
+      !this.state.transcriberModelErr &&
+      !this.state.transcriberLanguageErr &&
       !this.state.syslogServerErr &&
       (!this.state.customNodeIdErr || this.state.customNodeId  === '') &&
       !this.state.isVersionLoading &&
@@ -175,7 +197,13 @@ class Config extends Component {
       this.state.streamerChannels,
       this.state.streamerFiles,
       this.state.streamerFileDuration,
-      this.state.streamerPlayerBufferFiles)
+      this.state.streamerPlayerBufferFiles,
+      this.state.transcriberEnabled,
+      this.state.transcriberChannels,
+      this.state.transcriberFiles,
+      this.state.transcriberFileDuration,
+      this.state.transcriberModel,
+      this.state.transcriberLanguage)
     .then(response => toast.success('Applying new configuration ...'));
   }
 
@@ -252,6 +280,33 @@ class Config extends Component {
           </tr>
         </tbody></table>
         <br/>
+	{this.state.isConfigLoading ? <Loader/> : <h3>Transcriber Config</h3>}
+        <table><tbody>
+          <tr height="35">
+            <th align="left"> <label>Transcriber enabled</label> </th>
+            <th align="left"> <input type="checkbox" onChange={e => this.setState({transcriberEnabled: e.target.checked})} checked={this.state.transcriberEnabled ? true : undefined}/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Transcriber channels</label> </th>
+	    <th align="left"> <input type='number' min='2' max='16' className='input-number' value={this.state.transcriberChannels} onChange={e => this.setState({transcriberChannels: e.target.value, transcriberChIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Transcriber files</label> </th>
+	    <th align="left"> <input type='number' min='4' max='16' className='input-number' value={this.state.transcriberFiles} onChange={e => this.setState({transcriberFiles: e.target.value, transcriberFilesIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Transcriber file duration (secs)</label> </th>
+	    <th align="left"> <input type='number' min='2' max='5' className='input-number' value={this.state.transcriberFileDuration} onChange={e => this.setState({transcriberFileDuration: e.target.value, transcriberFileDurationIntervalErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Transcriber model</label> </th>
+	    <th align="left"> <input type='text' minLength="15" maxLength="128" size="40" value={this.state.transcriberModel} onChange={e => this.setState({transcriberModel: e.target.value, transcriberModelErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Transcriber language</label> </th>
+	    <th align="left"> <input type='text' minLength="2" maxLength="16" size="8" value={this.state.transcriberLanguage} onChange={e => this.setState({transcriberLanguage: e.target.value, transcriberLanguageErr: !e.currentTarget.checkValidity()})} required/> </th>
+          </tr>
+        </tbody></table>
 	{this.state.isConfigLoading ? <Loader/> : <h3>Network Config</h3>}
         <table><tbody>
           <tr>

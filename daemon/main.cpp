@@ -35,6 +35,10 @@
 #include "streamer.hpp"
 #endif
 
+#ifdef _USE_TRANSCRIBER_
+#include "transcriber.hpp"
+#endif
+
 #ifdef _USE_SYSTEMD_
 #include <systemd/sd-daemon.h>
 #endif
@@ -43,7 +47,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static const std::string version("bondagit-2.1.0");
+static const std::string version("bondagit-3.0.0");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -183,6 +187,15 @@ int main(int argc, char* argv[]) {
         throw std::runtime_error(std::string("RtspServer:: init failed"));
       }
 
+      /* start transciber */
+#ifdef _USE_TRANSCRIBER_
+      auto transcriber = Transcriber::create(session_manager, config);
+      if (config->get_transcriber_enabled() &&
+          (transcriber == nullptr || !transcriber->init())) {
+        throw std::runtime_error(std::string("Transcriber:: init failed"));
+      }
+#endif
+
       /* start streamer */
 #ifdef _USE_STREAMER_
       auto streamer = Streamer::create(session_manager, config);
@@ -190,12 +203,19 @@ int main(int argc, char* argv[]) {
           (streamer == nullptr || !streamer->init())) {
         throw std::runtime_error(std::string("Streamer:: init failed"));
       }
+#endif
 
-      /* start http server */
+#if defined(_USE_TRANSCRIBER_) && defined(_USE_STREAMER_)
+      HttpServer http_server(session_manager, browser, streamer, transcriber,
+                             config);
+#elif defined(_USE_STREAMER_)
       HttpServer http_server(session_manager, browser, streamer, config);
+#elif defined(_USE_TRANSCRIBER_)
+      HttpServer http_server(session_manager, browser, transcriber, config);
 #else
       HttpServer http_server(session_manager, browser, config);
 #endif
+
       if (!http_server.init()) {
         throw std::runtime_error(std::string("HttpServer:: init failed"));
       }
@@ -262,7 +282,15 @@ int main(int argc, char* argv[]) {
         }
       }
 #endif
-
+      /* stop transcriber */
+#ifdef _USE_TRANSCRIBER_
+      if (config->get_transcriber_enabled()) {
+        if (!transcriber->terminate()) {
+          throw std::runtime_error(
+              std::string("Transcriber:: terminate failed"));
+        }
+      }
+#endif
       /* stop rtsp server */
       if (!rtsp_server.terminate()) {
         throw std::runtime_error(std::string("RtspServer:: terminate failed"));

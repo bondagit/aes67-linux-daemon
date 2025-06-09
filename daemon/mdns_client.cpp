@@ -43,17 +43,17 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
   /* Called whenever a service has been resolved successfully or timed out */
   switch (event) {
     case AVAHI_RESOLVER_FAILURE:
-      BOOST_LOG_TRIVIAL(error) << "mdns_client:: (Resolver) failed to resolve "
-                               << "service " << name << " of type " << type
-                               << " in domain " << domain << " : "
-                               << avahi_strerror(avahi_client_errno(
-                                      avahi_service_resolver_get_client(r)));
+      BOOST_LOG_TRIVIAL(error)
+          << "mdns_client:: (Resolver) failed to resolve " << "service " << name
+          << " of type " << type << " in domain " << domain << " : "
+          << avahi_strerror(
+                 avahi_client_errno(avahi_service_resolver_get_client(r)));
       break;
 
     case AVAHI_RESOLVER_FOUND:
-      BOOST_LOG_TRIVIAL(debug) << "mdns_client:: (Resolver) "
-                               << "service " << name << " of type " << type
-                               << " in domain " << domain;
+      BOOST_LOG_TRIVIAL(debug)
+          << "mdns_client:: (Resolver) " << "service " << name << " of type "
+          << type << " in domain " << domain;
 
       char addr[AVAHI_ADDRESS_STR_MAX];
       if ((flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
@@ -134,9 +134,9 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
       return;
 
     case AVAHI_BROWSER_NEW:
-      BOOST_LOG_TRIVIAL(info) << "mdns_client:: (Browser) NEW: "
-                              << "service " << name << " of type " << type
-                              << " in domain " << domain;
+      BOOST_LOG_TRIVIAL(info)
+          << "mdns_client:: (Browser) NEW: " << "service " << name
+          << " of type " << type << " in domain " << domain;
       /* check if a resolver is already running for this name and domain */
       if (mdns.active_resolvers.find({name, domain}) !=
           mdns.active_resolvers.end()) {
@@ -148,8 +148,7 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
                      domain, AVAHI_PROTO_UNSPEC, AVAHI_LOOKUP_NO_TXT,
                      resolve_callback, &mdns))) {
         BOOST_LOG_TRIVIAL(error)
-            << "mdns_client:: "
-            << "Failed to resolve service " << name << " : "
+            << "mdns_client:: " << "Failed to resolve service " << name << " : "
             << avahi_strerror(avahi_client_errno(mdns.client_.get()));
       } else {
         /* add the resolver to the active pool */
@@ -158,9 +157,9 @@ void MDNSClient::browse_callback(AvahiServiceBrowser* b,
       break;
 
     case AVAHI_BROWSER_REMOVE:
-      BOOST_LOG_TRIVIAL(info) << "mdns_client:: (Browser) REMOVE: "
-                              << "service " << name << " of type " << type
-                              << " in domain " << domain;
+      BOOST_LOG_TRIVIAL(info)
+          << "mdns_client:: (Browser) REMOVE: " << "service " << name
+          << " of type " << type << " in domain " << domain;
       RtspClient::stop(name, domain);
       mdns.on_remove_rtsp_source(name, domain);
       break;
