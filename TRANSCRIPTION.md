@@ -33,7 +33,7 @@ This architecture ensures a robust audio buffer handling, independence from the 
 
 See the diagram below:
 
-![transcription schema]](https://github.com/user-attachments/assets/f5ebf0b7-0dcc-456a-9aea-8a54e83f2e7b)
+![transcription schema](https://github.com/user-attachments/assets/f5ebf0b7-0dcc-456a-9aea-8a54e83f2e7b)
 
 
 ## How to Build and Run a Test
