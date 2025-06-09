@@ -28,16 +28,17 @@ cmake --build build --config Release
 cd -
 
 cd webui
-echo "Downloading current webui release ..."
-wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
-if [ -f webui.tar.gz ]; then
-  tar -xzvf webui.tar.gz
-else
+#echo "Downloading current webui release ..."
+#wget --timestamping https://github.com/bondagit/aes67-linux-daemon/releases/latest/download/webui.tar.gz
+#if [ -f webui.tar.gz ]; then
+#  tar -xzvf webui.tar.gz
+#else
   echo "Building and installing webui ..."
   # npm install react-modal react-toastify react-router-dom
+  npm install
   npm ci
   npm run build
-fi
+#fi
 cd ..
 
 cd daemon
