@@ -42,7 +42,7 @@ To enable the transcription feature in the AES67 Linux Daemon, follow these step
 
 ### 1. Build the Daemon with Transcription Support
 
-Use the build.sh script to compile the daemon with the transcription feature. Make sure that the _WITH_TRANSCRIBER_ flag to ON. The build.sh script will also build and download the Whisper base model.
+Use the _build.sh_ script to compile the daemon and the new WebUI with the transcription feature. Make sure that the _WITH_TRANSCRIBER_ flag to ON. The _build.sh_ script will also build and download the Whisper base model.
 
 ### 2. Configure the daemon
 
