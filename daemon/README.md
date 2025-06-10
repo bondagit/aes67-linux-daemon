@@ -165,6 +165,20 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body Type** audio/aac
 * **Body** Binary body containing ADTS AAC LC audio frames
 
+### Get transcriber output text ###
+* **Description** retrieve the transcriber output text for the specified Sink 
+* **URL** /api/transcriber/text/:sinkId
+* **Method** GET
+* **URL Params** sinkId=[integer in the range (0-63)]
+* **Body Type** text/plain
+* **Body** Text body containing UTF8 output text
+
+### Clear transcriber output text ###
+* **Description** clear the transcriber output text for the specified Sink 
+* **URL** /api/transcriber/clear/:sinkId
+* **Method** GET
+* **URL Params** sinkId=[integer in the range (0-63)]
+* **Body Type** none
 
 ## HTTP REST API structures ##
 

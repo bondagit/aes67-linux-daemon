@@ -4,8 +4,6 @@
 
 The AES67 Linux Daemon now supports real-time transcription of audio streams  using [OpenAI's Whisper](https://github.com/openai/whisper), integrated through [Whisper.cpp](https://github.com/ggml-org/whisper.cpp), a high-performance C/C++ inference of Whisper. The transcription feature enables speech-to-text conversion of daemon's configured Sinks with good robustness and accuracy, making it a valuable addition for multimedia and broadcast applications.
 
-Audio transcription feature has been integrated while maintaining robust performance in multi-sink setups by leveraging a multithreaded architecture.
-
 This document explains the architecture of the transcription feature, how to build and configure the daemon with transcription support, and how to test the feature.
 
 
@@ -23,7 +21,7 @@ The transcription feature in the AES67 Linux Daemon builds upon a multithreaded 
    - The number of rotating buffers and their durations are user-configurable, see the daemon's transcription parameters below.
 
 3. **REST Interface & Web Dialog**:
-   - Real-time transcription results are presented via the web interface, where each configured Sink has a dedicated transcription dialog.
+   - Real-time transcription results are presented via the web interface, where each configured Sink has a dedicated transcription dialog. The REST API has been extended to allow fetching the ouput text and the clear it.
    - Additionally, transcription logs and warnings (e.g., slow transcription processing) are emitted into the daemon's log for monitoring purposes.
 
 4. **Configuration Parameters**:
