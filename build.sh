@@ -7,6 +7,11 @@
 #export CC=/usr/bin/clang
 #export CXX=/usr/bin/clang++
 
+die() {
+	echo >&2 "ERROR: $*"
+	exit 1
+}
+
 TOPDIR=$(pwd)
 
 echo "Init git submodules ..."
@@ -14,7 +19,7 @@ git submodule update --init --recursive
 
 cd 3rdparty/ravenna-alsa-lkm/driver
 git checkout aes67-daemon
-make
+make || die "Building the ALSA kernel module failed"
 cd -
 
 cd webui
