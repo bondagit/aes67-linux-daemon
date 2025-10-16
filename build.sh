@@ -31,8 +31,10 @@ fi
 cd ..
 
 cd daemon
+
 echo "Building aes67-daemon ..."
 cmake \
+	-DBoost_NO_WARN_NEW_VERSIONS=1 \
 	-DCPP_HTTPLIB_DIR="${TOPDIR}/3rdparty/cpp-httplib" \
 	-DRAVENNA_ALSA_LKM_DIR="${TOPDIR}/3rdparty/ravenna-alsa-lkm" \
 	-DENABLE_TESTS=ON \

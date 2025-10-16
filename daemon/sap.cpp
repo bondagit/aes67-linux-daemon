@@ -84,7 +84,8 @@ bool SAP::receive(bool& is_announce,
                   std::string& sdp,
                   int tout_secs) {
   // Set a deadline for the asynchronous operation
-  deadline_.expires_from_now(boost::posix_time::seconds(tout_secs));
+  deadline_.expires_at(std::chrono::steady_clock::now() +
+                       std::chrono::seconds(tout_secs));
 
   boost::system::error_code ec = boost::asio::error::would_block;
   ip::udp::endpoint endpoint;
@@ -129,10 +130,10 @@ void SAP::handle_receive(const boost::system::error_code& ec,
 }
 
 void SAP::check_deadline() {
-  if (deadline_.expires_at() <= deadline_timer::traits_type::now()) {
+  if (deadline_.expiry() <= std::chrono::steady_clock::now()) {
     // cancel receive operation
     socket_.cancel();
-    deadline_.expires_at(boost::posix_time::pos_infin);
+    deadline_.expires_at(boost::asio::steady_timer::time_point::max());
     // BOOST_LOG_TRIVIAL(debug) << "SAP:: timeout expired when receiving";
   }
 

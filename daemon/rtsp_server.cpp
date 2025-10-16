@@ -25,7 +25,7 @@ bool RtspServer::update_source(uint8_t id,
                                const std::string& sdp) {
   bool ret = false;
   BOOST_LOG_TRIVIAL(debug) << "rtsp_server:: added source " << name;
-  std::scoped_lock<std::mutex> lock{mutex_};
+  std::lock_guard<std::mutex> lock{mutex_};
   for (unsigned int i = 0; i < sessions_.size(); i++) {
     auto session = sessions_[i].lock();
     if (session != nullptr) {
@@ -39,7 +39,7 @@ bool RtspServer::update_source(uint8_t id,
 void RtspServer::accept() {
   acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
     if (!ec) {
-      std::scoped_lock<std::mutex> lock{mutex_};
+      std::lock_guard<std::mutex> lock{mutex_};
       /* check for free sessions */
       unsigned int i = 0;
       for (; i < sessions_.size(); i++) {

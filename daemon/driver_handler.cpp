@@ -143,7 +143,7 @@ bool DriverHandler::terminate(const Config& /* config */) {
 void DriverHandler::send_command(enum MT_ALSA_msg_id id,
                                  size_t data_size,
                                  const uint8_t* data) {
-  std::scoped_lock<std::mutex> lock{mutex_};
+  std::lock_guard<std::mutex> lock{mutex_};
   if (data_size > max_payload) {
     on_command_error(id, DaemonErrc::send_invalid_size);
     return;

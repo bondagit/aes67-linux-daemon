@@ -98,13 +98,13 @@ struct RtspActiveClientRemover {
         domain_(domain),
         wait_for_updates_(wait_for_updates) {
     if (stream_ != nullptr && wait_for_updates_) {
-      std::scoped_lock<std::mutex> lock{RtspClient::g_mutex};
+      std::lock_guard<std::mutex> lock{RtspClient::g_mutex};
       RtspClient::g_active_clients[{name_, domain_}] = stream_;
     }
   }
   ~RtspActiveClientRemover() {
     if (stream_ != nullptr && wait_for_updates_) {
-      std::scoped_lock<std::mutex> lock{RtspClient::g_mutex};
+      std::lock_guard<std::mutex> lock{RtspClient::g_mutex};
       auto it = RtspClient::g_active_clients.find({name_, domain_});
       if (it != RtspClient::g_active_clients.end() && it->second == stream_) {
         RtspClient::g_active_clients.erase(it);
@@ -280,7 +280,7 @@ std::pair<bool, RtspSource> RtspClient::process(
 }
 
 void RtspClient::stop(const std::string& name, const std::string& domain) {
-  std::scoped_lock<std::mutex> lock{g_mutex};
+  std::lock_guard<std::mutex> lock{g_mutex};
   auto it = g_active_clients.find({name, domain});
   if (it != g_active_clients.end()) {
     BOOST_LOG_TRIVIAL(info)
@@ -295,12 +295,12 @@ void RtspClient::stop(const std::string& name, const std::string& domain) {
 }
 
 bool RtspClient::is_active(const std::string& name, const std::string& domain) {
-  std::scoped_lock<std::mutex> lock{g_mutex};
+  std::lock_guard<std::mutex> lock{g_mutex};
   return g_active_clients.find({name, domain}) != g_active_clients.end();
 }
 
 void RtspClient::stop_all() {
-  std::scoped_lock<std::mutex> lock{g_mutex};
+  std::lock_guard<std::mutex> lock{g_mutex};
   auto it = g_active_clients.begin();
   while (it != g_active_clients.end()) {
     BOOST_LOG_TRIVIAL(info) << "rtsp_client:: stopping client "

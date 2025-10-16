@@ -45,7 +45,7 @@ class IGMP {
 #else
         ip::make_address(mcast_ip.c_str()).to_v4().to_uint();
 #endif
-    std::scoped_lock<std::mutex> lock{mutex};
+    std::lock_guard<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
     if (it != mcast_ref.end() && (*it).second > 0) {
@@ -89,7 +89,7 @@ class IGMP {
 #else
         ip::make_address(mcast_ip.c_str()).to_v4().to_uint();
 #endif
-    std::scoped_lock<std::mutex> lock{mutex};
+    std::lock_guard<std::mutex> lock{mutex};
 
     auto it = mcast_ref.find(mcast_ip_addr);
     if (it == mcast_ref.end() || (*it).second == 0) {
