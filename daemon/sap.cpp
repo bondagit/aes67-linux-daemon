@@ -130,7 +130,11 @@ void SAP::handle_receive(const boost::system::error_code& ec,
 }
 
 void SAP::check_deadline() {
+#if BOOST_VERSION < 106600
+  if (deadline_.expires_at() <= std::chrono::steady_clock::now()) {
+#else
   if (deadline_.expiry() <= std::chrono::steady_clock::now()) {
+#endif
     // cancel receive operation
     socket_.cancel();
     deadline_.expires_at(boost::asio::steady_timer::time_point::max());
