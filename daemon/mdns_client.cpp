@@ -87,7 +87,7 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
            (mdns.config_->get_interface_name() != "lo")) ||
           ((flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
            (mdns.config_->get_interface_name() == "lo"))) {
-        std::scoped_lock<std::mutex> lock{mdns.sources_res_mutex_};
+        std::lock_guard<std::mutex> lock{mdns.sources_res_mutex_};
 
         /* process RTSP client in async task */
         mdns.sources_res_.emplace_back(std::async(
@@ -243,7 +243,7 @@ bool MDNSClient::init() {
 
 void MDNSClient::process_results() {
 #ifdef _USE_AVAHI_
-  std::scoped_lock<std::mutex> lock{sources_res_mutex_};
+  std::lock_guard<std::mutex> lock{sources_res_mutex_};
   /* remove all completed results and populate remote sources list */
   sources_res_.remove_if([](auto& result) {
     if (!result.valid()) {
@@ -268,7 +268,7 @@ bool MDNSClient::terminate() {
     RtspClient::stop_all();
 #ifdef _USE_AVAHI_
     /* wait for all pending results and remove from list */
-    std::scoped_lock<std::mutex> lock{sources_res_mutex_};
+    std::lock_guard<std::mutex> lock{sources_res_mutex_};
     BOOST_LOG_TRIVIAL(info) << "mdns_client:: waiting for "
                             << sources_res_.size() << " RTSP clients";
     sources_res_.remove_if([](auto& result) {

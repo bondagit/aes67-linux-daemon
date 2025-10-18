@@ -16,7 +16,7 @@ endif()
 add_definitions( -DBOOST_LOG_DYN_LINK -DBOOST_LOG_USE_NATIVE_SYSLOG )
 add_compile_options( -Wall )
 
-set(BOOST_COMPONENTS unit_test_framework filesystem system thread)
+set(BOOST_COMPONENTS filesystem thread unit_test_framework)
 if(${Boost_VERSION_MINOR} GREATER 87)
     list(APPEND BOOST_COMPONENTS process)
 endif()

@@ -25,7 +25,7 @@
 #include "log.hpp"
 
 using namespace boost::asio;
-using boost::asio::deadline_timer;
+using boost::asio::steady_timer;
 
 class SAP {
  public:
@@ -81,7 +81,7 @@ class SAP {
 #else
       ip::udp::endpoint(ip::make_address("0.0.0.0"), port)};
 #endif
-  deadline_timer deadline_{io_service_};
+  steady_timer deadline_{io_service_};
 };
 
 #endif
