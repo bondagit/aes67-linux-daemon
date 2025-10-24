@@ -226,7 +226,6 @@ To stop it use:
 
      sudo systemctl stop aes67-daemon
 
-
 The daemon requires the _MergingRavennaALSA_ module to run.
 
 You can usally install the module using the following commands:
@@ -237,9 +236,17 @@ You can usally install the module using the following commands:
 If this doesn't work because you miss kernel certificate follow the instructions at: 
 [No OpenSSL sign-file signing_key.pem](https://superuser.com/questions/1214116/no-openssl-sign-file-signing-key-pem-leads-to-error-while-loading-kernel-modules)
 
+On some distros you may also need to create a module load configuration file with:
+
+    echo 'MergingRavennaALSA' | sudo tee /etc/modules-load.d/MergingRavennaALSA.conf
+
 Finally use the command to load the modules:
 
     sudo depmod -a
+
+and reboot with:
+
+    sudo reboot
 
 
 ### [test](test) directory ###
