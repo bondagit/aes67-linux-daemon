@@ -117,9 +117,9 @@ int main(int argc, char* argv[]) {
 
   if (current_watchdog_usec > 0) {
     // Inform systemd that if we're not petting the dog in 5s we're bust.
-    sd_notify(0, "WATCHDOG_USEC=5000000");
+    sd_notify(0, "WATCHDOG_USEC=10000000");
 
-    current_watchdog_usec = 5000000;
+    current_watchdog_usec = 10000000;
   }
 #endif
 
