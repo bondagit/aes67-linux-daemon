@@ -7,6 +7,8 @@ After=network.target
 Type=notify
 # Will be adjusted by service during startup
 WatchdogSec=10
+# In case of no IP we wait forever
+TimeoutStartSec=0
 
 # Run as separate user created via sysusers.d
 User=aes67-daemon
