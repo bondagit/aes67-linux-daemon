@@ -92,8 +92,8 @@ std::tuple<uint32_t, std::string, bool> get_new_interface_ip(
 
   auto [ip_addr, ip_str] = get_interface_ip(interface_name);
   BOOST_LOG_TRIVIAL(info) << "interface " << interface_name
-                          << " new IP address " << ip_str;
-  return {ip_addr, ip_str, true};
+                          << " new IP address <" << ip_str << ">";
+  return { ip_addr, ip_str, true };
 }
 
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(

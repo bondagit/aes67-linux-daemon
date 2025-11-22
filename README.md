@@ -234,7 +234,6 @@ To stop it use:
 
      sudo systemctl stop aes67-daemon
 
-
 The daemon requires the _MergingRavennaALSA_ module to run.
 
 You can usally install the module using the following commands:
@@ -245,9 +244,17 @@ You can usally install the module using the following commands:
 If this doesn't work because you miss kernel certificate follow the instructions at: 
 [No OpenSSL sign-file signing_key.pem](https://superuser.com/questions/1214116/no-openssl-sign-file-signing-key-pem-leads-to-error-while-loading-kernel-modules)
 
+On some distros you may also need to create a module load configuration file with:
+
+    echo 'MergingRavennaALSA' | sudo tee /etc/modules-load.d/MergingRavennaALSA.conf
+
 Finally use the command to load the modules:
 
     sudo depmod -a
+
+and reboot with:
+
+    sudo reboot
 
 
 ### [test](test) directory ###
@@ -264,7 +271,7 @@ The script allows a user to test a specific configuration and it can be used to 
 
       Usage run_test.sh sample_format sample_rate channels duration
            sample_format can be one of S16_LE, S24_3LE, S32_LE
-           sample_rate can be one of 44100, 48000, 88200, 96000, 192000, 384000
+           sample_rate can be one of 44100, 48000, 88200, 96000, 176400, 192000, 352800, 384000
            channels can be one of 2, 4, 6, up to 64
            duration is in the range 1 to 10 minutes
 

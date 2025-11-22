@@ -249,7 +249,9 @@ class Config extends Component {
                 <option value="48000">48 kHz</option>
                 <option value="88200">88.2 kHz</option>
                 <option value="96000">96 kHz</option>
+                <option value="176400">176.4 kHz</option>
                 <option value="192000">192 kHz</option>
+                <option value="352800">352.8 kHz</option>
                 <option value="384000">384 kHz</option>
               </select>
             </th>
