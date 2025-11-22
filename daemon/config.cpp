@@ -120,10 +120,9 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
   if (ip_str.empty()) {
     std::cerr << "Cannot retrieve IPv4 address for interface "
               << config.interface_name_ << std::endl;
-  } else {
-    config.ip_addr_ = ip_addr;
-    config.ip_str_ = ip_str;
   }
+  config.ip_addr_ = ip_addr;
+  config.ip_str_ = ip_str;
 
   config.config_filename_ = filename;
   config.daemon_restart_ = false;

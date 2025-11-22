@@ -261,7 +261,7 @@ where:
 
 > **sample\_rate**
 > JSON number specifying the default sample rate.
-> Valid values are 44100Hz, 48000Hz, 88200Hz, 96000Hz, 192000Hz and 384000Hz.
+> Valid values are 44100Hz, 48000Hz, 88200Hz, 96000Hz, 176400Hz, 192000Hz, 352800Hz and 384000Hz.
 
 > **playout\_delay**
 > JSON number specifying the default safety playout delay at 1FS in samples.

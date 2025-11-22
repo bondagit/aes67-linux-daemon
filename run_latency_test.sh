@@ -15,7 +15,7 @@ function cleanup {
 function usage {
   echo 'Usage run_latency_test.sh sample_format sample_rate channels duration frames' >&2
   echo '  sample_format can be one of S16_LE, S24_3LE, S32_LE' >&2
-  echo '  sample_rate can be one of 44100, 48000, 88200, 96000, 192000, 384000' >&2
+  echo '  sample_rate can be one of 44100, 48000, 88200, 96000, 176400, 192000, 352800, 384000' >&2
   echo '  channels can be one of 2, 4, 6, up to 64' >&2
   echo '  duration in seconds' >&2
   echo '  frames buffer size in frames' >&2
