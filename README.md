@@ -108,7 +108,7 @@ See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
 ## HTTP Streamer ##
 The HTTP Streamer was introduced with the daemon version 2.0 and it is used to receive AES67 audio streams via HTTP file streaming.
-Starting from the daemon version 2.2 the Streamer supports live HTTP streaming compatible with [https://www.videolan.org/](VideoLAN).
+Starting from the daemon version 2.2 the Streamer supports live HTTP streaming compatible with [VideoLAN](https://www.videolan.org/).
 
 The HTTP Streamer can be enabled via the _streamer_enabled_ daemon parameter.
 When the Streamer is active the daemon starts capturing the configured _Sinks_ up to the maximum number of channels configured by the _streamer_channels_ parameters.
@@ -116,7 +116,7 @@ The captured PCM samples are split into _streamer_files_num_ files of _streamer_
 ![Screenshot 2024-06-15 at 15 36 48](https://github.com/bondagit/aes67-linux-daemon/assets/56439183/3341b05e-daed-4541-b0a1-28839d5b9a6b)
 The HTTP streamer requires the libfaac-dev package to compile.
 
-When the HTTP Streamer is enabled and one or more _Sinks_ are configured, it's possible to receive a sink HTTP Live stream encoded with AAC LC using the following URL address: http://[daemon_ip:port]/api/streamer/stream/:sinkId
+When the HTTP Streamer is enabled and one or more _Sinks_ are configured, it's possible to receive a sink HTTP Live stream encoded with AAC LC using the following URL: http://[daemon_ip:port]/api/streamer/stream/:sinkId
 
 Please note that since the HTTP Streamer uses the RAVENNA ALSA device for capturing it's not possible to use such device for other audio captures.
 
