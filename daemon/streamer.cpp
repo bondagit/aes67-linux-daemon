@@ -603,15 +603,16 @@ bool Streamer::live_stream_wait(httplib::DataSink& httpSink,
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 
-  std::shared_lock streams_lock(streams_mutex_[info.sink_id]);
-  auto buf = output_streams_[std::make_pair(info.sink_id, info.file_id)].str();
-  streams_lock.unlock();
-
   if (httpSink.is_writable()) {
+    std::shared_lock streams_lock(streams_mutex_[info.sink_id]);
+    auto buf = output_streams_[std::make_pair(info.sink_id, info.file_id)].str();
+    streams_lock.unlock();
+
     BOOST_LOG_TRIVIAL(debug)
         << "streamer:: live sink " << std::to_string(info.sink_id)
         << " sending file " << int(info.file_id) << " " << buf.length()
         << " bytes to " << ip << ":" << port;
+
     httpSink.write(buf.data(), buf.length());
     info.file_id = (info.file_id + 1) % files_num_;
     info.unwriteble = 0;
