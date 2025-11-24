@@ -1,4 +1,4 @@
-#1 AES67 Linux Daemon
+# AES67 Linux Daemon
 
 AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.
 See [https://en.wikipedia.org/wiki/AES67](https://en.wikipedia.org/wiki/AES67) for additional info.
@@ -116,7 +116,7 @@ The captured PCM samples are split into _streamer_files_num_ files of _streamer_
 ![Screenshot 2024-06-15 at 15 36 48](https://github.com/bondagit/aes67-linux-daemon/assets/56439183/3341b05e-daed-4541-b0a1-28839d5b9a6b)
 The HTTP streamer requires the libfaac-dev package to compile.
 
-When the HTTP Streamer is enabled and one or more _Sinks_ are configured, it's possible to receive a sink HTTP Live stream encoded with AAC LC using the following URL: http://[daemon_ip:port]/api/streamer/stream/:sinkId
+When the HTTP Streamer is enabled and one or more _Sinks_ are configured, it's possible to receive a HTTP Live stream encoded using AAC LC at the following URL: _http://[daemon_ip:port]/api/streamer/stream/:sinkId_
 
 Please note that since the HTTP Streamer uses the RAVENNA ALSA device for capturing it's not possible to use such device for other audio captures.
 
