@@ -398,3 +398,69 @@ std::error_code Streamer::get_stream(const StreamSink& sink,
   file_counter = output_ids_[files_id];
   return std::error_code{};
 }
+
+std::error_code Streamer::live_stream_init(const StreamSink& sink,
+                                           const std::string& ip,
+                                           int port) {
+  if (!running_) {
+    return std::error_code{DaemonErrc::streamer_not_running};
+  }
+
+  for (uint16_t ch : sink.map) {
+    if (ch >= channels_) {
+      return std::error_code{DaemonErrc::streamer_invalid_ch};
+    }
+  }
+
+  if (total_sink_samples_[sink.id] < buffer_samples_ * (files_num_ - 1)) {
+    return std::error_code{DaemonErrc::streamer_retry_later};
+  }
+
+  StreamerLiveInfo info;
+  info.unwriteble = 0;
+  info.sink_id = sink.id;
+  info.file_id = (file_id_.load() + 1) % files_num_;
+  liveInfos_[make_pair(ip, port)] = info;
+
+  BOOST_LOG_TRIVIAL(info) << "streamer:: sink " << std::to_string(info.sink_id)
+                          << " live started on remote " << ip << ":" << port;
+  return std::error_code{};
+}
+
+bool Streamer::live_stream_wait(httplib::DataSink& httpSink,
+                                const std::string& ip,
+                                int port) {
+  if (liveInfos_.find(make_pair(ip, port)) == liveInfos_.end()) {
+    BOOST_LOG_TRIVIAL(error) << "streamer:: live sink with remote " << ip << ":"
+                             << port << " not started, stopping ..";
+    return false;
+  }
+  auto& info = liveInfos_[make_pair(ip, port)];
+  while (info.file_id == file_id_.load()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
+
+  if (httpSink.is_writable()) {
+    std::shared_lock streams_lock(streams_mutex_[info.sink_id]);
+    auto buf = output_streams_[std::make_pair(info.sink_id, info.file_id)].str();
+    streams_lock.unlock();
+
+    BOOST_LOG_TRIVIAL(debug)
+        << "streamer:: live sink " << std::to_string(info.sink_id)
+        << " sending file " << int(info.file_id) << " " << buf.length()
+        << " bytes to " << ip << ":" << port;
+
+    httpSink.write(buf.data(), buf.length());
+    info.file_id = (info.file_id + 1) % files_num_;
+    info.unwriteble = 0;
+  } else {
+    if (++info.unwriteble >= (files_num_ / 2)) {
+      BOOST_LOG_TRIVIAL(warning)
+          << "streamer:: live sink " << std::to_string(info.sink_id)
+          << " remote " << ip << ":" << port << " not writable, stopping ..";
+      liveInfos_.erase(make_pair(ip, port));
+      return false;
+    }
+  }
+  return true;
+}

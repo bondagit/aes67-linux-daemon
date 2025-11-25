@@ -40,6 +40,12 @@ struct StreamerInfo {
   std::string format;
 };
 
+struct StreamerLiveInfo {
+  uint8_t sink_id{0};
+  uint8_t file_id{0};
+  uint8_t unwriteble{0};
+};
+
 class Streamer {
  public:
   static std::shared_ptr<Streamer> create(
@@ -59,6 +65,13 @@ class Streamer {
                              uint8_t& start_file_id,
                              uint32_t& file_count,
                              std::string& out);
+
+  std::error_code live_stream_init(const StreamSink& sink,
+                                   const std::string& ip,
+                                   int port);
+  bool live_stream_wait(httplib::DataSink& httpSink,
+                        const std::string& ip,
+                        int port);
 
  protected:
   explicit Streamer(std::shared_ptr<SessionManager> session_manager,
@@ -104,6 +117,7 @@ class Streamer {
   std::unordered_map<uint8_t, std::mutex> faac_mutex_;
   std::unordered_map<uint8_t, unsigned long> codec_in_samples_;
   std::unordered_map<uint8_t, unsigned long> codec_out_buffer_size_;
+  std::map<std::pair<std::string, int>, StreamerLiveInfo> liveInfos_;
 };
 
 #endif

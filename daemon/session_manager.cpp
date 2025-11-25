@@ -313,7 +313,7 @@ std::error_code SessionManager::get_source(uint8_t id,
   auto const it = sources_.find(id);
   if (it == sources_.end()) {
     BOOST_LOG_TRIVIAL(error)
-        << "session_manager:: source " << id << " not in use";
+        << "session_manager:: source " << std::to_string(id) << " not in use";
     return DaemonErrc::stream_id_not_in_use;
   }
   const auto& info = (*it).second;
@@ -326,7 +326,7 @@ std::error_code SessionManager::get_sink(uint8_t id, StreamSink& sink) const {
   auto const it = sinks_.find(id);
   if (it == sinks_.end()) {
     BOOST_LOG_TRIVIAL(error)
-        << "session_manager:: sink " << id << " not in use";
+        << "session_manager:: sink " << std::to_string(id) << " not in use";
     return DaemonErrc::stream_id_not_in_use;
   }
   const auto& info = (*it).second;
@@ -707,7 +707,7 @@ std::error_code SessionManager::get_source_sdp(uint32_t id,
   auto const it = sources_.find(id);
   if (it == sources_.end()) {
     BOOST_LOG_TRIVIAL(error)
-        << "session_manager:: source " << id << " not in use";
+        << "session_manager:: source " << std::to_string(id) << " not in use";
     return DaemonErrc::stream_id_not_in_use;
   }
   const auto& info = (*it).second;
@@ -726,7 +726,7 @@ std::error_code SessionManager::remove_source(uint32_t id) {
   auto const it = sources_.find(id);
   if (it == sources_.end()) {
     BOOST_LOG_TRIVIAL(error)
-        << "session_manager:: source " << id << " not in use";
+        << "session_manager:: source " << std::to_string(id) << " not in use";
     return DaemonErrc::stream_id_not_in_use;
   }
 
@@ -920,7 +920,7 @@ std::error_code SessionManager::remove_sink(uint32_t id) {
   auto const it = sinks_.find(id);
   if (it == sinks_.end()) {
     BOOST_LOG_TRIVIAL(error)
-        << "session_manager:: sink " << id << " not in use";
+        << "session_manager:: sink " << std::to_string(id) << " not in use";
     return DaemonErrc::stream_id_not_in_use;
   }
 
@@ -947,7 +947,7 @@ std::error_code SessionManager::get_sink_status(
   auto const it = sinks_.find(id);
   if (it == sinks_.end()) {
     BOOST_LOG_TRIVIAL(error)
-        << "session_manager:: sink " << id << " not in use";
+        << "session_manager:: sink " << std::to_string(id) << " not in use";
     return DaemonErrc::stream_id_not_in_use;
   }
 

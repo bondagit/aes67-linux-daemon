@@ -381,6 +381,43 @@ bool HttpServer::init() {
     res.body = streamer_info_to_json(info);
   });
 #endif
+  /* retrieve live streamer */
+  svr_.Get("/api/streamer/stream/([0-9]+)", [this](const Request& req,
+                                                   Response& res) {
+#ifdef _USE_STREAMER_
+    if (!config_->get_streamer_enabled()) {
+      set_error(400, "streamer not enabled", res);
+      return;
+    }
+    uint8_t sinkId;
+    try {
+      sinkId = std::stoi(req.matches[1]);
+    } catch (...) {
+      set_error(400, "failed to convert id", res);
+      return;
+    }
+    StreamSink sink;
+    auto ret = session_manager_->get_sink(sinkId, sink);
+    if (ret) {
+      set_error(ret, "failed to retrieve sink " + std::to_string(sinkId), res);
+      return;
+    }
+
+    ret = streamer_->live_stream_init(sink, req.remote_addr, req.remote_port);
+    if (ret) {
+      set_error(ret, "failed to init streamer " + std::to_string(sinkId), res);
+      return;
+    }
+
+    res.set_content_provider("audio/aac",
+                             [&](size_t /*offset*/, DataSink& httpSync) {
+                               return streamer_->live_stream_wait(
+                                   httpSync, req.remote_addr, req.remote_port);
+                             });
+#else
+    set_error(400, "streamer support not compiled-in", res);
+#endif
+  });
 
   /* retrieve streamer file */
   svr_.Get("/api/streamer/stream/([0-9]+)/([0-9]+)", [this](const Request& req,
