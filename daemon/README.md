@@ -165,6 +165,13 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body Type** audio/aac
 * **Body** Binary body containing ADTS AAC LC audio frames
 
+### Get streamer AAC live streaming ###
+* **Description** retrieve the AAC live stream for the specified Sink
+* **URL** /api/streamer/streamer/:sinkId
+* **Method** GET
+* **URL Params** sinkId=[integer in the range (0-63)]
+* **Body Type** audio/aac
+* **Body** Binary body containing ADTS AAC LC audio frames
 
 ## HTTP REST API structures ##
 
