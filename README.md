@@ -181,6 +181,8 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
+* patch to fix the PTP master sync timeout and to have a less restrictive spin lock (from driver version v1.17). See [issue 236](https://github.com/bondagit/aes67-linux-daemon/issues/246)
+* patch to fix a kernel warning with Linux Kernel v6.18 and above (from driver version v1.16). See [driver issue 32](https://github.com/bondagit/ravenna-alsa-lkm/issues/32)
 * patch to compile with Linux Kernel v6.15 and above (from driver version v1.15)
 * patch to properly release the network device, that on some Linux Kernels was preventing device reboot and shutdown (from driver v1.14)
 * patch to use ALSA managed buffer allocation and compile with Linux Kernel v6.12 and above (from driver version v1.13)
