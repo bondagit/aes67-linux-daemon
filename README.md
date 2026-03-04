@@ -190,8 +190,9 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
-* patch to update the grand master clock ID of the current master clock when it gets updated in the ANNOUNCE messages (from driver version v1.18). See driver [isuse 34](https://github.com/bondagit/ravenna-alsa-lkm/issues/34)
-* patch to fix the PTP master sync timeout and to have a less restrictive spin lock (from driver version v1.17). See [issue 236](https://github.com/bondagit/aes67-linux-daemon/issues/246)
+* added support for ST-2022-7 (from driver version 2.0). This version breaks compatibility with the older and requires a new daemon. See [issue 248](https://github.com/bondagit/aes67-linux-daemon/issues/248)
+* patch to update the grand master clock ID of the current master clock when it gets updated in the ANNOUNCE messages (from driver version v1.18). See driver [issue 34](https://github.com/bondagit/ravenna-alsa-lkm/issues/34)
+* patch to fix the PTP master sync timeout and to have a less restrictive spin lock (from driver version v1.17). See [issue 246](https://github.com/bondagit/aes67-linux-daemon/issues/246)
 * patch to fix a kernel warning with Linux Kernel v6.18 and above (from driver version v1.16). See [driver issue 32](https://github.com/bondagit/ravenna-alsa-lkm/issues/32)
 * patch to compile with Linux Kernel v6.15 and above (from driver version v1.15)
 * patch to properly release the network device, that on some Linux Kernels was preventing device reboot and shutdown (from driver v1.14)
