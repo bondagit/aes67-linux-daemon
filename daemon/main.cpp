@@ -43,7 +43,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static const std::string version("bondagit-2.2.0");
+static const std::string version("bondagit-3.0.0");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
 #endif
 
         auto [ip_addr, ip_str, is_new] = get_new_interface_ip(
-            config->get_interface_name(), config->get_ip_addr_str());
+            config->get_interface_name(0), config->get_ip_addr_str());
         if (is_new) {
           BOOST_LOG_TRIVIAL(warning)
               << "main:: IP address changed, restarting ...";

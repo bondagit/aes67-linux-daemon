@@ -605,7 +605,8 @@ bool Streamer::live_stream_wait(httplib::DataSink& httpSink,
 
   if (httpSink.is_writable()) {
     std::shared_lock streams_lock(streams_mutex_[info.sink_id]);
-    auto buf = output_streams_[std::make_pair(info.sink_id, info.file_id)].str();
+    auto buf =
+        output_streams_[std::make_pair(info.sink_id, info.file_id)].str();
     streams_lock.unlock();
 
     BOOST_LOG_TRIVIAL(debug)

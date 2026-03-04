@@ -79,8 +79,7 @@ static std::string escape_json(const std::string& js) {
 
 std::string config_to_json(const Config& config) {
   std::stringstream ss;
-  ss << "{"
-     << "\n  \"http_port\": " << config.get_http_port()
+  ss << "{" << "\n  \"http_port\": " << config.get_http_port()
      << ",\n  \"rtsp_port\": " << config.get_rtsp_port()
      << ",\n  \"http_base_dir\": \"" << config.get_http_base_dir() << "\""
      << ",\n  \"log_severity\": " << config.get_log_severity()
@@ -97,12 +96,10 @@ std::string config_to_json(const Config& config) {
      << escape_json(config.get_sap_mcast_addr()) << "\""
      << ",\n  \"sap_interval\": " << config.get_sap_interval()
      << ",\n  \"syslog_proto\": \"" << escape_json(config.get_syslog_proto())
-     << "\""
-     << ",\n  \"syslog_server\": \"" << escape_json(config.get_syslog_server())
-     << "\""
+     << "\"" << ",\n  \"syslog_server\": \""
+     << escape_json(config.get_syslog_server()) << "\""
      << ",\n  \"status_file\": \"" << escape_json(config.get_status_file())
-     << "\""
-     << ",\n  \"interface_name\": \""
+     << "\"" << ",\n  \"interface_name\": \""
      << escape_json(config.get_interface_name()) << "\""
      << ",\n  \"mdns_enabled\": " << std::boolalpha << config.get_mdns_enabled()
      << ",\n  \"custom_node_id\": \""
@@ -111,9 +108,8 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"ptp_status_script\": \""
      << escape_json(config.get_ptp_status_script()) << "\""
      << ",\n  \"mac_addr\": \"" << escape_json(config.get_mac_addr_str())
-     << "\""
-     << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str()) << "\""
-     << ",\n  \"streamer_channels\": "
+     << "\"" << ",\n  \"ip_addr\": \"" << escape_json(config.get_ip_addr_str())
+     << "\"" << ",\n  \"streamer_channels\": "
      << unsigned(config.get_streamer_channels())
      << ",\n  \"streamer_files_num\": "
      << unsigned(config.get_streamer_files_num())
@@ -130,8 +126,7 @@ std::string config_to_json(const Config& config) {
 
 std::string source_to_json(const StreamSource& source) {
   std::stringstream ss;
-  ss << "\n  {"
-     << "\n    \"id\": " << unsigned(source.id)
+  ss << "\n  {" << "\n    \"id\": " << unsigned(source.id)
      << ",\n    \"enabled\": " << std::boolalpha << source.enabled
      << ",\n    \"name\": \"" << escape_json(source.name) << "\""
      << ",\n    \"io\": \"" << escape_json(source.io) << "\""
@@ -155,9 +150,8 @@ std::string source_to_json(const StreamSource& source) {
 
 std::string sink_to_json(const StreamSink& sink) {
   std::stringstream ss;
-  ss << "\n  {"
-     << "\n    \"id\": " << unsigned(sink.id) << ",\n    \"name\": \""
-     << escape_json(sink.name) << "\""
+  ss << "\n  {" << "\n    \"id\": " << unsigned(sink.id)
+     << ",\n    \"name\": \"" << escape_json(sink.name) << "\""
      << ",\n    \"io\": \"" << escape_json(sink.io) << "\""
      << ",\n    \"use_sdp\": " << std::boolalpha << sink.use_sdp
      << ",\n    \"source\": \"" << escape_json(sink.source) << "\""
@@ -194,16 +188,14 @@ std::string sink_status_to_json(const SinkStreamStatus& status) {
 
 std::string ptp_config_to_json(const PTPConfig& ptp_config) {
   std::stringstream ss;
-  ss << "{"
-     << " \"domain\": " << unsigned(ptp_config.domain)
+  ss << "{" << " \"domain\": " << unsigned(ptp_config.domain)
      << ", \"dscp\": " << unsigned(ptp_config.dscp) << " }\n";
   return ss.str();
 }
 
 std::string ptp_status_to_json(const PTPStatus& status) {
   std::stringstream ss;
-  ss << "{"
-     << " \"status\": \"" << escape_json(status.status) << "\""
+  ss << "{" << " \"status\": \"" << escape_json(status.status) << "\""
      << ", \"gmid\": \"" << escape_json(status.gmid) << "\""
      << ", \"jitter\": " << status.jitter << " }\n";
   return ss.str();
@@ -262,8 +254,7 @@ std::string streams_to_json(const std::list<StreamSource>& sources,
 
 std::string remote_source_to_json(const RemoteSource& source) {
   std::stringstream ss;
-  ss << "\n  {"
-     << "\n    \"source\": \"" << escape_json(source.source) << "\""
+  ss << "\n  {" << "\n    \"source\": \"" << escape_json(source.source) << "\""
      << ",\n    \"id\": \"" << escape_json(source.id) << "\""
      << ",\n    \"name\": \"" << escape_json(source.name) << "\""
      << ",\n    \"domain\": \"" << escape_json(source.domain) << "\""
@@ -295,8 +286,7 @@ std::string remote_sources_to_json(const std::list<RemoteSource>& sources) {
 #ifdef _USE_STREAMER_
 std::string streamer_info_to_json(const StreamerInfo& info) {
   std::stringstream ss;
-  ss << "{"
-     << "\n   \"status\": " << unsigned(info.status)
+  ss << "{" << "\n   \"status\": " << unsigned(info.status)
      << ",\n   \"file_duration\": " << unsigned(info.file_duration)
      << ",\n   \"files_num\": " << unsigned(info.files_num)
      << ",\n   \"player_buffer_files_num\": "

@@ -91,11 +91,13 @@ class RtspServer {
         acceptor_(io_service_,
                   tcp::endpoint(
 #if BOOST_VERSION < 108700
-                      boost::asio::ip::address::from_string(config_->get_ip_addr_str()),
+                      boost::asio::ip::address::from_string(
+                          config_->get_ip_addr_str()),
 #else
                       boost::asio::ip::make_address(config_->get_ip_addr_str()),
 #endif
-                      config_->get_rtsp_port())) {}
+                      config_->get_rtsp_port())) {
+  }
   bool init() {
     accept();
     /* start rtsp server on a separate thread */

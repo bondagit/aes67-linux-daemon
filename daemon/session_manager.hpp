@@ -84,9 +84,10 @@ struct PTPStatus {
 };
 
 struct StreamInfo {
-  TRTP_stream_info stream;
-  uint64_t handle{0};
+  TRTP_stream_info stream[2];
+  uint64_t handle[2]{0};
   bool enabled{false};
+  bool st20227_enabled{false};
   bool refclk_ptp_traceable{false};
   bool ignore_refclk_gmid{false};
   std::string io;
@@ -151,8 +152,7 @@ class SessionManager {
   void add_source_observer(SourceObserverType type, const SourceObserver& cb);
 
   enum class SinkObserverType { add_sink, remove_sink };
-  using SinkObserver = std::function<
-      bool(uint8_t id, const std::string& name)>;
+  using SinkObserver = std::function<bool(uint8_t id, const std::string& name)>;
   void add_sink_observer(SinkObserverType type, const SinkObserver& cb);
 
   using PtpStatusObserver = std::function<bool(const std::string& status)>;
@@ -257,7 +257,7 @@ class SessionManager {
   std::list<SinkObserver> update_sink_observers_;
 
   SAP sap_{config_->get_sap_mcast_addr()};
-  IGMP igmp_;
+  IGMP igmp_[2];
   uint32_t last_sink_update_{0};
 
   /* used to handle session versioning */

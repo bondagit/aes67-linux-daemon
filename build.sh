@@ -13,7 +13,7 @@ echo "Init git submodules ..."
 git submodule update --init --recursive
 
 cd 3rdparty/ravenna-alsa-lkm/driver
-git checkout aes67-daemon
+git checkout aes67-daemon-st-2022-7
 make
 cd -
 

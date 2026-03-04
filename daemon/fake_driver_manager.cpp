@@ -103,11 +103,13 @@ std::error_code DriverManager::get_ptp_config(TPTPConfig& config) {
 
 std::error_code DriverManager::get_ptp_status(TPTPStatus& status) {
   status.nPTPLockStatus = PTPLS_UNLOCKED;
-  status.ui64GMID = 0xABABABABABABABAB;
-  status.i32Jitter = 0;
+  status.ui64GMID[0] = 0xABABABABABABABAB;
+  status.ui64GMID[1] = 0x0;
+  status.i32ClockJitter = 0;
   BOOST_LOG_TRIVIAL(debug) << "fake_driver_manager:: PTP Status "
                            << ptp_status_str[status.nPTPLockStatus] << " GMID "
-                           << status.ui64GMID << " Jitter " << status.i32Jitter;
+                           << status.ui64GMID[0] << " Jitter "
+                           << status.i32ClockJitter;
   return std::error_code{};
 }
 

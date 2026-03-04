@@ -156,8 +156,8 @@ std::error_code DriverManager::get_ptp_status(TPTPStatus& status) {
     memcpy(&status, recv_data_, sizeof(TPTPStatus));
     BOOST_LOG_TRIVIAL(debug)
         << "driver_manager:: PTP Status "
-        << ptp_status_str[status.nPTPLockStatus] << " GMID " << status.ui64GMID
-        << " Jitter " << status.i32Jitter;
+        << ptp_status_str[status.nPTPLockStatus] << " GMID "
+        << status.ui64GMID[0] << " Jitter " << status.i32ClockJitter;
   }
   return retcode_;
 }
@@ -259,7 +259,7 @@ void DriverManager::on_command_done(enum MT_ALSA_msg_id id,
                                     size_t size,
                                     const uint8_t* data) {
   BOOST_LOG_TRIVIAL(debug) << "driver_manager:: cmd " << alsa_msg_str[id]
-                          << " done data len " << size;
+                           << " done data len " << size;
   memcpy(recv_data_, data, size);
   retcode_ = std::error_code{};
 }

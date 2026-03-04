@@ -24,6 +24,7 @@
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 #include <utility>
+#include <iostream>
 
 #include <ifaddrs.h>
 #include "log.hpp"
@@ -84,17 +85,17 @@ std::pair<uint32_t, std::string> get_interface_ip(
 std::tuple<uint32_t, std::string, bool> get_new_interface_ip(
     const std::string& interface_name,
     const std::string& curr_addr) {
-  if (is_interface_ip(interface_name, curr_addr))
-  {
+  if (is_interface_ip(interface_name, curr_addr)) {
     uint32_t ip_addr;
     inet_pton(AF_INET, curr_addr.c_str(), &ip_addr);
-    return { ntohl(ip_addr), curr_addr, false };
+    return {ntohl(ip_addr), curr_addr, false};
   }
 
   auto [ip_addr, ip_str] = get_interface_ip(interface_name);
   BOOST_LOG_TRIVIAL(info) << "interface " << interface_name
                           << " new IP address <" << ip_str << ">";
-  return { ip_addr, ip_str, true };
+  return {ip_addr, ip_str,
+          !ip_str.empty() && !curr_addr.empty() && curr_addr != ip_str};
 }
 
 std::pair<std::array<uint8_t, 6>, std::string> get_interface_mac(
@@ -237,4 +238,16 @@ bool echo_try_connect(const std::string& ip) {
   }
   s.close();
   return true;
+}
+
+std::array<uint8_t, 6> get_mcast_mac_addr(uint32_t mcast_ip) {
+  // As defined by IANA, the most significant 24 bits of an IPv4 multicast
+  // MAC address are 0x01005E.  // Bit 25 is 0, and the other 23 bits are the
+  // least significant 23 bits of an IPv4 multicast address.
+  return {0x01,
+          0x00,
+          0x5e,
+          static_cast<uint8_t>((mcast_ip >> 16) & 0x7F),
+          static_cast<uint8_t>(mcast_ip >> 8),
+          static_cast<uint8_t>(mcast_ip)};
 }

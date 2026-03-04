@@ -79,17 +79,15 @@ bool RtspSession::announce(uint8_t id,
     ss << "ANNOUNCE rtsp://" << address << ":" << std::to_string(port)
        << httplib::detail::encode_url(path) << " RTSP/1.0\r\n"
        << "User-Agent: aes67-daemon\r\n"
-       << "connection: Keep-Alive"
-       << "\r\n"
+       << "connection: Keep-Alive" << "\r\n"
        << "CSeq: " << announce_cseq_++ << "\r\n"
        << "Content-Length: " << sdp.length() << "\r\n"
        << "Content-Type: application/sdp\r\n"
        << "\r\n"
        << sdp;
 
-    BOOST_LOG_TRIVIAL(info) << "rtsp_server:: "
-                            << "ANNOUNCE for source " << name << " sent to "
-                            << socket_.remote_endpoint();
+    BOOST_LOG_TRIVIAL(info) << "rtsp_server:: " << "ANNOUNCE for source "
+                            << name << " sent to " << socket_.remote_endpoint();
 
     send_response(ss.str());
     return true;

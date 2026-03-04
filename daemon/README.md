@@ -226,7 +226,9 @@ Example
 where:
 
 > **interface\_name**
-> JSON string specifying the network interface used by the daemon and the driver for both the RTP, PTP, SAP and HTTP traffic.
+> JSON string specifying the network interface/s used by the daemon and the driver.
+> Two interfaces separated by a comma can be specified (eg: "enp1s0,enp1s1"), in such case ST-2022-7 is enabled.
+> SAP and mDNS run only on the primary interface, while PTP and RTP run on both interfaces, see Support for ST-2022-7 in [README](../README.md)
 
 > **http\_port**
 > JSON number specifying the HTTP port number used by the web server in the daemon implementing the REST interface.

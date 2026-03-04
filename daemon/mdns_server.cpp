@@ -71,9 +71,8 @@ void MDNSServer::entry_group_callback(AvahiEntryGroup* g,
     }
 
     case AVAHI_ENTRY_GROUP_FAILURE:
-      BOOST_LOG_TRIVIAL(error) << "mdns_server:: entry group name "
-                               << "(" << it->second << ") "
-                               << "failure"
+      BOOST_LOG_TRIVIAL(error) << "mdns_server:: entry group name " << "("
+                               << it->second << ") " << "failure"
                                << avahi_strerror(avahi_client_errno(
                                       avahi_entry_group_get_client(g)));
       /* Some kind of failure happened while we were registering our services */

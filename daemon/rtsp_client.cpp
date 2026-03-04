@@ -134,8 +134,8 @@ std::pair<bool, RtspSource> RtspClient::process(
   ip::tcp::iostream s;
   RtspActiveClientRemover clientRemover(&s, name, domain, wait_for_updates);
   try {
-    BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: connecting to "
-                             << "rtsp://" << address << ":" << port << path;
+    BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: connecting to " << "rtsp://"
+                             << address << ":" << port << path;
 #if BOOST_VERSION < 106600
     s.expires_from_now(boost::posix_time::seconds(5));
 #else
@@ -174,9 +174,9 @@ std::pair<bool, RtspSource> RtspClient::process(
     }
 
     if (status_code != 200) {
-      BOOST_LOG_TRIVIAL(error) << "rtsp_client:: response with status code "
-                               << status_code << " from "
-                               << "rtsp://" << address << ":" << port << path;
+      BOOST_LOG_TRIVIAL(error)
+          << "rtsp_client:: response with status code " << status_code
+          << " from " << "rtsp://" << address << ":" << port << path;
       return {false, rtsp_source};
     }
 
@@ -194,9 +194,9 @@ std::pair<bool, RtspSource> RtspClient::process(
 
       if (!res.content_type.empty() &&
           res.content_type.rfind("application/sdp", 0) == std::string::npos) {
-        BOOST_LOG_TRIVIAL(error) << "rtsp_client:: unsupported content-type "
-                                 << res.content_type << " from "
-                                 << "rtsp://" << address << ":" << port << path;
+        BOOST_LOG_TRIVIAL(error)
+            << "rtsp_client:: unsupported content-type " << res.content_type
+            << " from " << "rtsp://" << address << ":" << port << path;
         if (is_describe) {
           return {false, rtsp_source};
         }
@@ -220,8 +220,8 @@ std::pair<bool, RtspSource> RtspClient::process(
           s << "\r\n";
         }
 
-        BOOST_LOG_TRIVIAL(info) << "rtsp_client:: completed "
-                                << "rtsp://" << address << ":" << port << path;
+        BOOST_LOG_TRIVIAL(info) << "rtsp_client:: completed " << "rtsp://"
+                                << address << ":" << port << path;
 
         if (is_announce || is_describe) {
           if (is_announce && announced_name.empty()) {
@@ -272,8 +272,8 @@ std::pair<bool, RtspSource> RtspClient::process(
     } while (wait_for_updates && is_active(name, domain));
   } catch (std::exception& e) {
     BOOST_LOG_TRIVIAL(warning)
-        << "rtsp_client:: error with "
-        << "rtsp://" << address << ":" << port << path << ": " << e.what();
+        << "rtsp_client:: error with " << "rtsp://" << address << ":" << port
+        << path << ": " << e.what();
   }
 
   return {true, rtsp_source};

@@ -35,5 +35,6 @@ std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
     const std::string& ip);
 bool ping(const std::string& ip);
 bool echo_try_connect(const std::string& ip);
+std::array<uint8_t, 6> get_mcast_mac_addr(uint32_t mcast_ip);
 
 #endif

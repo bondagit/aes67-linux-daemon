@@ -30,7 +30,6 @@
 #include "config.hpp"
 #include "log.hpp"
 
-
 namespace logging = boost::log;
 namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;

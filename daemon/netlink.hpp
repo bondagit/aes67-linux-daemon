@@ -52,8 +52,7 @@ class nl_endpoint {
 
   std::size_t size() const { return sizeof(sockaddr_); }
 
-  void resize(std::size_t size) { /* nothing we can do here */
-  }
+  void resize(std::size_t size) { /* nothing we can do here */ }
 
   std::size_t capacity() const { return sizeof(sockaddr_); }
 };

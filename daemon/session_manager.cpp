@@ -161,29 +161,30 @@ bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
                   return false;
                 }
                 // if matching payload
-                if (info.stream.m_byPayloadType == std::stoi(fields[0])) {
-                  strncpy(info.stream.m_cCodec, fields[1].c_str(),
-                          sizeof(info.stream.m_cCodec) - 1);
-                  info.stream.m_byWordLength = get_codec_word_length(fields[1]);
-                  info.stream.m_ui32SamplingRate = std::stoul(fields[2]);
-                  if (info.stream.m_byNbOfChannels != std::stoi(fields[3])) {
+                if (info.stream[0].m_byPayloadType == std::stoi(fields[0])) {
+                  strncpy(info.stream[0].m_cCodec, fields[1].c_str(),
+                          sizeof(info.stream[0].m_cCodec) - 1);
+                  info.stream[0].m_byWordLength =
+                      get_codec_word_length(fields[1]);
+                  info.stream[0].m_ui32SamplingRate = std::stoul(fields[2]);
+                  if (info.stream[0].m_byNbOfChannels != std::stoi(fields[3])) {
                     BOOST_LOG_TRIVIAL(warning)
                         << "session_manager:: invalid audio channel "
                            "number in SDP at line "
                         << num << ", using "
-                        << (int)info.stream.m_byNbOfChannels;
+                        << (int)info.stream[0].m_byNbOfChannels;
                     /*return false; */
                   }
                 }
               } else if (name == "sync-time") {
                 /* a=sync-time:0 */
-                info.stream.m_ui32RTPTimestampOffset = std::stoul(value);
+                info.stream[0].m_ui32RTPTimestampOffset = std::stoul(value);
               } else if (name == "framecount") {
                 /* a=framecount:64-192 */
               } else if (name == "ptime") {
                 /* a=mediaclk:ptime=4.35374165 */
-                info.stream.m_ui32MaxSamplesPerPacket =
-                    (static_cast<double>(info.stream.m_ui32SamplingRate) *
+                info.stream[0].m_ui32MaxSamplesPerPacket =
+                    (static_cast<double>(info.stream[0].m_ui32SamplingRate) *
                      std::stod(value)) /
                     1000;
               } else if (name == "mediaclk") {
@@ -192,7 +193,8 @@ bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
                 boost::split(fields, value,
                              [line](char c) { return c == '='; });
                 if (fields.size() == 2 && fields[0] == "direct") {
-                  info.stream.m_ui32RTPTimestampOffset = std::stoul(fields[1]);
+                  info.stream[0].m_ui32RTPTimestampOffset =
+                      std::stoul(fields[1]);
                 }
               } else if (name == "ts-refclk" && !info.ignore_refclk_gmid) {
                 /* a=ts-refclk:ptp=IEEE1588-2008:00-0C-29-FF-FE-0E-90-C8:0 */
@@ -225,8 +227,8 @@ bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
             return false;
           }
           if (fields[0] == "audio") {
-            info.stream.m_usDestPort = std::stoi(fields[1]);
-            info.stream.m_byPayloadType =
+            info.stream[0].m_usDestPort = std::stoi(fields[1]);
+            info.stream[0].m_byPayloadType =
                 std::stoi(fields[3]); /* take first payload */
             status = sdp_parser_status::media;
           }
@@ -254,23 +256,23 @@ bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
                   << num;
               return false;
             }
-            info.stream.m_ui32DestIP =
+            info.stream[0].m_ui32DestIP =
 #if BOOST_VERSION < 108700
                 ip::address_v4::from_string(fields[2].c_str()).to_ulong();
 #else
 
                 ip::make_address(fields[2].c_str()).to_v4().to_uint();
 #endif
-            if (info.stream.m_ui32DestIP == INADDR_NONE) {
+            if (info.stream[0].m_ui32DestIP == INADDR_NONE) {
               BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid IPv4 "
                                           "connection address in SDP at line "
                                        << num;
               return false;
             }
             if (fields.size() > 3) {
-              info.stream.m_byTTL = std::stoi(fields[3]);
+              info.stream[0].m_byTTL = std::stoi(fields[3]);
             } else {
-              info.stream.m_byTTL = 64;
+              info.stream[0].m_byTTL = 64;
             }
           }
           break;
@@ -356,30 +358,30 @@ StreamSource SessionManager::get_source_(uint8_t id,
                                          const StreamInfo& info) const {
   return {id,
           info.enabled,
-          info.stream.m_cName,
+          info.stream[0].m_cName,
           info.io,
-          info.stream.m_ui32MaxSamplesPerPacket,
-          info.stream.m_cCodec,
-          ip::address_v4(info.stream.m_ui32DestIP).to_string(),
-          info.stream.m_byTTL,
-          info.stream.m_byPayloadType,
-          info.stream.m_ucDSCP,
+          info.stream[0].m_ui32MaxSamplesPerPacket,
+          info.stream[0].m_cCodec,
+          ip::address_v4(info.stream[0].m_ui32DestIP).to_string(),
+          info.stream[0].m_byTTL,
+          info.stream[0].m_byPayloadType,
+          info.stream[0].m_ucDSCP,
           info.refclk_ptp_traceable,
-          {info.stream.m_aui32Routing,
-           info.stream.m_aui32Routing + info.stream.m_byNbOfChannels}};
+          {info.stream[0].m_aui32Routing,
+           info.stream[0].m_aui32Routing + info.stream[0].m_byNbOfChannels}};
 }
 
 StreamSink SessionManager::get_sink_(uint8_t id, const StreamInfo& info) const {
   return {id,
-          info.stream.m_cName,
+          info.stream[0].m_cName,
           info.io,
           info.sink_use_sdp,
           info.sink_source,
           info.sink_sdp,
-          info.stream.m_ui32PlayOutDelay,
+          info.stream[0].m_ui32PlayOutDelay,
           info.ignore_refclk_gmid,
-          {info.stream.m_aui32Routing,
-           info.stream.m_aui32Routing + info.stream.m_byNbOfChannels}};
+          {info.stream[0].m_aui32Routing,
+           info.stream[0].m_aui32Routing + info.stream[0].m_byNbOfChannels}};
 }
 
 bool SessionManager::load_status() {
@@ -432,18 +434,6 @@ bool SessionManager::save_status() const {
   return true;
 }
 
-static std::array<uint8_t, 6> get_mcast_mac_addr(uint32_t mcast_ip) {
-  // As defined by IANA, the most significant 24 bits of an IPv4 multicast
-  // MAC address are 0x01005E.  // Bit 25 is 0, and the other 23 bits are the
-  // least significant 23 bits of an IPv4 multicast address.
-  return {0x01,
-          0x00,
-          0x5e,
-          static_cast<uint8_t>((mcast_ip >> 16) & 0x7F),
-          static_cast<uint8_t>(mcast_ip >> 8),
-          static_cast<uint8_t>(mcast_ip)};
-}
-
 uint8_t SessionManager::get_source_id(const std::string& name) const {
   const auto it = source_names_.find(name);
   return it != source_names_.end() ? it->second : (stream_id_max + 1);
@@ -485,22 +475,32 @@ void SessionManager::on_add_source(const StreamSource& source,
   for (const auto& cb : add_source_observers_) {
     cb(source.id, source.name, get_source_sdp_(source.id, info));
   }
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    igmp_.join(config_->get_ip_addr_str(),
-               ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    igmp_[0].join(config_->get_ip_addr_str(),
+               ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+    if (info.st20227_enabled) {
+      auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+      igmp_[1].join(ip_str,
+                  ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+    }
   }
   source_names_[source.name] = source.id;
 }
 
 void SessionManager::on_remove_source(const StreamInfo& info) {
   for (const auto& cb : remove_source_observers_) {
-    cb((uint8_t)info.stream.m_uiId, info.stream.m_cName, {});
+    cb((uint8_t)info.stream[0].m_uiId, info.stream[0].m_cName, {});
   }
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    igmp_.leave(config_->get_ip_addr_str(),
-                ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    igmp_[0].leave(config_->get_ip_addr_str(),
+                ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+    if (info.st20227_enabled) {
+      auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+      igmp_[1].leave(ip_str,
+                   ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+    }
   }
-  source_names_.erase(info.stream.m_cName);
+  source_names_.erase(info.stream[0].m_cName);
 }
 
 std::error_code SessionManager::add_source(const StreamSource& source) {
@@ -511,23 +511,24 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   }
 
   StreamInfo info;
-  memset(&info.stream, 0, sizeof info.stream);
-  info.stream.m_bSource = 1;  // source
-  info.stream.m_ui32CRTP_stream_info_sizeof = sizeof(info.stream);
-  strncpy(info.stream.m_cName, source.name.c_str(),
-          sizeof(info.stream.m_cName) - 1);
-  info.stream.m_ucDSCP = source.dscp;  // IPv4 DSCP
-  info.stream.m_byPayloadType = source.payload_type;
-  info.stream.m_byWordLength = get_codec_word_length(source.codec);
-  info.stream.m_byNbOfChannels = source.map.size();
-  strncpy(info.stream.m_cCodec, source.codec.c_str(),
-          sizeof(info.stream.m_cCodec) - 1);
-  info.stream.m_ui32MaxSamplesPerPacket = source.max_samples_per_packet;
-  info.stream.m_ui32SamplingRate =
+  memset(&info.stream[0], 0, sizeof info.stream[0]);
+  info.stream[0].m_bSource = 1;  // source
+  info.stream[0].m_ui32CRTP_stream_info_sizeof = sizeof(info.stream[0]);
+  strncpy(info.stream[0].m_cName, source.name.c_str(),
+          sizeof(info.stream[0].m_cName) - 1);
+  info.stream[0].m_ucDSCP = source.dscp;  // IPv4 DSCP
+  // info.stream[0].m_uiIfPortId = 1;
+  info.stream[0].m_byPayloadType = source.payload_type;
+  info.stream[0].m_byWordLength = get_codec_word_length(source.codec);
+  info.stream[0].m_byNbOfChannels = source.map.size();
+  strncpy(info.stream[0].m_cCodec, source.codec.c_str(),
+          sizeof(info.stream[0].m_cCodec) - 1);
+  info.stream[0].m_ui32MaxSamplesPerPacket = source.max_samples_per_packet;
+  info.stream[0].m_ui32SamplingRate =
       driver_->get_current_sample_rate();  // last set from driver or config
-  info.stream.m_uiId = source.id;
-  info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();
-  info.stream.m_ui32SrcIP = config_->get_ip_addr();  // only for Source
+  info.stream[0].m_uiId = source.id;
+  info.stream[0].m_ui32RTCPSrcIP = config_->get_ip_addr();
+  info.stream[0].m_ui32SrcIP = config_->get_ip_addr();  // only for Source
   boost::system::error_code ec;
 #if BOOST_VERSION < 108700
   ip::address_v4::from_string(source.address, ec);
@@ -535,14 +536,14 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
   ip::make_address(source.address, ec);
 #endif
   if (!ec) {
-    info.stream.m_ui32DestIP =
+    info.stream[0].m_ui32DestIP =
 #if BOOST_VERSION < 108700
         ip::address_v4::from_string(source.address).to_ulong();
 #else
         ip::make_address(source.address).to_v4().to_uint();
 #endif
   } else {
-    info.stream.m_ui32DestIP =
+    info.stream[0].m_ui32DestIP =
 #if BOOST_VERSION < 108700
         ip::address_v4::from_string(config_->get_rtp_mcast_base().c_str())
             .to_ulong() +
@@ -553,28 +554,29 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
 #endif
         source.id;
   }
-  info.stream.m_usSrcPort = config_->get_rtp_port();
-  info.stream.m_usDestPort = config_->get_rtp_port();
-  info.stream.m_ui32SSRC = rand() % 65536;  // use random number
-  std::copy(source.map.begin(), source.map.end(), info.stream.m_aui32Routing);
+  info.stream[0].m_usSrcPort = config_->get_rtp_port();
+  info.stream[0].m_usDestPort = config_->get_rtp_port();
+  info.stream[0].m_ui32SSRC = rand() % 65536;  // use random number
+  std::copy(source.map.begin(), source.map.end(),
+            info.stream[0].m_aui32Routing);
 
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    auto mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    auto mac_addr = get_mcast_mac_addr(info.stream[0].m_ui32DestIP);
     std::copy(std::begin(mac_addr), std::end(mac_addr),
-              info.stream.m_ui8DestMAC);
-    info.stream.m_byTTL = source.ttl;
+              info.stream[0].m_ui8DestMAC);
+    info.stream[0].m_byTTL = source.ttl;
   } else {
     auto mac_addr = get_mac_from_arp_cache(
-        config_->get_interface_name(),
-        ip::address_v4(info.stream.m_ui32DestIP).to_string());
+        config_->get_interface_name(0),
+        ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
     int retry = 3;
     while (!mac_addr.second.length() && retry > 0) {
       // if not in cache already try to populate the MAC cache
       (void)echo_try_connect(
-          ip::address_v4(info.stream.m_ui32DestIP).to_string());
+          ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
       mac_addr = get_mac_from_arp_cache(
-          config_->get_interface_name(),
-          ip::address_v4(info.stream.m_ui32DestIP).to_string());
+          config_->get_interface_name(0),
+          ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
       retry--;
     }
     if (!mac_addr.second.length()) {
@@ -584,8 +586,8 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
       return DaemonErrc::cannot_retrieve_mac;
     }
     std::copy(std::begin(mac_addr.first), std::end(mac_addr.first),
-              info.stream.m_ui8DestMAC);
-    info.stream.m_byTTL = 64;
+              info.stream[0].m_ui8DestMAC);
+    info.stream[0].m_byTTL = 64;
   }
 
   info.refclk_ptp_traceable = source.refclk_ptp_traceable;
@@ -605,7 +607,10 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
         << " is in use, updating";
     // remove previous stream if enabled
     if ((*it).second.enabled) {
-      (void)driver_->remove_rtp_stream((*it).second.handle);
+      (void)driver_->remove_rtp_stream((*it).second.handle[0]);
+      if ((*it).second.st20227_enabled) {
+        (void)driver_->remove_rtp_stream((*it).second.handle[1]);
+      }
       on_remove_source((*it).second);
     }
   } else if (source_names_.find(source.name) != source_names_.end()) {
@@ -616,7 +621,7 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
 
   std::error_code ret;
   if (info.enabled) {
-    ret = driver_->add_rtp_stream(info.stream, info.handle);
+    ret = driver_->add_rtp_stream(info.stream[0], info.handle[0]);
     if (ret) {
       if (it != sources_.end()) {
         /* update operation failed */
@@ -624,13 +629,60 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
       }
       return ret;
     }
+
+    info.st20227_enabled = false;
+    if (config_->get_interface_name(1).length() > 0) {
+      auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+      if (!ip_str.empty()) {
+        memcpy(&info.stream[1], &info.stream[0], sizeof(info.stream[0]));
+        info.stream[1].m_ui32RTCPSrcIP = ip_addr;
+        info.stream[1].m_ui32SrcIP = ip_addr;  // only for Source
+        info.stream[1].m_uiIfPortId = 1;
+
+        if (!IN_MULTICAST(info.stream[1].m_ui32DestIP)) {
+          auto mac_addr = get_mac_from_arp_cache(
+              config_->get_interface_name(1),
+              ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+          int retry = 3;
+          while (!mac_addr.second.length() && retry > 0) {
+            // if not in cache already try to populate the MAC cache
+            (void)echo_try_connect(
+                ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+            mac_addr = get_mac_from_arp_cache(
+                config_->get_interface_name(1),
+                ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+            retry--;
+          }
+          if (!mac_addr.second.length()) {
+            BOOST_LOG_TRIVIAL(error)
+                << "session_manager:: cannot retrieve MAC address for IP "
+                << config_->get_rtp_mcast_base();
+            return DaemonErrc::cannot_retrieve_mac;
+          }
+          std::copy(std::begin(mac_addr.first), std::end(mac_addr.first),
+                    info.stream[1].m_ui8DestMAC);
+          info.stream[1].m_byTTL = 64;
+        }
+        ret = driver_->add_rtp_stream(info.stream[1], info.handle[1]);
+        if (ret) {
+          (void)driver_->remove_rtp_stream((*it).second.handle[0]);
+          if (it != sources_.end()) {
+            /* update operation failed */
+            sources_.erase(source.id);
+          }
+          return ret;
+        }
+        info.st20227_enabled = true;
+      }
+    }
     on_add_source(source, info);
   }
 
   // update source map
   sources_[source.id] = info;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: added source "
-                          << std::to_string(source.id) << " " << info.handle;
+                          << std::to_string(source.id) << " " << info.handle[0]
+                          << "," << info.handle[1];
   return ret;
 }
 
@@ -654,7 +706,7 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   std::ostringstream ss_ptime;
   ss_ptime.precision(12);
   ss_ptime << std::fixed
-           << static_cast<double>(info.stream.m_ui32MaxSamplesPerPacket) *
+           << static_cast<double>(info.stream[0].m_ui32MaxSamplesPerPacket) *
                   1000 / static_cast<double>(sample_rate);
   std::string ptime = ss_ptime.str();
   // remove trailing zeros or dot
@@ -664,29 +716,29 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   std::stringstream ss;
   ss << "v=0\n"
      << "o=- " << info.session_id << " " << info.session_version << " IN IP4 "
-     << ip::address_v4(info.stream.m_ui32SrcIP).to_string() << "\n"
-     << "s=" << config_->get_node_id() << " " << info.stream.m_cName << "\n"
-     << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string();
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    ss << "/" << static_cast<unsigned>(info.stream.m_byTTL);
+     << ip::address_v4(info.stream[0].m_ui32SrcIP).to_string() << "\n"
+     << "s=" << config_->get_node_id() << " " << info.stream[0].m_cName << "\n"
+     << "c=IN IP4 " << ip::address_v4(info.stream[0].m_ui32DestIP).to_string();
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    ss << "/" << static_cast<unsigned>(info.stream[0].m_byTTL);
   }
   /*ss << "\na=source-filter: incl IN IP4 "
-     << ip::address_v4(info.stream.m_ui32DestIP).to_string() << " "
+     << ip::address_v4(info.stream[0].m_ui32DestIP).to_string() << " "
      << config_->get_ip_addr_str();*/
   ss << "\nt=0 0\n"
      << "a=clock-domain:PTPv2 " << static_cast<unsigned>(ptp_config_.domain)
      << "\n"
-     << "m=audio " << info.stream.m_usSrcPort << " RTP/AVP "
-     << static_cast<unsigned>(info.stream.m_byPayloadType) << "\n"
-     << "c=IN IP4 " << ip::address_v4(info.stream.m_ui32DestIP).to_string();
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    ss << "/" << static_cast<unsigned>(info.stream.m_byTTL);
+     << "m=audio " << info.stream[0].m_usSrcPort << " RTP/AVP "
+     << static_cast<unsigned>(info.stream[0].m_byPayloadType) << "\n"
+     << "c=IN IP4 " << ip::address_v4(info.stream[0].m_ui32DestIP).to_string();
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    ss << "/" << static_cast<unsigned>(info.stream[0].m_byTTL);
   }
-  ss << "\na=rtpmap:" << static_cast<unsigned>(info.stream.m_byPayloadType)
-     << " " << info.stream.m_cCodec << "/" << sample_rate << "/"
-     << static_cast<unsigned>(info.stream.m_byNbOfChannels) << "\n"
+  ss << "\na=rtpmap:" << static_cast<unsigned>(info.stream[0].m_byPayloadType)
+     << " " << info.stream[0].m_cCodec << "/" << sample_rate << "/"
+     << static_cast<unsigned>(info.stream[0].m_byNbOfChannels) << "\n"
      << "a=sync-time:0\n"
-     << "a=framecount:" << info.stream.m_ui32MaxSamplesPerPacket << "\n"
+     << "a=framecount:" << info.stream[0].m_ui32MaxSamplesPerPacket << "\n"
      << "a=ptime:" << ptime << "\n"
      << "a=mediaclk:direct=0\n";
   ss << "a=ts-refclk:ptp=IEEE1588-2008:";
@@ -732,7 +784,10 @@ std::error_code SessionManager::remove_source(uint32_t id) {
 
   std::error_code ret;
   if (const auto& info = (*it).second; info.enabled) {
-    ret = driver_->remove_rtp_stream(info.handle);
+    ret = driver_->remove_rtp_stream(info.handle[0]);
+    if (!ret && info.st20227_enabled) {
+      ret = driver_->remove_rtp_stream(info.handle[1]);
+    }
     if (!ret) {
       on_remove_source(info);
     }
@@ -754,22 +809,32 @@ void SessionManager::on_add_sink(const StreamSink& sink,
   for (const auto& cb : add_sink_observers_) {
     cb(sink.id, sink.name);
   }
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    igmp_.join(config_->get_ip_addr_str(),
-               ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    igmp_[0].join(config_->get_ip_addr_str(),
+               ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+    if (info.st20227_enabled) {
+      auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+      igmp_[1].join(ip_str,
+                  ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+    }
   }
   sink_names_[sink.name] = sink.id;
 }
 
 void SessionManager::on_remove_sink(const StreamInfo& info) {
   for (const auto& cb : remove_sink_observers_) {
-    cb((uint8_t)info.stream.m_uiId, info.stream.m_cName);
+    cb((uint8_t)info.stream[0].m_uiId, info.stream[0].m_cName);
   }
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    igmp_.leave(config_->get_ip_addr_str(),
-                ip::address_v4(info.stream.m_ui32DestIP).to_string());
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    igmp_[0].leave(config_->get_ip_addr_str(),
+                ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+    if (info.st20227_enabled) {
+      auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+      igmp_[1].leave(ip_str,
+                   ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+    }
   }
-  sink_names_.erase(info.stream.m_cName);
+  sink_names_.erase(info.stream[0].m_cName);
 }
 
 std::error_code SessionManager::add_sink(const StreamSink& sink) {
@@ -780,16 +845,16 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   }
 
   StreamInfo info;
-  memset(&info.stream, 0, sizeof info.stream);
-  info.stream.m_bSource = 0;  // sink
-  info.stream.m_ui32CRTP_stream_info_sizeof = sizeof(info.stream);
-  strncpy(info.stream.m_cName, sink.name.c_str(),
-          sizeof(info.stream.m_cName) - 1);
-  info.stream.m_uiId = sink.id;
-  info.stream.m_byNbOfChannels = sink.map.size();
-  std::copy(sink.map.begin(), sink.map.end(), info.stream.m_aui32Routing);
-  info.stream.m_ui32PlayOutDelay = sink.delay;
-  info.stream.m_ui32RTCPSrcIP = config_->get_ip_addr();
+  memset(&info.stream[0], 0, sizeof info.stream[0]);
+  info.stream[0].m_bSource = 0;  // sink
+  info.stream[0].m_ui32CRTP_stream_info_sizeof = sizeof(info.stream[0]);
+  strncpy(info.stream[0].m_cName, sink.name.c_str(),
+          sizeof(info.stream[0].m_cName) - 1);
+  info.stream[0].m_uiId = sink.id;
+  info.stream[0].m_byNbOfChannels = sink.map.size();
+  std::copy(sink.map.begin(), sink.map.end(), info.stream[0].m_aui32Routing);
+  info.stream[0].m_ui32PlayOutDelay = sink.delay;
+  info.stream[0].m_ui32RTCPSrcIP = config_->get_ip_addr();
   info.ignore_refclk_gmid = sink.ignore_refclk_gmid;
   info.io = sink.io;
 
@@ -856,25 +921,25 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
   info.sink_source = sink.source;
   info.sink_use_sdp = true;  // save back and use with SDP file
 
-  info.stream.m_ui32FrameSize = info.stream.m_ui32MaxSamplesPerPacket;
-  if (!info.stream.m_ui32FrameSize) {
+  info.stream[0].m_ui32FrameSize = info.stream[0].m_ui32MaxSamplesPerPacket;
+  if (!info.stream[0].m_ui32FrameSize) {
     // if not from SDP use config
-    info.stream.m_ui32FrameSize = config_->get_max_tic_frame_size();
+    info.stream[0].m_ui32FrameSize = config_->get_max_tic_frame_size();
   }
 
   BOOST_LOG_TRIVIAL(info) << "session_manager:: sink frame size "
-                          << info.stream.m_ui32FrameSize;
+                          << info.stream[0].m_ui32FrameSize;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: playout delay "
-                          << info.stream.m_ui32PlayOutDelay;
+                          << info.stream[0].m_ui32PlayOutDelay;
 
-  if (IN_MULTICAST(info.stream.m_ui32DestIP)) {
-    auto mcast_mac_addr = get_mcast_mac_addr(info.stream.m_ui32DestIP);
+  if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
+    auto mcast_mac_addr = get_mcast_mac_addr(info.stream[0].m_ui32DestIP);
     std::copy(std::begin(mcast_mac_addr), std::end(mcast_mac_addr),
-              info.stream.m_ui8DestMAC);
+              info.stream[0].m_ui8DestMAC);
   } else {
     auto mac_addr = config_->get_mac_addr();
     std::copy(std::begin(mac_addr), std::end(mac_addr),
-              info.stream.m_ui8DestMAC);
+              info.stream[0].m_ui8DestMAC);
   }
 
   std::unique_lock sinks_lock(sinks_mutex_);
@@ -884,7 +949,10 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
         << "session_manager:: sink id " << std::to_string(sink.id)
         << " is in use, updating";
     // remove previous stream
-    (void)driver_->remove_rtp_stream((*it).second.handle);
+    (void)driver_->remove_rtp_stream((*it).second.handle[0]);
+    if ((*it).second.st20227_enabled) {
+      (void)driver_->remove_rtp_stream((*it).second.handle[1]);
+    }
     on_remove_sink((*it).second);
   } else if (sink_names_.find(sink.name) != sink_names_.end()) {
     BOOST_LOG_TRIVIAL(error)
@@ -892,7 +960,7 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     return DaemonErrc::stream_name_in_use;
   }
 
-  auto ret = driver_->add_rtp_stream(info.stream, info.handle);
+  auto ret = driver_->add_rtp_stream(info.stream[0], info.handle[0]);
   if (ret) {
     if (it != sinks_.end()) {
       /* update operation failed */
@@ -900,12 +968,43 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     }
     return ret;
   }
+
+  info.st20227_enabled = false;
+  if (config_->get_interface_name(1).length() > 0) {
+    auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+    if (!ip_str.empty()) {
+      memcpy(&info.stream[1], &info.stream[0], sizeof(info.stream[0]));
+      info.stream[1].m_ui32RTCPSrcIP = ip_addr;
+      // info.stream[0].m_ui32SrcIP = ntohl(ip_addr);  // only for Source
+      info.stream[1].m_uiIfPortId = 1;
+
+      if (!IN_MULTICAST(info.stream[1].m_ui32DestIP)) {
+        auto [mac_addr, mac_str] =
+            get_interface_mac(config_->get_interface_name(1));
+        if (!mac_str.empty()) {
+          std::copy(std::begin(mac_addr), std::end(mac_addr),
+                    info.stream[1].m_ui8DestMAC);
+        }
+      }
+      ret = driver_->add_rtp_stream(info.stream[1], info.handle[1]);
+      if (ret) {
+        (void)driver_->remove_rtp_stream((*it).second.handle[0]);
+        if (it != sinks_.end()) {
+          /* update operation failed */
+          sinks_.erase(sink.id);
+        }
+        return ret;
+      }
+      info.st20227_enabled = true;
+    }
+  }
   on_add_sink(sink, info);
 
   // update sinks map
   sinks_[sink.id] = info;
   BOOST_LOG_TRIVIAL(info) << "session_manager:: added sink "
-                          << std::to_string(sink.id) << " " << info.handle;
+                          << std::to_string(sink.id) << " " << info.handle[0]
+                          << "," << info.handle[1];
   return ret;
 }
 
@@ -925,7 +1024,10 @@ std::error_code SessionManager::remove_sink(uint32_t id) {
   }
 
   const auto& info = (*it).second;
-  auto ret = driver_->remove_rtp_stream(info.handle);
+  auto ret = driver_->remove_rtp_stream(info.handle[0]);
+  if (!ret && info.st20227_enabled) {
+    ret = driver_->remove_rtp_stream(info.handle[1]);
+  }
   if (!ret) {
     on_remove_sink(info);
     sinks_.erase(id);
@@ -953,7 +1055,7 @@ std::error_code SessionManager::get_sink_status(
 
   TRTP_stream_status status;
   const auto& info = (*it).second;
-  auto ret = driver_->get_rtp_stream_status(info.handle, status);
+  auto ret = driver_->get_rtp_stream_status(info.handle[0], status);
   if (!ret) {
     sink_status.is_rtp_seq_id_error = status.u.flags & 0x01;
     sink_status.is_rtp_ssrc_error = status.u.flags & 0x02;
@@ -1021,14 +1123,14 @@ size_t SessionManager::process_sap() {
       // compute source hash
       uint32_t msg_id_hash = (static_cast<uint32_t>(id) << 16) + msg_crc;
       // add/update this source in the announced sources
-      announced_sources_[msg_id_hash] = {info.stream.m_ui32RTCPSrcIP,
+      announced_sources_[msg_id_hash] = {info.stream[0].m_ui32RTCPSrcIP,
                                          info.session_id, info.session_version};
       // add this source to the currently active sources
       active_sources.insert(msg_id_hash);
       // remove this source from deleted sources (if present)
       deleted_sources_count_.erase(msg_id_hash);
       // send announcement for this source
-      sap_.announcement(msg_crc, info.stream.m_ui32RTCPSrcIP, sdp);
+      sap_.announcement(msg_crc, info.stream[0].m_ui32RTCPSrcIP, sdp);
       // update amount of byte sent
       sdp_len_sum += sdp.length();
     }
@@ -1125,7 +1227,7 @@ void SessionManager::on_update_sources() {
   for (auto& [id, info] : sources_) {
     for (const auto& cb : update_source_observers_) {
       info.session_version++;
-      cb(id, info.stream.m_cName, get_source_sdp_(id, info));
+      cb(id, info.stream[0].m_cName, get_source_sdp_(id, info));
     }
   }
   sources_mutex_.unlock();
@@ -1179,7 +1281,11 @@ bool SessionManager::worker() {
   sap_.set_multicast_interface(config_->get_ip_addr_str());
 
   // join PTP multicast addresses
-  igmp_.join(config_->get_ip_addr_str(), ptp_primary_mcast_addr);
+  igmp_[0].join(config_->get_ip_addr_str(), ptp_primary_mcast_addr);
+  if (config_->get_interface_name(1).length() > 0) {
+    auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+    igmp_[1].join(ip_str, ptp_primary_mcast_addr);
+  }
 
   while (running_) {
     // check if it's time to update the PTP status
@@ -1209,7 +1315,7 @@ bool SessionManager::worker() {
           ptp_status_.gmid = ptp_clock_id;
           ptp_changed_gmid = true;
         }
-        ptp_status_.jitter = ptp_status.i32Jitter;
+        ptp_status_.jitter = ptp_status.i32ClockJitter;
         std::string new_ptp_status;
         switch (ptp_status.nPTPLockStatus) {
           case PTPLS_UNLOCKED:
@@ -1291,7 +1397,11 @@ bool SessionManager::worker() {
   }
 
   // leave PTP multicast addresses
-  igmp_.leave(config_->get_ip_addr_str(), ptp_primary_mcast_addr);
+  igmp_[0].leave(config_->get_ip_addr_str(), ptp_primary_mcast_addr);
+  if (config_->get_interface_name(1).length() > 0) {
+    auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
+    igmp_[1].leave(ip_str, ptp_primary_mcast_addr);
+  }
 
   return true;
 }
