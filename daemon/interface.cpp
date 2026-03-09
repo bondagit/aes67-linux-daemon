@@ -155,7 +155,6 @@ int get_interface_index(const std::string& interface_name) {
 }
 
 std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
-    const std::string& interface_name,
     const std::string& ip) {
   const std::string arpProcPath("/proc/net/arp");
   std::array<uint8_t, 6> mac{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -171,7 +170,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
     }
     boost::split(tokens, line, boost::is_any_of(" "), boost::token_compress_on);
     /* check that IP is on the correct interface */
-    if (tokens.size() >= 6 && tokens[5] == interface_name) {
+    if (tokens.size() >= 6 /*&& tokens[5] == interface_name*/) {
       std::vector<std::string> vec;
       /* parse MAC */
       boost::split(vec, tokens[3], boost::is_any_of(":"));
@@ -188,8 +187,7 @@ std::pair<std::array<uint8_t, 6>, std::string> get_mac_from_arp_cache(
     }
   }
   BOOST_LOG_TRIVIAL(debug)
-      << "get_mac_from_arp_cache:: cannot retrieve MAC for IP " << ip
-      << " on interface " << interface_name;
+      << "get_mac_from_arp_cache:: cannot retrieve MAC for IP " << ip;
   return {mac, ""};
 }
 
@@ -223,17 +221,18 @@ bool ping(const std::string& ip) {
   return true;
 }
 
-bool echo_try_connect(const std::string& ip) {
+bool echo_try_connect(const std::string& dest_ip) {
   ip::tcp::iostream s;
-  BOOST_LOG_TRIVIAL(debug) << "echo_connect:: connecting to " << ip;
+  BOOST_LOG_TRIVIAL(debug) << "echo_connect:: connecting to " << dest_ip;
 #if BOOST_VERSION < 106600
   s.expires_from_now(boost::posix_time::seconds(1));
 #else
   s.expires_after(boost::asio::chrono::seconds(1));
 #endif
-  s.connect(ip, "7");
+  s.connect(dest_ip, "7");
   if (!s || s.error()) {
-    BOOST_LOG_TRIVIAL(debug) << "echo_connect:: unable to connect to " << ip;
+    BOOST_LOG_TRIVIAL(debug)
+        << "echo_connect:: unable to connect to " << dest_ip;
     return false;
   }
   s.close();

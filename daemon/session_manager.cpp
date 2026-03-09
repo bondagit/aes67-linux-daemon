@@ -567,7 +567,6 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
     info.stream[0].m_byTTL = source.ttl;
   } else {
     auto mac_addr = get_mac_from_arp_cache(
-        config_->get_interface_name(0),
         ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
     int retry = 3;
     while (!mac_addr.second.length() && retry > 0) {
@@ -575,7 +574,6 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
       (void)echo_try_connect(
           ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
       mac_addr = get_mac_from_arp_cache(
-          config_->get_interface_name(0),
           ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
       retry--;
     }
@@ -868,7 +866,7 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
       }
       sdp = std::move(res->body);
     } else if (boost::iequals(protocol, "rtsp")) {
-      auto res = RtspClient::describe(path, host, port);
+      auto res = RtspClient::describe(config_->get_ip_addr_str(), path, host, port);
       if (!res.first) {
         BOOST_LOG_TRIVIAL(error)
             << "session_manager:: cannot retrieve SDP from URL " << sink.source;
