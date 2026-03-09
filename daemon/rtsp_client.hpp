@@ -44,7 +44,6 @@ class RtspClient {
   static std::pair<bool, RtspSource> process(const Observer& callback,
                                              const std::string& name,
                                              const std::string& domain,
-                                             const std::string& src_address,
                                              const std::string& path,
                                              const std::string& dst_address,
                                              const std::string& port = dft_port,
@@ -53,8 +52,7 @@ class RtspClient {
   static bool is_active(const std::string& name, const std::string& domain);
   static void stop(const std::string& name, const std::string& domain);
   static void stop_all();
-  static std::pair<bool, RtspSource> describe(const std::string& src_address,
-                                              const std::string& path,
+  static std::pair<bool, RtspSource> describe(const std::string& path,
                                               const std::string& dst_address,
                                               const std::string& port);
   inline static std::map<

@@ -866,7 +866,7 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
       }
       sdp = std::move(res->body);
     } else if (boost::iequals(protocol, "rtsp")) {
-      auto res = RtspClient::describe(config_->get_ip_addr_str(), path, host, port);
+      auto res = RtspClient::describe(path, host, port);
       if (!res.first) {
         BOOST_LOG_TRIVIAL(error)
             << "session_manager:: cannot retrieve SDP from URL " << sink.source;

@@ -126,13 +126,12 @@ std::pair<bool, RtspSource> RtspClient::process(
     const RtspClient::Observer& callback,
     const std::string& name,
     const std::string& domain,
-    const std::string& src_address,
     const std::string& path,
     const std::string& dst_address,
     const std::string& port,
     bool wait_for_updates) {
   RtspSource rtsp_source;
-  ip::tcp::iostream s{src_address};
+  ip::tcp::iostream s;
   RtspActiveClientRemover clientRemover(&s, name, domain, wait_for_updates);
   try {
     BOOST_LOG_TRIVIAL(debug) << "rtsp_client:: connecting to " << "rtsp://"
@@ -316,10 +315,9 @@ void RtspClient::stop_all() {
   }
 }
 
-std::pair<bool, RtspSource> RtspClient::describe(const std::string& src_address,
-                                                 const std::string& path,
+std::pair<bool, RtspSource> RtspClient::describe(const std::string& path,
                                                  const std::string& dst_address,
                                                  const std::string& port) {
-  return RtspClient::process({}, {}, {}, src_address, path, dst_address, port,
+  return RtspClient::process({}, {}, {}, path, dst_address, port,
                              false);
 }
