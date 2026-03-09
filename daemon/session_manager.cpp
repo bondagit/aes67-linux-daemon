@@ -477,11 +477,11 @@ void SessionManager::on_add_source(const StreamSource& source,
   }
   if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
     igmp_[0].join(config_->get_ip_addr_str(),
-               ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+                  ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
     if (info.st20227_enabled) {
       auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
       igmp_[1].join(ip_str,
-                  ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+                    ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
     }
   }
   source_names_[source.name] = source.id;
@@ -493,11 +493,11 @@ void SessionManager::on_remove_source(const StreamInfo& info) {
   }
   if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
     igmp_[0].leave(config_->get_ip_addr_str(),
-                ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+                   ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
     if (info.st20227_enabled) {
       auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
       igmp_[1].leave(ip_str,
-                   ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+                     ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
     }
   }
   source_names_.erase(info.stream[0].m_cName);
@@ -582,7 +582,8 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
     if (!mac_addr.second.length()) {
       BOOST_LOG_TRIVIAL(error)
           << "session_manager:: cannot retrieve MAC address for IP "
-          << config_->get_rtp_mcast_base();
+          << ip::address_v4(info.stream[0].m_ui32DestIP).to_string()
+          << " on interface " << config_->get_interface_name(0);
       return DaemonErrc::cannot_retrieve_mac;
     }
     std::copy(std::begin(mac_addr.first), std::end(mac_addr.first),
@@ -640,27 +641,7 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
         info.stream[1].m_uiIfPortId = 1;
 
         if (!IN_MULTICAST(info.stream[1].m_ui32DestIP)) {
-          auto mac_addr = get_mac_from_arp_cache(
-              config_->get_interface_name(1),
-              ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
-          int retry = 3;
-          while (!mac_addr.second.length() && retry > 0) {
-            // if not in cache already try to populate the MAC cache
-            (void)echo_try_connect(
-                ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
-            mac_addr = get_mac_from_arp_cache(
-                config_->get_interface_name(1),
-                ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
-            retry--;
-          }
-          if (!mac_addr.second.length()) {
-            BOOST_LOG_TRIVIAL(error)
-                << "session_manager:: cannot retrieve MAC address for IP "
-                << config_->get_rtp_mcast_base();
-            return DaemonErrc::cannot_retrieve_mac;
-          }
-          std::copy(std::begin(mac_addr.first), std::end(mac_addr.first),
-                    info.stream[1].m_ui8DestMAC);
+          /* reuse the MAC address found on interface 0 */
           info.stream[1].m_byTTL = 64;
         }
         ret = driver_->add_rtp_stream(info.stream[1], info.handle[1]);
@@ -811,11 +792,11 @@ void SessionManager::on_add_sink(const StreamSink& sink,
   }
   if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
     igmp_[0].join(config_->get_ip_addr_str(),
-               ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+                  ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
     if (info.st20227_enabled) {
       auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
       igmp_[1].join(ip_str,
-                  ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+                    ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
     }
   }
   sink_names_[sink.name] = sink.id;
@@ -827,11 +808,11 @@ void SessionManager::on_remove_sink(const StreamInfo& info) {
   }
   if (IN_MULTICAST(info.stream[0].m_ui32DestIP)) {
     igmp_[0].leave(config_->get_ip_addr_str(),
-                ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
+                   ip::address_v4(info.stream[0].m_ui32DestIP).to_string());
     if (info.st20227_enabled) {
       auto [ip_addr, ip_str] = get_interface_ip(config_->get_interface_name(1));
       igmp_[1].leave(ip_str,
-                   ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
+                     ip::address_v4(info.stream[1].m_ui32DestIP).to_string());
     }
   }
   sink_names_.erase(info.stream[0].m_cName);
