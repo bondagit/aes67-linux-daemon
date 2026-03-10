@@ -471,7 +471,7 @@ bool HttpServer::init() {
 
   std::string http_addr = config_->get_http_addr_str();
   if (http_addr.empty())
-    http_addr = config_->get_ip_addr_str();
+    http_addr = "0.0.0.0";
   BOOST_LOG_TRIVIAL(info) << "http_server:: binding to " << http_addr << ":"
                           << config_->get_http_port();
 
