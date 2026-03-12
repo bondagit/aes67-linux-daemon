@@ -113,7 +113,7 @@ When ST-2022-7 is enabled:
  - the driver's PTP slave receives packets from both interfaces, and a master clock is automatically elected.
  - for a Source, outgoing packets are transmitted through both interfaces.
  - for a Sink, packets are received from both interfaces, and the incoming streams are merged accordingly.
- - AES67 control (SAP and mDNS) runs only on all interfaces.
+ - AES67 control (SAP and mDNS) runs on all interfaces.
 
 ## HTTP Streamer ##
 The HTTP Streamer was introduced with the daemon version 2.0 and it is used to receive AES67 audio streams via HTTP file streaming.
