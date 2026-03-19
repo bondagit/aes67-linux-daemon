@@ -66,8 +66,10 @@ export function useMatrix() {
 
     try {
       await api.setMatrixRoute({
-        src: [src.id, src.ch],
-        dst: [dst.id, dst.ch],
+        src_stream: src.id,
+        src_channel: src.ch,
+        dst_stream: dst.id,
+        dst_channel: dst.ch,
         action,
       });
     } catch (err) {
