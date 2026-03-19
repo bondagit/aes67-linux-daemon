@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useApi } from '../../hooks/useApi';
 import { usePolling } from '../../hooks/usePolling';
@@ -8,10 +9,26 @@ import SinkEditModal from './SinkEditModal';
 import './Sinks.css';
 
 export default function Sinks() {
+  const location = useLocation();
   const { data: sinks, loading, refresh } = useApi(() => api.getSinks(), []);
   const [statuses, setStatuses] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [editSink, setEditSink] = useState(null);
+
+  // Open add modal pre-filled with SDP when navigated from dashboard "+ Sink"
+  useEffect(() => {
+    if (location.state?.addFromSDP) {
+      setEditSink({
+        _prefill: true,
+        name: location.state.name || '',
+        sdp: location.state.addFromSDP,
+        use_sdp: true,
+      });
+      setModalOpen(true);
+      // Clear the state so refreshing doesn't re-open the modal
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
 
   const fetchStatuses = useCallback(async () => {
     const list = sinks && sinks.sinks ? sinks.sinks : [];

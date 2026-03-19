@@ -15,8 +15,8 @@ const defaultSink = {
 };
 
 export default function SinkEditModal({ isOpen, onClose, sink, onSave }) {
-  const isEdit = sink !== null;
-  const initial = sink || defaultSink;
+  const isEdit = sink !== null && !sink?._prefill;
+  const initial = sink ? { ...defaultSink, ...sink } : defaultSink;
 
   const [id, setId] = useState(initial.id);
   const [name, setName] = useState(initial.name);
