@@ -732,6 +732,7 @@ Type=simple
 ExecStart=/usr/sbin/ptp4l -i ${IFACE_NAME} -l6 -E -H --step_threshold=0.00002 --first_step_threshold=0.00002 -m
 Restart=on-failure
 RestartSec=2
+$([ "${RT_ISOLCPU:-n}" = "y" ] && [ -n "${RT_ISOLCPU_CORE}" ] && echo "CPUAffinity=${RT_ISOLCPU_CORE}")
 
 [Install]
 WantedBy=multi-user.target
@@ -770,6 +771,7 @@ Wants=ptp4l-aes67.service
 [Service]
 ExecStart=
 ExecStart=/usr/local/bin/aes67-daemon$([ -n "${HTTP_BIND_ADDR}" ] && echo " -a ${HTTP_BIND_ADDR}")
+$([ "${RT_ISOLCPU:-n}" = "y" ] && [ -n "${RT_ISOLCPU_CORE}" ] && echo "CPUAffinity=${RT_ISOLCPU_CORE}")
 OVERRIDE
 
 sudo systemctl daemon-reload
@@ -1370,6 +1372,11 @@ LimitMEMLOCK=infinity"
         SP_AFTER="${SP_AFTER} jack-ravenna-bridge.service"
     fi
 
+    SP_CPU_AFF=""
+    if [[ "${RT_ISOLCPU:-n}" == "y" && -n "${RT_ISOLCPU_CORE}" ]]; then
+        SP_CPU_AFF="CPUAffinity=${RT_ISOLCPU_CORE}"
+    fi
+
     SP_SERVICE="[Unit]
 Description=Shairport Sync - AirPlay Audio Receiver
 After=${SP_AFTER}
@@ -1380,6 +1387,7 @@ Type=simple
 ${SP_USER_LINES}
 ExecStart=/usr/local/bin/shairport-sync
 Restart=on-failure
+${SP_CPU_AFF}
 
 [Install]
 WantedBy=multi-user.target"
@@ -1462,6 +1470,7 @@ ExecStartPre=/bin/sleep 2
 ExecStart=/usr/bin/jackd -R -P89 -ddummy -r${SAMPLE_RATE} -p${JACK_PERIOD_SIZE} -C0 -P0
 Restart=on-failure
 RestartSec=3
+$([ "${RT_ISOLCPU:-n}" = "y" ] && [ -n "${RT_ISOLCPU_CORE}" ] && echo "CPUAffinity=${RT_ISOLCPU_CORE}")
 
 [Install]
 WantedBy=multi-user.target
@@ -1526,6 +1535,7 @@ ExecStart=/usr/local/bin/jack-ravenna-bridge.sh
 ExecStop=/usr/local/bin/jack-ravenna-bridge-stop.sh
 Restart=on-failure
 RestartSec=3
+$([ "${RT_ISOLCPU:-n}" = "y" ] && [ -n "${RT_ISOLCPU_CORE}" ] && echo "CPUAffinity=${RT_ISOLCPU_CORE}")
 
 [Install]
 WantedBy=multi-user.target
@@ -1599,6 +1609,7 @@ ExecStartPre=/bin/sleep 1
 \${EXEC_STOP_LINES}
 Restart=on-failure
 RestartSec=3
+$([ "${RT_ISOLCPU:-n}" = "y" ] && [ -n "${RT_ISOLCPU_CORE}" ] && echo "CPUAffinity=${RT_ISOLCPU_CORE}")
 RemainAfterExit=yes
 
 [Install]
