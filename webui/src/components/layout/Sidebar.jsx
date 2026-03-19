@@ -30,9 +30,23 @@ function ptpStatusToLed(status) {
   return { dotStatus: 'error', label: 'Unlocked' };
 }
 
+function getInitialTheme() {
+  const saved = localStorage.getItem('aes67-theme');
+  return saved || 'light';
+}
+
 export default function Sidebar({ collapsed, onToggle }) {
   const [ptpStatus, setPtpStatus] = useState(null);
   const [version, setVersion] = useState('');
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('aes67-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
   const fetchPtp = useCallback(async () => {
     try {
@@ -82,6 +96,14 @@ export default function Sidebar({ collapsed, onToggle }) {
 
       {/* Bottom section */}
       <div className="sidebar__footer">
+        <button
+          className="sidebar__theme-toggle"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          <span className="sidebar__theme-icon">{theme === 'dark' ? '☀' : '☾'}</span>
+          {!collapsed && <span className="sidebar__theme-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>}
+        </button>
         <div className="sidebar__ptp" title={`PTP: ${label}`}>
           <StatusDot status={dotStatus} size={8} pulse={dotStatus === 'warning'} />
           {!collapsed && <span className="sidebar__ptp-label">PTP</span>}

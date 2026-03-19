@@ -109,6 +109,40 @@
   white-space: nowrap;
 }
 
+/* Theme toggle */
+.sidebar__theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-raised);
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sidebar__theme-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+}
+.sidebar__theme-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.sidebar__theme-label {
+  white-space: nowrap;
+}
+.sidebar--collapsed .sidebar__theme-toggle {
+  justify-content: center;
+  padding: 6px;
+}
+
 /* Footer */
 .sidebar__footer {
   padding: 12px;

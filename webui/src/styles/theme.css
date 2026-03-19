@@ -1,36 +1,66 @@
 /* AES67 Daemon WebUI — Design System */
 
+/* ── Light theme (default) ── */
 :root {
   /* Backgrounds */
+  --bg-deep: #f0f2f5;
+  --bg-base: #f8f9fb;
+  --bg-surface: #ffffff;
+  --bg-raised: #f0f2f5;
+  --bg-hover: #e8eaef;
+
+  /* Borders */
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.12);
+
+  /* Text */
+  --text-primary: #1a1d23;
+  --text-secondary: #4a5060;
+  --text-tertiary: #7a8290;
+  --text-dim: #b0b6c2;
+
+  /* Accent */
+  --accent: #2e7dd6;
+  --accent-glow: rgba(46, 125, 214, 0.12);
+
+  /* Routes */
+  --route-on: #00b890;
+  --route-glow: rgba(0, 184, 144, 0.25);
+
+  /* Stream types */
+  --sink-color: #2e7dd6;
+  --source-color: #00b890;
+
+  /* Danger */
+  --danger: #d94444;
+  --danger-glow: rgba(217, 68, 68, 0.2);
+}
+
+/* ── Dark theme ── */
+[data-theme="dark"] {
   --bg-deep: #06080c;
   --bg-base: #0a0d13;
   --bg-surface: #0e1118;
   --bg-raised: #131720;
   --bg-hover: #181d28;
 
-  /* Borders */
   --border: rgba(255, 255, 255, 0.06);
   --border-strong: rgba(255, 255, 255, 0.10);
 
-  /* Text */
   --text-primary: #e8ecf2;
   --text-secondary: #8694a8;
   --text-tertiary: #4a5568;
   --text-dim: #2c3544;
 
-  /* Accent */
   --accent: #4a90e2;
   --accent-glow: rgba(74, 144, 226, 0.15);
 
-  /* Routes */
   --route-on: #00d4aa;
   --route-glow: rgba(0, 212, 170, 0.35);
 
-  /* Stream types */
   --sink-color: #4a90e2;
   --source-color: #00d4aa;
 
-  /* Danger */
   --danger: #e85555;
   --danger-glow: rgba(232, 85, 85, 0.3);
 }
@@ -59,16 +89,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-deep);
+  background: var(--bg-base);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-hover);
+  background: var(--border-strong);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  background: var(--text-dim);
 }
 
 /* Form inputs */
