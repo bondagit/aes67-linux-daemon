@@ -14,7 +14,7 @@ export default function Sources() {
   const [editModal, setEditModal] = useState({ open: false, source: null });
   const [infoModal, setInfoModal] = useState({ open: false, sourceId: null });
 
-  const sources = Array.isArray(data) ? data : [];
+  const sources = Array.isArray(data?.sources) ? data.sources : (Array.isArray(data) ? data : []);
 
   const handleAdd = () => setEditModal({ open: true, source: null });
   const handleEdit = (src) => setEditModal({ open: true, source: src });
