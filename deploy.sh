@@ -233,25 +233,92 @@ echo
 ask_yesno WITH_JACK        "Enable JACK audio server"                  "y"
 JACK_PERIOD_SIZE="${JACK_PERIOD_SIZE:-${TIC_FRAME_SIZE}}"
 JACK_NPERIODS="${JACK_NPERIODS:-2}"
-JACK_ALSA_DEVICE="${JACK_ALSA_DEVICE:-hw:RAVENNA}"
+JACK_RAVENNA_DEVICE="${JACK_RAVENNA_DEVICE:-hw:RAVENNA}"
+JACK_RAVENNA_IN="${JACK_RAVENNA_IN:-8}"
+JACK_RAVENNA_OUT="${JACK_RAVENNA_OUT:-8}"
 JACK_EXTRA_IO="${JACK_EXTRA_IO:-}"
 JACK_AUTOCONNECT="${JACK_AUTOCONNECT:-y}"
 if [[ "$WITH_JACK" == "y" ]]; then
     echo
-    echo -e "  ${YELLOW}JACK period size should match the RAVENNA TIC frame size.${NC}"
-    echo -e "  ${YELLOW}  48 frames @ 48kHz = 1ms latency per period${NC}"
-    echo -e "  ${YELLOW}  2 periods = ~2ms round-trip, 3 periods = safer on slow hardware${NC}"
+    echo -e "  ${YELLOW}JACK uses a dummy (timing-only) backend. All ALSA devices${NC}"
+    echo -e "  ${YELLOW}(RAVENNA, I2S, USB) are bridged in via alsa_in/alsa_out.${NC}"
+    echo -e "  ${YELLOW}Period size should match TIC frame size (48=1ms @ 48kHz).${NC}"
     echo
-    ask JACK_ALSA_DEVICE    "Primary ALSA device for JACK"             "$JACK_ALSA_DEVICE"
     ask JACK_PERIOD_SIZE    "JACK period size (frames, match TIC)"     "$JACK_PERIOD_SIZE"
     ask JACK_NPERIODS       "JACK number of periods (2=low lat, 3=safe)" "$JACK_NPERIODS"
     echo
-    echo -e "  ${YELLOW}Additional ALSA devices to bridge into JACK (multi-IO):${NC}"
-    echo -e "  ${YELLOW}  Format: name:device:in_ch:out_ch separated by spaces${NC}"
-    echo -e "  ${YELLOW}  Example: i2s-dac:hw:sndrpihifiberry:0:2 usb-mic:hw:USB:2:0${NC}"
-    echo -e "  ${YELLOW}  Leave empty for no extra devices (RAVENNA only).${NC}"
+    echo -e "  ${YELLOW}RAVENNA bridge channels (AES67 network I/O in JACK):${NC}"
     echo
-    ask JACK_EXTRA_IO       "Extra ALSA devices (or empty)"            "$JACK_EXTRA_IO"
+    ask JACK_RAVENNA_DEVICE "RAVENNA ALSA device"                      "$JACK_RAVENNA_DEVICE"
+    ask JACK_RAVENNA_IN     "RAVENNA capture channels (from network)"  "$JACK_RAVENNA_IN"
+    ask JACK_RAVENNA_OUT    "RAVENNA playback channels (to network)"   "$JACK_RAVENNA_OUT"
+    echo
+    echo -e "  ${YELLOW}Scanning remote ALSA devices (excluding RAVENNA)...${NC}"
+    echo
+
+    # Auto-detect ALSA playback devices via aplay -l, capture via arecord -l
+    DETECTED_IO=""
+    DETECTED_DISPLAY=""
+    while IFS= read -r line; do
+        # Parse lines like: "card 1: sndrpihifiberry [snd_rpi_hifiberry_dac], device 0: ..."
+        if [[ "$line" =~ ^card\ ([0-9]+):\ ([a-zA-Z0-9_]+)\ \[(.+)\],\ device\ ([0-9]+): ]]; then
+            CARD_NUM="${BASH_REMATCH[1]}"
+            CARD_ID="${BASH_REMATCH[2]}"
+            CARD_NAME="${BASH_REMATCH[3]}"
+            DEV_NUM="${BASH_REMATCH[4]}"
+
+            # Skip RAVENNA — it's bridged separately
+            [[ "$CARD_ID" == "RAVENNA" || "$CARD_NAME" == *"RAVENNA"* || "$CARD_NAME" == *"Merging"* ]] && continue
+            # Skip Loopback devices
+            [[ "$CARD_ID" == "Loopback" || "$CARD_NAME" == *"Loopback"* ]] && continue
+
+            HW_DEV="hw:${CARD_ID},${DEV_NUM}"
+            # Sanitize name for JACK client: lowercase, replace spaces/special chars
+            JACK_NAME=$(echo "${CARD_ID}" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' '-' | sed 's/-$//')
+
+            # Count playback channels
+            OUT_CH=0
+            PLAY_INFO=$(run_remote "aplay -D '${HW_DEV}' --dump-hw-params /dev/null 2>&1" 2>/dev/null || true)
+            if echo "$PLAY_INFO" | grep -q "CHANNELS"; then
+                OUT_CH=$(echo "$PLAY_INFO" | grep "^CHANNELS" | head -1 | grep -oP '\d+' | tail -1)
+                [[ -z "$OUT_CH" ]] && OUT_CH=0
+            fi
+
+            # Count capture channels
+            IN_CH=0
+            REC_INFO=$(run_remote "arecord -D '${HW_DEV}' --dump-hw-params /dev/null 2>&1" 2>/dev/null || true)
+            if echo "$REC_INFO" | grep -q "CHANNELS"; then
+                IN_CH=$(echo "$REC_INFO" | grep "^CHANNELS" | head -1 | grep -oP '\d+' | tail -1)
+                [[ -z "$IN_CH" ]] && IN_CH=0
+            fi
+
+            # Skip if no channels at all
+            [[ "$IN_CH" -eq 0 && "$OUT_CH" -eq 0 ]] && continue
+
+            ENTRY="${JACK_NAME}:${HW_DEV}:${IN_CH}:${OUT_CH}"
+            if [[ -n "$DETECTED_IO" ]]; then
+                DETECTED_IO="${DETECTED_IO} ${ENTRY}"
+            else
+                DETECTED_IO="${ENTRY}"
+            fi
+            echo -e "    ${GREEN}Found:${NC} ${CARD_NAME} (${HW_DEV}) — ${IN_CH} in / ${OUT_CH} out"
+        fi
+    done < <(run_remote "aplay -l 2>/dev/null; arecord -l 2>/dev/null" 2>/dev/null | sort -u)
+
+    if [[ -n "$DETECTED_IO" ]]; then
+        echo
+        echo -e "  ${GREEN}Auto-detected devices: ${DETECTED_IO}${NC}"
+        # Use detected as default, but let user override
+        JACK_EXTRA_IO="${JACK_EXTRA_IO:-$DETECTED_IO}"
+    else
+        echo -e "  ${YELLOW}No additional ALSA devices found (RAVENNA only).${NC}"
+    fi
+
+    echo
+    echo -e "  ${YELLOW}Format: name:device:in_ch:out_ch separated by spaces${NC}"
+    echo -e "  ${YELLOW}Edit the auto-detected list or leave empty for RAVENNA only.${NC}"
+    echo
+    ask JACK_EXTRA_IO       "Extra ALSA devices"                       "$JACK_EXTRA_IO"
     ask_yesno JACK_AUTOCONNECT "Auto-connect shairport to RAVENNA outputs" "$JACK_AUTOCONNECT"
 fi
 
@@ -301,8 +368,8 @@ save_config() {
                    STREAMER_ENABLED STREAMER_CHANNELS \
                    WITH_SHAIRPORT SHAIRPORT_NAME SHAIRPORT_OUTPUT SHAIRPORT_AIRPLAY2 \
                    ENABLE_I2S I2S_OVERLAY \
-                   WITH_JACK JACK_ALSA_DEVICE JACK_PERIOD_SIZE JACK_NPERIODS \
-                   JACK_EXTRA_IO JACK_AUTOCONNECT \
+                   WITH_JACK JACK_RAVENNA_DEVICE JACK_RAVENNA_IN JACK_RAVENNA_OUT \
+                   JACK_PERIOD_SIZE JACK_NPERIODS JACK_EXTRA_IO JACK_AUTOCONNECT \
                    DISABLE_PULSE APPLY_SYSCTL ENABLE_SERVICE START_AFTER_DEPLOY \
                    APPLY_RT_TUNING RT_CPU_PERFORMANCE RT_DISABLE_BT RT_DISABLE_WIFI \
                    RT_FORCE_TURBO RT_ISOLCPU RT_ISOLCPU_CORE; do
@@ -333,7 +400,7 @@ echo -e "  Streamer:   ${WITH_STREAMER}"
 echo -e "  Systemd:    ${WITH_SYSTEMD}"
 echo -e "  Shairport:  ${WITH_SHAIRPORT}$([ "$WITH_SHAIRPORT" == "y" ] && echo " (\"${SHAIRPORT_NAME}\" -> ${SHAIRPORT_OUTPUT})")"
 echo -e "  I2S overlay: ${ENABLE_I2S}$([ "$ENABLE_I2S" == "y" ] && echo " (${I2S_OVERLAY})")"
-echo -e "  JACK:       ${WITH_JACK:-n}$([ "${WITH_JACK:-n}" == "y" ] && echo " (${JACK_ALSA_DEVICE} p=${JACK_PERIOD_SIZE} n=${JACK_NPERIODS}$([ -n "${JACK_EXTRA_IO}" ] && echo " +bridges"))")"
+echo -e "  JACK:       ${WITH_JACK:-n}$([ "${WITH_JACK:-n}" == "y" ] && echo " (dummy+bridges p=${JACK_PERIOD_SIZE} n=${JACK_NPERIODS} ravenna=${JACK_RAVENNA_IN}in/${JACK_RAVENNA_OUT}out$([ -n "${JACK_EXTRA_IO}" ] && echo " +extra"))")"
 echo -e "  RT tuning:  ${APPLY_RT_TUNING:-n}$([ "${RT_ISOLCPU:-n}" == "y" ] && echo " (isolcpus=${RT_ISOLCPU_CORE})")"
 echo
 echo -en "  ${BOLD}Proceed with deployment? [Y/n]:${NC} "
@@ -382,31 +449,31 @@ PACKAGES=(
 )
 
 echo ">>> Installing base packages..."
-sudo apt-get install -y "${PACKAGES[@]}"
+sudo apt-get install -y --no-upgrade "${PACKAGES[@]}"
 
 # linux-headers — try multiple package names (varies by distro)
 echo ">>> Installing kernel headers..."
-sudo apt-get install -y -qq "linux-headers-$(uname -r)" 2>/dev/null \
-    || sudo apt-get install -y -qq raspberrypi-kernel-headers 2>/dev/null \
+sudo apt-get install -y --no-upgrade -qq "linux-headers-$(uname -r)" 2>/dev/null \
+    || sudo apt-get install -y --no-upgrade -qq raspberrypi-kernel-headers 2>/dev/null \
     || echo "WARNING: Could not install kernel headers automatically. You may need to install them manually."
 
 REMOTE_DEPS
 
 # Conditional packages
 if [[ "$USE_CLANG" == "y" ]]; then
-    run_remote "sudo apt-get install -y clang"
+    run_remote "sudo apt-get install -y --no-upgrade clang"
 fi
 if [[ "$WITH_AVAHI" == "y" ]]; then
-    run_remote "sudo apt-get install -y libavahi-client-dev"
+    run_remote "sudo apt-get install -y --no-upgrade libavahi-client-dev"
 fi
 if [[ "$WITH_STREAMER" == "y" ]]; then
-    run_remote "sudo apt-get install -y libfaac-dev"
+    run_remote "sudo apt-get install -y --no-upgrade libfaac-dev"
 fi
 if [[ "$WITH_SHAIRPORT" == "y" ]]; then
-    run_remote "sudo apt-get install -y git"
+    run_remote "sudo apt-get install -y --no-upgrade git"
 fi
 if [[ "${WITH_JACK:-n}" == "y" ]]; then
-    run_remote "sudo apt-get install -y jackd2 libjack-jackd2-dev aj-snapshot jack-tools"
+    run_remote "sudo apt-get install -y --no-upgrade jackd2 libjack-jackd2-dev aj-snapshot jack-tools zita-ajbridge"
 fi
 
 info "Dependencies installed."
@@ -696,7 +763,8 @@ echo ">>> Adding ptp4l dependency..."
 sudo mkdir -p /etc/systemd/system/aes67-daemon.service.d
 sudo tee /etc/systemd/system/aes67-daemon.service.d/override.conf > /dev/null <<OVERRIDE
 [Unit]
-After=network.target ptp4l-aes67.service
+After=network.target systemd-modules-load.service ptp4l-aes67.service
+Requires=systemd-modules-load.service
 Wants=ptp4l-aes67.service
 
 [Service]
@@ -952,7 +1020,7 @@ REMOTE_RT_RPI
 set -e
 
 # Install cpufrequtils if available
-sudo apt-get install -y -qq cpufrequtils 2>/dev/null || true
+sudo apt-get install -y --no-upgrade -qq cpufrequtils 2>/dev/null || true
 
 # Set governor immediately on all CPUs
 for cpu_gov in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
@@ -1164,7 +1232,7 @@ if [[ "$WITH_SHAIRPORT" == "y" ]]; then
         SHAIRPORT_PKGS+=" libplist-dev libsodium-dev uuid-dev libgcrypt-dev xxd"
         SHAIRPORT_PKGS+=" libavutil-dev libavcodec-dev libavformat-dev libplist-utils"
     fi
-    run_remote "sudo apt-get install -y ${SHAIRPORT_PKGS}"
+    run_remote "sudo apt-get install -y --no-upgrade ${SHAIRPORT_PKGS}"
     info "Shairport-sync dependencies installed."
 
     if [[ "$SHAIRPORT_AIRPLAY2" == "y" ]]; then
@@ -1221,9 +1289,14 @@ REMOTE_NQPTP
     run_remote "bash -s" <<REMOTE_SHAIRPORT_BUILD
 set -e
 SHAIRPORT_DIR="/home/${TARGET_USER}/shairport-sync"
-if [ -f /usr/local/bin/shairport-sync ]; then
-    echo ">>> shairport-sync already built, skipping. (Delete /usr/local/bin/shairport-sync to force rebuild)"
+SHAIRPORT_CONF_MARKER="/usr/local/share/.shairport-build-config"
+SHAIRPORT_WANT="${SHAIRPORT_CONFIGURE}"
+SHAIRPORT_HAVE=""
+[ -f "\${SHAIRPORT_CONF_MARKER}" ] && SHAIRPORT_HAVE=\$(cat "\${SHAIRPORT_CONF_MARKER}")
+if [ -f /usr/local/bin/shairport-sync ] && [ "\${SHAIRPORT_WANT}" = "\${SHAIRPORT_HAVE}" ]; then
+    echo ">>> shairport-sync already built with matching config, skipping."
 else
+    [ -f /usr/local/bin/shairport-sync ] && echo ">>> Config changed, rebuilding shairport-sync..."
     echo ">>> Cloning shairport-sync..."
     rm -rf "\${SHAIRPORT_DIR}"
     git clone https://github.com/mikebrady/shairport-sync.git "\${SHAIRPORT_DIR}"
@@ -1234,6 +1307,7 @@ else
     echo ">>> Building shairport-sync (this may take a while on ARM)..."
     make -j\$(nproc)
     sudo make install
+    echo "${SHAIRPORT_CONFIGURE}" | sudo tee "\${SHAIRPORT_CONF_MARKER}" > /dev/null
     echo ">>> shairport-sync built and installed."
 fi
 REMOTE_SHAIRPORT_BUILD
@@ -1285,6 +1359,17 @@ alsa =
         SP_WANTS="${SP_WANTS} nqptp.service"
     fi
 
+    SP_USER_LINES=""
+    if [[ "${WITH_JACK:-n}" == "y" ]]; then
+        # Run as jack user so shairport-sync can connect to JACK server
+        SP_USER_LINES="User=jack
+Group=audio
+Environment=JACK_NO_AUDIO_RESERVATION=1
+LimitRTPRIO=99
+LimitMEMLOCK=infinity"
+        SP_AFTER="${SP_AFTER} jack-ravenna-bridge.service"
+    fi
+
     SP_SERVICE="[Unit]
 Description=Shairport Sync - AirPlay Audio Receiver
 After=${SP_AFTER}
@@ -1292,6 +1377,7 @@ Wants=${SP_WANTS}
 
 [Service]
 Type=simple
+${SP_USER_LINES}
 ExecStart=/usr/local/bin/shairport-sync
 Restart=on-failure
 
@@ -1351,15 +1437,15 @@ else
 fi
 REMOTE_JACK_USER
 
-    # --- jackd systemd service ---
-    step "Creating jackd systemd service..."
+    # --- jackd systemd service (dummy driver — all devices are bridges) ---
+    step "Creating jackd systemd service (dummy backend)..."
     run_remote "bash -s" <<REMOTE_JACK_SERVICE
 set -e
 
-echo ">>> Installing jackd systemd service..."
+echo ">>> Installing jackd systemd service (dummy backend)..."
 sudo tee /etc/systemd/system/jackd.service > /dev/null <<'JACKSVC'
 [Unit]
-Description=JACK Audio Server (low-latency)
+Description=JACK Audio Server (dummy backend, low-latency)
 After=sound.target aes67-daemon.service
 Wants=aes67-daemon.service
 Before=shairport-sync.service
@@ -1373,12 +1459,7 @@ LimitMEMLOCK=infinity
 LimitNICE=-20
 Environment=JACK_NO_AUDIO_RESERVATION=1
 ExecStartPre=/bin/sleep 2
-ExecStart=/usr/bin/jackd -R -P89 -dalsa \
-    -d${JACK_ALSA_DEVICE} \
-    -r${SAMPLE_RATE} \
-    -p${JACK_PERIOD_SIZE} \
-    -n${JACK_NPERIODS} \
-    -Xraw
+ExecStart=/usr/bin/jackd -R -P89 -ddummy -r${SAMPLE_RATE} -p${JACK_PERIOD_SIZE} -C0 -P0
 Restart=on-failure
 RestartSec=3
 
@@ -1388,11 +1469,77 @@ JACKSVC
 
 sudo systemctl daemon-reload
 sudo systemctl enable jackd
-echo ">>> jackd.service installed."
+echo ">>> jackd.service installed (dummy @ ${SAMPLE_RATE}Hz, period=${JACK_PERIOD_SIZE})."
 REMOTE_JACK_SERVICE
-    info "jackd systemd service created."
+    info "jackd systemd service created (dummy backend)."
 
-    # --- ALSA bridge services for extra I/O devices ---
+    # --- RAVENNA ALSA bridge (always, when JACK enabled) ---
+    step "Creating RAVENNA ALSA bridge for JACK..."
+    run_remote "bash -s" <<REMOTE_JACK_RAV_BRIDGE
+set -e
+
+echo ">>> Installing RAVENNA bridge scripts..."
+sudo tee /usr/local/bin/jack-ravenna-bridge.sh > /dev/null <<RAVSCRIPT
+#!/bin/bash
+# RAVENNA JACK bridge — playback path only.
+# Uses zita-j2a for robust ALSA-to-JACK bridging (handles xruns gracefully).
+#
+# NOTE: RAVENNA capture (AES67 network -> local) is managed exclusively by
+# the aes67-daemon, which holds the ALSA capture device open. Received AES67
+# sink audio is available through the daemon's API and ALSA capture, but
+# cannot be simultaneously bridged into JACK.
+#
+# The playback path (JACK -> AES67 network) works via zita-j2a:
+#   JACK clients -> ravenna-out:playback_* -> zita-j2a -> hw:RAVENNA -> AES67 network
+export JACK_NO_AUDIO_RESERVATION=1
+for i in \\\$(seq 1 30); do jack_lsp &>/dev/null && break; sleep 1; done
+if ! jack_lsp &>/dev/null; then echo "ERROR: JACK not available"; exit 1; fi
+
+echo ">>> Starting ravenna-out (${JACK_RAVENNA_OUT}ch playback to AES67 via zita-j2a)..."
+exec zita-j2a -j ravenna-out -d ${JACK_RAVENNA_DEVICE} -c ${JACK_RAVENNA_OUT} -r ${SAMPLE_RATE} -p ${JACK_PERIOD_SIZE} -n 3
+RAVSCRIPT
+sudo chmod +x /usr/local/bin/jack-ravenna-bridge.sh
+
+sudo tee /usr/local/bin/jack-ravenna-bridge-stop.sh > /dev/null <<'RAVSTOP'
+#!/bin/bash
+pkill -f 'zita-j2a -j ravenna-out' 2>/dev/null || true
+RAVSTOP
+sudo chmod +x /usr/local/bin/jack-ravenna-bridge-stop.sh
+
+echo ">>> Installing jack-ravenna-bridge.service..."
+sudo tee /etc/systemd/system/jack-ravenna-bridge.service > /dev/null <<'RAVSVC'
+[Unit]
+Description=JACK ALSA Bridge for RAVENNA (AES67)
+After=jackd.service aes67-daemon.service
+Requires=jackd.service
+Before=jack-autoconnect.service
+
+[Service]
+Type=simple
+User=jack
+Group=audio
+LimitRTPRIO=99
+LimitMEMLOCK=infinity
+Environment=JACK_NO_AUDIO_RESERVATION=1
+RuntimeDirectory=jack
+ExecStart=/usr/local/bin/jack-ravenna-bridge.sh
+ExecStop=/usr/local/bin/jack-ravenna-bridge-stop.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+RAVSVC
+
+sudo systemctl daemon-reload
+sudo systemctl enable jack-ravenna-bridge
+echo ">>> jack-ravenna-bridge.service installed."
+echo ">>>   ravenna-out:playback_* = JACK audio TO AES67 network (via zita-j2a)"
+echo ">>>   NOTE: AES67 capture (network -> local) is managed by the daemon directly."
+REMOTE_JACK_RAV_BRIDGE
+    info "RAVENNA ALSA bridge service created."
+
+    # --- Extra ALSA bridge services for additional I/O devices ---
     if [[ -n "${JACK_EXTRA_IO}" ]]; then
         step "Creating ALSA bridge services for extra I/O devices..."
         run_remote "bash -s" <<REMOTE_JACK_BRIDGES
@@ -1533,9 +1680,9 @@ fi
 echo ">>> JACK server is running. Available ports:"
 jack_lsp
 
-# Wait for system ports (RAVENNA)
-wait_for_port "system:playback_1" 15
-wait_for_port "system:capture_1" 15
+# Wait for RAVENNA bridge ports
+wait_for_port "ravenna-out:playback_1" 30
+wait_for_port "ravenna-in:capture_1" 30
 
 CONNECTSCRIPT
 
@@ -1543,12 +1690,12 @@ CONNECTSCRIPT
 if [ "${JACK_AUTOCONNECT}" = "y" ] && [ "${WITH_SHAIRPORT}" = "y" ]; then
     sudo tee -a /usr/local/bin/jack-autoconnect.sh > /dev/null <<'SHAIRPORTCONNECT'
 
-# Auto-connect shairport-sync to system (RAVENNA) outputs
+# Auto-connect shairport-sync to RAVENNA playback (to AES67 network)
 echo ">>> Waiting for shairport-sync JACK client..."
 if wait_for_port "shairport-sync:out_L" 60; then
-    echo ">>> Connecting shairport-sync -> system (RAVENNA)..."
-    jack_connect "shairport-sync:out_L" "system:playback_1" 2>/dev/null || true
-    jack_connect "shairport-sync:out_R" "system:playback_2" 2>/dev/null || true
+    echo ">>> Connecting shairport-sync -> ravenna-out (AES67 network)..."
+    jack_connect "shairport-sync:out_L" "ravenna-out:playback_1" 2>/dev/null || true
+    jack_connect "shairport-sync:out_R" "ravenna-out:playback_2" 2>/dev/null || true
     echo ">>> shairport-sync connected to RAVENNA outputs 1-2."
 else
     echo ">>> shairport-sync not found, skipping auto-connect."
@@ -1578,8 +1725,8 @@ echo ">>> Installing jack-autoconnect.service..."
 sudo tee /etc/systemd/system/jack-autoconnect.service > /dev/null <<'ACSERVICE'
 [Unit]
 Description=JACK Auto-Connect Routing
-After=jackd.service shairport-sync.service jack-alsa-bridges.service
-Wants=jackd.service
+After=jackd.service jack-ravenna-bridge.service jack-alsa-bridges.service shairport-sync.service
+Wants=jackd.service jack-ravenna-bridge.service
 
 [Service]
 Type=oneshot
@@ -1636,12 +1783,22 @@ REMOTE_JACK_ROUTING
         sleep 3
         JACK_STATUS=$(run_remote "sudo systemctl is-active jackd" 2>/dev/null || echo "unknown")
         if [[ "$JACK_STATUS" == "active" ]]; then
-            info "jackd is running."
-            # Start bridges if configured
+            info "jackd is running (dummy backend)."
+            # Start RAVENNA bridge
+            run_remote "sudo systemctl restart jack-ravenna-bridge" || true
+            sleep 2
+            info "RAVENNA bridge started."
+            # Start extra bridges if configured
             if [[ -n "${JACK_EXTRA_IO}" ]]; then
                 run_remote "sudo systemctl restart jack-alsa-bridges" || true
                 sleep 2
                 info "ALSA bridges started."
+            fi
+            # Restart shairport-sync now that JACK is running (it may have started earlier)
+            if [[ "${WITH_SHAIRPORT:-n}" == "y" ]]; then
+                run_remote "sudo systemctl restart shairport-sync" || true
+                sleep 2
+                info "shairport-sync restarted (connected to JACK)."
             fi
             # Run auto-connect
             run_remote "sudo systemctl restart jack-autoconnect" || true
@@ -1687,7 +1844,7 @@ case "${1:-list}" in
     connect|c)
         if [ -z "$2" ] || [ -z "$3" ]; then
             echo "Usage: jack-route connect <output-port> <input-port>"
-            echo "Example: jack-route connect shairport-sync:out_L system:playback_1"
+            echo "Example: jack-route connect shairport-sync:out_L ravenna-out:playback_1"
             exit 1
         fi
         jack_connect "$2" "$3" && echo "Connected: $2 -> $3"
@@ -1749,15 +1906,17 @@ echo -e "  Logs:    ${BOLD}sudo journalctl -u aes67-daemon -f${NC}"
 echo -e "  Status:  ${BOLD}sudo systemctl status aes67-daemon${NC}"
 if [[ "${WITH_JACK:-n}" == "y" ]]; then
 echo -e ""
-echo -e "  ${BOLD}JACK Audio Routing:${NC}"
-echo -e "    Server:  ${BOLD}jackd${NC} on ${JACK_ALSA_DEVICE} (p=${JACK_PERIOD_SIZE} n=${JACK_NPERIODS})"
+echo -e "  ${BOLD}JACK Audio Routing (dummy backend + bridges):${NC}"
+echo -e "    Server:  ${BOLD}jackd${NC} dummy @ ${SAMPLE_RATE}Hz p=${JACK_PERIOD_SIZE} n=${JACK_NPERIODS}"
+echo -e "    RAVENNA: ${BOLD}ravenna-out:playback_1..${JACK_RAVENNA_OUT}${NC} (to AES67)"
+echo -e "             ${BOLD}ravenna-in:capture_1..${JACK_RAVENNA_IN}${NC}  (from AES67)"
 if [[ -n "${JACK_EXTRA_IO}" ]]; then
 echo -e "    Bridges: ${BOLD}${JACK_EXTRA_IO}${NC}"
 fi
-echo -e "    Route:   ${BOLD}jack-route list${NC}  (show all ports)"
-echo -e "    Route:   ${BOLD}jack-route connect <out> <in>${NC}"
-echo -e "    Save:    ${BOLD}jack-route save${NC}   (persist routing)"
-echo -e "    Logs:    ${BOLD}sudo journalctl -u jackd -f${NC}"
+echo -e "    Route:   ${BOLD}sudo -u jack jack-route list${NC}"
+echo -e "    Route:   ${BOLD}sudo -u jack jack-route connect <out> <in>${NC}"
+echo -e "    Save:    ${BOLD}sudo -u jack jack-route save${NC}"
+echo -e "    Logs:    ${BOLD}sudo journalctl -u jackd -u jack-ravenna-bridge -f${NC}"
 fi
 if [[ "$WITH_SHAIRPORT" == "y" ]]; then
 echo -e ""
