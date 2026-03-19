@@ -17,7 +17,12 @@ export function useMatrix() {
     const set = new Set();
     if (Array.isArray(routeArray)) {
       routeArray.forEach((r) => {
-        set.add(routeKey(r.srcId, r.srcCh, r.dstId, r.dstCh));
+        // API returns routes as { src: [streamId, chIdx], dst: [streamId, chIdx] }
+        const srcId = Array.isArray(r.src) ? r.src[0] : r.srcId;
+        const srcCh = Array.isArray(r.src) ? r.src[1] : r.srcCh;
+        const dstId = Array.isArray(r.dst) ? r.dst[0] : r.dstId;
+        const dstCh = Array.isArray(r.dst) ? r.dst[1] : r.dstCh;
+        set.add(routeKey(srcId, srcCh, dstId, dstCh));
       });
     }
     return set;
@@ -60,7 +65,11 @@ export function useMatrix() {
     });
 
     try {
-      await api.setMatrixRoute({ src, dst, action });
+      await api.setMatrixRoute({
+        src: [src.id, src.ch],
+        dst: [dst.id, dst.ch],
+        action,
+      });
     } catch (err) {
       // Revert on failure
       setRoutes((prev) => {
@@ -97,10 +106,8 @@ export function useMatrix() {
       );
       for (let c = 0; c < maxCh; c++) {
         newRoutes.push({
-          srcId: inp.id,
-          srcCh: inp.channels[c].id !== undefined ? inp.channels[c].id : c,
-          dstId: out.id,
-          dstCh: out.channels[c].id !== undefined ? out.channels[c].id : c,
+          src: [inp.id, c],
+          dst: [out.id, c],
         });
       }
     }
