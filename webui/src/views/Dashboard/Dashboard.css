@@ -195,11 +195,36 @@
   flex-shrink: 0;
 }
 
-/* Bottom row — 2 compact panels */
+/* Bottom row */
 .dashboard__bottom-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+/* Discovery panel full width */
+.dashboard-panel--discovery {
+  margin-bottom: 0.5rem;
+}
+
+/* "+ Sink" action button in stream rows */
+.stream-row__action-btn {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.stream-row__action-btn:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--text-primary);
 }
 
 .dashboard-compact {

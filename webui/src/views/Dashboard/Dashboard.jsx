@@ -40,6 +40,7 @@ export default function Dashboard() {
   const ptpConfig = useApi(() => api.getPTPConfig(), []);
   const sources = useApi(() => api.getSources(), []);
   const sinks = useApi(() => api.getSinks(), []);
+  const remoteSources = useApi(() => api.getBrowseSources(), []);
 
   // Fast polling for PTP status
   usePolling(() => ptpStatus.refresh(), 2000);
@@ -49,6 +50,7 @@ export default function Dashboard() {
     sources.refresh();
     sinks.refresh();
     ptpConfig.refresh();
+    remoteSources.refresh();
   }, 5000);
 
   const cfg = config.data || {};
@@ -56,6 +58,7 @@ export default function Dashboard() {
   const ptpCfg = ptpConfig.data || {};
   const srcList = Array.isArray(sources.data?.sources) ? sources.data.sources : (Array.isArray(sources.data) ? sources.data : []);
   const snkList = Array.isArray(sinks.data?.sinks) ? sinks.data.sinks : (Array.isArray(sinks.data) ? sinks.data : []);
+  const remoteList = Array.isArray(remoteSources.data?.remote_sources) ? remoteSources.data.remote_sources : [];
 
   const isLoading = config.loading && ptpStatus.loading;
 
@@ -193,7 +196,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom row — Compact info */}
+      {/* Bottom row — Streamer + Network Discovery */}
       <div className="dashboard__bottom-row">
         <div className="dashboard-compact">
           <div className="dashboard-compact__info">
@@ -206,13 +209,45 @@ export default function Dashboard() {
           </div>
           <Badge variant={httpEnabled ? 'success' : 'neutral'}>{httpEnabled ? 'Enabled' : 'Disabled'}</Badge>
         </div>
-        <div className="dashboard-compact">
-          <div className="dashboard-compact__info">
-            <div className="dashboard-compact__title">Network Discovery</div>
-            <div className="dashboard-compact__text">
-              {sapEnabled ? 'SAP + mDNS' : 'mDNS'} {'\u00B7'} {srcList.length} remote sources found
-            </div>
-          </div>
+      </div>
+
+      {/* Network Discovery — full panel */}
+      <div className="dashboard-panel dashboard-panel--discovery">
+        <div className="dashboard-panel__header">
+          <span className="dashboard-panel__title">Network Discovery</span>
+          <Badge variant={remoteList.length > 0 ? 'success' : 'neutral'}>{remoteList.length} found</Badge>
+          <span className="dashboard-panel__spacer" />
+          <button className="dashboard-panel__add" onClick={() => navigate('/browser')}>Browse All</button>
+        </div>
+        <div className="dashboard-panel__body">
+          {remoteList.length === 0 ? (
+            <div className="dashboard-panel__empty">No remote sources discovered on the network</div>
+          ) : (
+            remoteList.map((rs, i) => (
+              <div key={rs.id || i} className="stream-row">
+                <StatusDot status="active" />
+                <div className="stream-row__info">
+                  <div className="stream-row__name">{rs.name || rs.id || `Remote ${i}`}</div>
+                  <div className="stream-row__subtitle">
+                    {rs.address || '--'}{rs.domain ? ` \u00B7 ${rs.domain}` : ''}
+                    {rs.last_seen != null ? ` \u00B7 ${rs.last_seen}s ago` : ''}
+                  </div>
+                </div>
+                <div className="stream-row__badges">
+                  <Badge variant={rs.source === 'SAP' ? 'info' : 'success'}>
+                    {rs.source || 'mDNS'}
+                  </Badge>
+                  <button
+                    className="stream-row__action-btn"
+                    title="Add as sink using this source's SDP"
+                    onClick={() => navigate('/sinks', { state: { addFromSDP: rs.sdp, name: rs.name } })}
+                  >
+                    + Sink
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
