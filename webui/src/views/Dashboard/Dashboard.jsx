@@ -43,15 +43,18 @@ export default function Dashboard() {
   const remoteSources = useApi(() => api.getBrowseSources(), []);
 
   // Fast polling for PTP status
-  usePolling(() => ptpStatus.refresh(), 2000);
-  // Slower polling for everything else
+  usePolling(() => ptpStatus.refresh(), 1000);
+  // Regular polling for streams and config
   usePolling(() => {
-    config.refresh();
     sources.refresh();
     sinks.refresh();
-    ptpConfig.refresh();
     remoteSources.refresh();
-  }, 5000);
+  }, 3000);
+  // Slow polling for config (rarely changes)
+  usePolling(() => {
+    config.refresh();
+    ptpConfig.refresh();
+  }, 10000);
 
   const cfg = config.data || {};
   const ptp = ptpStatus.data || {};

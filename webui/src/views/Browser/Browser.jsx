@@ -16,7 +16,7 @@ function formatRelativeTime(seconds) {
 
 export default function Browser() {
   const { data, loading, refresh } = useApi(() => api.getBrowseSources(), []);
-  usePolling(refresh, 10000);
+  usePolling(refresh, 5000);
 
   const [selected, setSelected] = useState(null);
 

@@ -30,8 +30,8 @@ export default function Sinks() {
     setStatuses(results);
   }, [sinks]);
 
-  usePolling(refresh, 5000);
-  usePolling(fetchStatuses, 5000);
+  usePolling(refresh, 3000);
+  usePolling(fetchStatuses, 2000);
 
   const handleDelete = async (sink) => {
     if (!window.confirm(`Delete sink "${sink.name}" (ID ${sink.id})?`)) return;

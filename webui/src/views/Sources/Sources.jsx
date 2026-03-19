@@ -9,7 +9,7 @@ import './Sources.css';
 
 export default function Sources() {
   const { data, loading, refresh } = useApi(() => api.getSources(), []);
-  usePolling(() => refresh(), 5000);
+  usePolling(() => refresh(), 3000);
 
   const [editModal, setEditModal] = useState({ open: false, source: null });
   const [infoModal, setInfoModal] = useState({ open: false, sourceId: null });

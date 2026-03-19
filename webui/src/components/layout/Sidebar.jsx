@@ -49,7 +49,7 @@ export default function Sidebar({ collapsed, onToggle }) {
     }).catch(() => {});
   }, [fetchPtp]);
 
-  usePolling(fetchPtp, 2000);
+  usePolling(fetchPtp, 1000);
 
   const { dotStatus, label } = ptpStatusToLed(ptpStatus);
 
