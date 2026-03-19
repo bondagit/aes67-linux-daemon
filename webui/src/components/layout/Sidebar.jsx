@@ -7,6 +7,7 @@ import './Sidebar.css';
 
 const navItems = [
   { to: '/',         icon: '\u2B21', label: 'Dashboard' },
+  { to: '/monitoring', icon: '\u2261', label: 'Monitoring' },
   { to: '/matrix',   icon: '\u229E', label: 'Matrix' },
   { to: '/sources',  icon: '\u25B6', label: 'Sources' },
   { to: '/sinks',    icon: '\u25C0', label: 'Sinks' },

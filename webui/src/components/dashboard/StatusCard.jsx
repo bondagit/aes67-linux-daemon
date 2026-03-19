@@ -10,7 +10,7 @@ const successStyle = {
   border: '1px solid #1a3a1a',
 };
 
-export default function StatusCard({ title, value, subtitle, details = [], variant = 'default', indicator }) {
+export default function StatusCard({ title, value, subtitle, details = [], variant = 'default', indicator, children }) {
   const isSuccess = variant === 'success';
   const cardStyle = isSuccess ? successStyle : defaultStyle;
 
@@ -48,6 +48,7 @@ export default function StatusCard({ title, value, subtitle, details = [], varia
           </div>
         </>
       )}
+      {children}
     </div>
   );
 }

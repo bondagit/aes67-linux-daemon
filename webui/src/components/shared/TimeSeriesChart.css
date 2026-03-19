@@ -1,0 +1,35 @@
+.ts-chart {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.ts-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 6px;
+}
+
+.ts-chart__title {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+.ts-chart__body {
+  padding: 0 6px 6px;
+  position: relative;
+}
+
+/* Override uPlot defaults for dark theme */
+.ts-chart .u-wrap {
+  background: transparent !important;
+}
+
+.ts-chart .u-legend {
+  display: none;
+}

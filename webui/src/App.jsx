@@ -7,12 +7,14 @@ import Sources from './views/Sources/Sources';
 import Sinks from './views/Sinks/Sinks';
 import Browser from './views/Browser/Browser';
 import Settings from './views/Settings/Settings';
+import Monitoring from './views/Monitoring/Monitoring';
 
 export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Dashboard />} />
+        <Route path="monitoring" element={<Monitoring />} />
         <Route path="matrix" element={<Matrix />} />
         <Route path="sources" element={<Sources />} />
         <Route path="sinks" element={<Sinks />} />

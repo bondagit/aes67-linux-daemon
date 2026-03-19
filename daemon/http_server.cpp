@@ -87,7 +87,7 @@ bool HttpServer::init() {
 
   svr_.set_mount_point("/", config_->get_http_base_dir().c_str());
 
-  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser|/matrix|/sources|/sinks|/browser|/settings)",
+  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser|/matrix|/sources|/sinks|/browser|/settings|/monitoring)",
            [&](const Request& req, Response& res) {
              std::ifstream file(config_->get_http_base_dir() + "/index.html");
              std::stringstream buffer;

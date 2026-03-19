@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useApi } from '../../hooks/useApi';
 import { usePolling } from '../../hooks/usePolling';
+import { useTimeSeries } from '../../hooks/useTimeSeries';
 import StatusCard from '../../components/dashboard/StatusCard';
+import TimeSeriesChart from '../../components/shared/TimeSeriesChart';
 import StatusDot from '../../components/shared/StatusDot';
 import Badge from '../../components/shared/Badge';
 import './Dashboard.css';
@@ -42,8 +44,23 @@ export default function Dashboard() {
   const sinks = useApi(() => api.getSinks(), []);
   const remoteSources = useApi(() => api.getBrowseSources(), []);
 
+  // Jitter sparkline
+  const jitterTs = useTimeSeries(60);
+  const jitterTsRef = React.useRef(jitterTs);
+  jitterTsRef.current = jitterTs;
+
+  const pollPtp = useCallback(async () => {
+    try {
+      const data = await api.getPTPStatus();
+      ptpStatus.setData(data);
+      if (data && data.jitter != null) {
+        jitterTsRef.current.push(Number(data.jitter));
+      }
+    } catch { /* ignore */ }
+  }, [ptpStatus]);
+
   // Fast polling for PTP status
-  usePolling(() => ptpStatus.refresh(), 1000);
+  usePolling(pollPtp, 1000);
   // Regular polling for streams and config
   usePolling(() => {
     sources.refresh();
@@ -109,7 +126,17 @@ export default function Dashboard() {
             { label: 'JITTER', value: formatJitter(ptp) },
             { label: 'DSCP', value: dscpLabel(ptpCfg.dscp) },
           ]}
-        />
+        >
+          {jitterTs.data[0].length >= 2 && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <TimeSeriesChart
+                data={jitterTs.data}
+                series={[{ label: 'Jitter', color: locked ? 'var(--route-on)' : 'var(--danger)', width: 1 }]}
+                height={80}
+              />
+            </div>
+          )}
+        </StatusCard>
         <StatusCard
           title="Audio Engine"
           value={`${(sampleRate / 1000)} kHz`}
