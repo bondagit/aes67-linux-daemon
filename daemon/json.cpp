@@ -404,14 +404,14 @@ MatrixRoute json_to_matrix_route(const std::string& json) {
     boost::property_tree::read_json(ss, pt);
 
     auto src_it = pt.get_child("src").begin();
-    route.src_stream = static_cast<uint8_t>(src_it->second.get_value<int>());
+    route.src_stream = static_cast<uint8_t>(std::stoi(src_it->second.data()));
     ++src_it;
-    route.src_channel = static_cast<uint8_t>(src_it->second.get_value<int>());
+    route.src_channel = static_cast<uint8_t>(std::stoi(src_it->second.data()));
 
     auto dst_it = pt.get_child("dst").begin();
-    route.dst_stream = static_cast<uint8_t>(dst_it->second.get_value<int>());
+    route.dst_stream = static_cast<uint8_t>(std::stoi(dst_it->second.data()));
     ++dst_it;
-    route.dst_channel = static_cast<uint8_t>(dst_it->second.get_value<int>());
+    route.dst_channel = static_cast<uint8_t>(std::stoi(dst_it->second.data()));
 
     route.action = pt.get<std::string>("action", "connect");
   } catch (boost::property_tree::json_parser::json_parser_error& je) {
