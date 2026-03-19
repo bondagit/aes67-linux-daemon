@@ -54,8 +54,8 @@ export default function Dashboard() {
   const cfg = config.data || {};
   const ptp = ptpStatus.data || {};
   const ptpCfg = ptpConfig.data || {};
-  const srcList = Array.isArray(sources.data) ? sources.data : [];
-  const snkList = Array.isArray(sinks.data) ? sinks.data : [];
+  const srcList = Array.isArray(sources.data?.sources) ? sources.data.sources : (Array.isArray(sources.data) ? sources.data : []);
+  const snkList = Array.isArray(sinks.data?.sinks) ? sinks.data.sinks : (Array.isArray(sinks.data) ? sinks.data : []);
 
   const isLoading = config.loading && ptpStatus.loading;
 
@@ -82,8 +82,8 @@ export default function Dashboard() {
   const rtspPort = cfg.rtsp_port || '--';
   const httpEnabled = cfg.streamer_enabled === true;
   const httpChannels = cfg.streamer_channels || '--';
-  const httpBuffer = cfg.streamer_buffer || '--';
-  const httpPort = cfg.streamer_port || '--';
+  const httpBuffer = cfg.streamer_player_buffer_files_num || '--';
+  const httpPort = cfg.http_port || '--';
   const sapEnabled = cfg.sap_mcast_addr || cfg.sap_interval;
   const activeSources = srcList.filter(s => s.enabled !== false).length;
   const activeSinks = snkList.filter(s => s.enabled !== false).length;
@@ -146,7 +146,7 @@ export default function Dashboard() {
                   <div className="stream-row__info">
                     <div className="stream-row__name">{src.name || `Source ${src.id ?? i}`}</div>
                     <div className="stream-row__subtitle">
-                      {src.address ? `${src.address}:${src.port || ''}` : ''}{src.channels != null ? ` \u00B7 ${src.channels} channels` : ''}
+                      {src.address || ''}{src.map ? ` \u00B7 ${src.map.length} channels` : ''}
                     </div>
                   </div>
                   <div className="stream-row__badges">
@@ -171,14 +171,14 @@ export default function Dashboard() {
               <div className="dashboard-panel__empty">No sinks configured</div>
             ) : (
               snkList.map((snk, i) => {
-                const hasError = snk.error_count > 0 || snk.status === 'error';
+                const hasError = false; // sink status requires separate API call per sink
                 return (
                   <div key={snk.id ?? i} className="stream-row">
                     <StatusDot status={snk.enabled !== false ? 'active' : 'inactive'} />
                     <div className="stream-row__info">
                       <div className="stream-row__name">{snk.name || `Sink ${snk.id ?? i}`}</div>
                       <div className="stream-row__subtitle">
-                        {snk.channels != null ? `${snk.channels} channels` : ''}{snk.device ? ` \u00B7 ${snk.device}` : ''}
+                        {snk.map ? `${snk.map.length} channels` : ''}{snk.io ? ` \u00B7 ${snk.io}` : ''}
                       </div>
                     </div>
                     <div className="stream-row__badges">
