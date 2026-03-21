@@ -45,18 +45,16 @@ class RtspClient {
                                              const std::string& name,
                                              const std::string& domain,
                                              const std::string& path,
-                                             const std::string& address,
+                                             const std::string& dst_address,
                                              const std::string& port = dft_port,
                                              bool wait_for_updates = true);
 
   static bool is_active(const std::string& name, const std::string& domain);
   static void stop(const std::string& name, const std::string& domain);
   static void stop_all();
-  static std::pair<bool, RtspSource> describe(
-      const std::string& path,
-      const std::string& address,
-      const std::string& port = dft_port);
-
+  static std::pair<bool, RtspSource> describe(const std::string& path,
+                                              const std::string& dst_address,
+                                              const std::string& port);
   inline static std::map<
       std::pair<std::string /*name*/, std::string /*domain*/>,
       boost::asio::ip::tcp::iostream* /*stream*/>

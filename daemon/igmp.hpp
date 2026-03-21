@@ -39,6 +39,9 @@ class IGMP {
   };
 
   bool join(const std::string& interface_ip, const std::string& mcast_ip) {
+    if (interface_ip.empty() || mcast_ip.empty()) {
+      return false;
+    }
     uint32_t mcast_ip_addr =
 #if BOOST_VERSION < 108700
         ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();
@@ -83,6 +86,9 @@ class IGMP {
   }
 
   bool leave(const std::string& interface_ip, const std::string& mcast_ip) {
+    if (interface_ip.empty() || mcast_ip.empty()) {
+      return false;
+    }
     uint32_t mcast_ip_addr =
 #if BOOST_VERSION < 108700
         ip::address_v4::from_string(mcast_ip.c_str()).to_ulong();

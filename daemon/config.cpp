@@ -24,9 +24,11 @@
 #include <sys/socket.h>
 
 #include <boost/asio.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+
 #include <exception>
 #include <iostream>
 #include <sstream>
@@ -107,28 +109,38 @@ std::shared_ptr<Config> Config::parse(const std::string& filename,
   if (config.ptp_domain_ > 127)
     config.ptp_domain_ = 0;
 
-  auto [mac_addr, mac_str] = get_interface_mac(config.interface_name_);
+
+  boost::algorithm::erase_all(config.interface_name_, " ");
+  boost::split(config.interfaces_, config.interface_name_,
+               boost::is_any_of(","), boost::token_compress_on);
+
+  if (config.interfaces_.empty()) {
+    std::cerr << "No interface specified in config file" << std::endl;
+    return nullptr;
+  }
+
+  auto [mac_addr, mac_str] = get_interface_mac(config.interfaces_[0]);
   if (mac_str.empty()) {
     std::cerr << "Cannot retrieve MAC address for interface "
-              << config.interface_name_ << std::endl;
+              << config.interfaces_[0] << std::endl;
     return nullptr;
   }
   config.mac_addr_ = mac_addr;
   config.mac_str_ = mac_str;
 
-  auto interface_idx = get_interface_index(config.interface_name_);
+  auto interface_idx = get_interface_index(config.interfaces_[0]);
   if (interface_idx < 0) {
-    std::cerr << "Cannot retrieve index for interface "
-              << config.interface_name_ << std::endl;
+    std::cerr << "Cannot retrieve index for interface " << config.interfaces_[0]
+              << std::endl;
   } else {
     config.interface_idx_ = interface_idx;
   }
 
   auto [ip_addr, ip_str, is_new] =
-      get_new_interface_ip(config.interface_name_, config.ip_str_);
+      get_new_interface_ip(config.interfaces_[0], config.ip_str_);
   if (ip_str.empty()) {
     std::cerr << "Cannot retrieve IPv4 address for interface "
-              << config.interface_name_ << std::endl;
+              << config.interfaces_[0] << std::endl;
   }
   config.ip_addr_ = ip_addr;
   config.ip_str_ = ip_str;

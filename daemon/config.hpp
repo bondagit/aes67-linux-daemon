@@ -76,6 +76,10 @@ class Config {
   const std::string& get_syslog_server() const { return syslog_server_; };
   const std::string& get_status_file() const { return status_file_; };
   const std::string& get_interface_name() const { return interface_name_; };
+  const std::string& get_interface_name(uint8_t idx) const {
+    static const std::string empty = "";
+    return interfaces_.size() > idx ? interfaces_[idx] : empty;
+  };
   const std::string& get_config_filename() const { return config_filename_; };
   const std::string& get_custom_node_id() const { return custom_node_id_; };
   std::string get_node_id() const;
@@ -86,10 +90,10 @@ class Config {
   const std::string& get_mac_addr_str() const { return mac_str_; };
   uint32_t get_ip_addr() const { return ip_addr_; };
   const std::string& get_ip_addr_str() const { return ip_str_; };
+  int get_interface_idx() const { return interface_idx_; };
   bool get_daemon_restart() const { return daemon_restart_; };
   bool get_driver_restart() const { return driver_restart_; };
   bool get_mdns_enabled() const;
-  int get_interface_idx() const { return interface_idx_; };
   const std::string& get_ptp_status_script() const {
     return ptp_status_script_;
   }
@@ -175,14 +179,14 @@ class Config {
   void set_interface_name(std::string_view interface_name) {
     interface_name_ = interface_name;
   };
+  void set_interface_idx(int index) { interface_idx_ = index; };
   void set_ip_addr_str(std::string_view ip_str) { ip_str_ = ip_str; };
-  void set_ip_addr(uint32_t ip_addr) { ip_addr_ = ip_addr; };
+  void set_ip_addr(uint32_t ip_addr) { ip_addr_ = ip_addr; }
   void set_mac_addr_str(std::string_view mac_str) { mac_str_ = mac_str; };
   void set_mac_addr(const std::array<uint8_t, 6>& mac_addr) {
     mac_addr_ = mac_addr;
   };
   void set_mdns_enabled(bool enabled) { mdns_enabled_ = enabled; };
-  void set_interface_idx(int index) { interface_idx_ = index; };
   void set_ptp_status_script(std::string_view script) {
     ptp_status_script_ = script;
   };
@@ -272,6 +276,7 @@ class Config {
   std::string syslog_server_{""};
   std::string status_file_{"./status.json"};
   std::string interface_name_{"eth0"};
+  std::vector<std::string> interfaces_;
   bool mdns_enabled_{true};
   std::string ptp_status_script_;
   std::string custom_node_id_;

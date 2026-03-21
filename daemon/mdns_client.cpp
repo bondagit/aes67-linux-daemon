@@ -57,7 +57,7 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
 
       char addr[AVAHI_ADDRESS_STR_MAX];
       if ((flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
-          (mdns.config_->get_interface_name() == "lo")) {
+          (mdns.config_->get_interface_name(0) == "lo")) {
         ::strncpy(addr, mdns.config_->get_ip_addr_str().c_str(),
                   sizeof addr - 1);
         addr[sizeof addr - 1] = 0;
@@ -84,9 +84,9 @@ void MDNSClient::resolve_callback(AvahiServiceResolver* r,
        * sessions or if on loopback interface we want only local announced
        * sessions */
       if ((!(flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
-           (mdns.config_->get_interface_name() != "lo")) ||
+           (mdns.config_->get_interface_name(0) != "lo")) ||
           ((flags & AVAHI_LOOKUP_RESULT_LOCAL) &&
-           (mdns.config_->get_interface_name() == "lo"))) {
+           (mdns.config_->get_interface_name(0) == "lo"))) {
         std::lock_guard<std::mutex> lock{mdns.sources_res_mutex_};
 
         /* process RTSP client in async task */

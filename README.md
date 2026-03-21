@@ -106,6 +106,15 @@ The daemon should work on all Ubuntu starting from 18.04 onward, it's possible t
 ## Devices and interoperability tests ##
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
+## Support for ST-2022-7 ##
+Starting from the daemon version 3.0 and driver version 2.0 support for ST-2022-7 was added. 
+This feature is automatically enabled when 2 interfaces are configured via the daemon _interface_name_ parameter.
+When ST-2022-7 is enabled:
+ - the driver's PTP slave receives packets from both interfaces, and a master clock is automatically elected.
+ - for a Source, outgoing packets are transmitted through both interfaces.
+ - for a Sink, packets are received from both interfaces, and the incoming streams are merged accordingly.
+ - AES67 control (SAP and mDNS) runs on all interfaces.
+
 ## HTTP Streamer ##
 The HTTP Streamer was introduced with the daemon version 2.0 and it is used to receive AES67 audio streams via HTTP file streaming.
 Starting from the daemon version 2.2 the Streamer supports live HTTP streaming compatible with [VideoLAN](https://www.videolan.org/).
@@ -189,6 +198,10 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
+* added support for ST-2022-7 (from driver version 2.0). This version breaks compatibility with the older and requires a new daemon. See [issue 248](https://github.com/bondagit/aes67-linux-daemon/issues/248)
+* patch to update the grand master clock ID of the current master clock when it gets updated in the ANNOUNCE messages (from driver version v1.18). See driver [issue 34](https://github.com/bondagit/ravenna-alsa-lkm/issues/34)
+* patch to fix the PTP master sync timeout and to have a less restrictive spin lock (from driver version v1.17). See [issue 246](https://github.com/bondagit/aes67-linux-daemon/issues/246)
+* patch to fix a kernel warning with Linux Kernel v6.18 and above (from driver version v1.16). See [driver issue 32](https://github.com/bondagit/ravenna-alsa-lkm/issues/32)
 * patch to compile with Linux Kernel v6.15 and above (from driver version v1.15)
 * patch to properly release the network device, that on some Linux Kernels was preventing device reboot and shutdown (from driver v1.14)
 * patch to use ALSA managed buffer allocation and compile with Linux Kernel v6.12 and above (from driver version v1.13)

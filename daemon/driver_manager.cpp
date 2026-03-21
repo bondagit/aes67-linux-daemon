@@ -156,8 +156,8 @@ std::error_code DriverManager::get_ptp_status(TPTPStatus& status) {
     memcpy(&status, recv_data_, sizeof(TPTPStatus));
     BOOST_LOG_TRIVIAL(debug)
         << "driver_manager:: PTP Status "
-        << ptp_status_str[status.nPTPLockStatus] << " GMID " << status.ui64GMID
-        << " Jitter " << status.i32Jitter;
+        << ptp_status_str[status.nPTPLockStatus] << " GMID "
+        << status.ui64GMID[0] << " Jitter " << status.i32ClockJitter;
   }
   return retcode_;
 }
