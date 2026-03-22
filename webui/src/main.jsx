@@ -1,11 +1,14 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import './styles.css'
-import App from './App'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './styles/theme.css';
+import App from './App';
 
-ReactDOM.render(
-  <React.StrictMode>
+createRoot(document.getElementById('root')).render(
+  <BrowserRouter>
     <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-)
+    <ToastContainer position="bottom-right" theme="dark" />
+  </BrowserRouter>
+);

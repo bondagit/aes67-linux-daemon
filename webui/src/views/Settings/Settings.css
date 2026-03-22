@@ -1,0 +1,137 @@
+/* Settings view */
+.settings {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 800px;
+}
+
+.settings__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+/* Collapsible section card */
+.settings-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.settings-section__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.settings-section__header:hover {
+  background: var(--bg-hover);
+}
+
+.settings-section__chevron {
+  font-size: 0.625rem;
+  color: var(--text-tertiary);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.settings-section__chevron--open {
+  transform: rotate(90deg);
+}
+
+.settings-section__title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  flex: 1;
+}
+
+.settings-section__body {
+  border-top: 1px solid var(--border);
+  padding: 1.25rem;
+}
+
+/* Form grid — 2-column label/input */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0.75rem 1rem;
+  align-items: center;
+}
+
+.settings-grid__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.settings-grid__value {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+}
+
+/* Input styling within settings */
+.settings-grid input,
+.settings-grid select {
+  width: 100%;
+  max-width: 320px;
+}
+
+.settings-grid input[type="checkbox"] {
+  width: auto;
+  max-width: none;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-grid input:disabled,
+.settings-grid select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Save button row */
+.settings-section__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Loading state */
+.settings__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 0.25rem 0;
+  }
+
+  .settings-grid__label {
+    margin-top: 0.5rem;
+  }
+
+  .settings-grid input,
+  .settings-grid select {
+    max-width: 100%;
+  }
+}

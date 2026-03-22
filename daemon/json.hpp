@@ -29,6 +29,14 @@
 #include "streamer.hpp"
 #endif
 
+struct MatrixRoute {
+    uint8_t src_stream;
+    uint8_t src_channel;
+    uint8_t dst_stream;
+    uint8_t dst_channel;
+    std::string action; // "connect" or "disconnect"
+};
+
 /* JSON serializers */
 std::string config_to_json(const Config& config);
 std::string source_to_json(const StreamSource& source);
@@ -45,6 +53,9 @@ std::string remote_sources_to_json(const std::list<RemoteSource>& sources);
 #ifdef _USE_STREAMER_
 std::string streamer_info_to_json(const StreamerInfo& info);
 #endif
+std::string matrix_to_json(
+    const std::list<StreamSource>& sources,
+    const std::list<StreamSink>& sinks);
 
 /* JSON deserializers */
 Config json_to_config(std::istream& jstream, const Config& curCconfig);
@@ -54,6 +65,7 @@ Config json_to_config(const std::string& json);
 StreamSource json_to_source(const std::string& id, const std::string& json);
 StreamSink json_to_sink(const std::string& id, const std::string& json);
 PTPConfig json_to_ptp_config(const std::string& json);
+MatrixRoute json_to_matrix_route(const std::string& json);
 void json_to_sources(std::istream& jstream, std::list<StreamSource>& sources);
 void json_to_sources(const std::string& json, std::list<StreamSource>& sources);
 void json_to_sinks(std::istream& jstream, std::list<StreamSink>& sinks);
