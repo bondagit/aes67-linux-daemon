@@ -390,7 +390,7 @@ long readbuf(snd_pcm_t *handle, char *buf, long len, size_t *frames, size_t *max
   }
 
   uint64_t sentMs, recvMs = tp.tv_sec * 1000000 + tp.tv_nsec / 1000;
-  for (int i = 0; i < (nread - 12); i++) {
+  for (int i = 0; i < (nread * snd_pcm_format_width(format) / 8 * channels) - 12; i++) {
     if (!memcmp(buf + i, header, 4)) {
       memcpy(&sentMs, buf + i + 4, 8);
       if ((recvMs - sentMs) < 1000000) {

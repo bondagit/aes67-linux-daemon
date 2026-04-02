@@ -235,7 +235,7 @@ class Sources extends Component {
       'name': 'ALSA Source ' + id,
       'io': 'Audio Device',
       'max_samples_per_packet': 48,
-      'codec': 'L16',
+      'codec': 'L24',
       'ttl': 15,
       'payload_type': 98,
       'dscp': 34,
