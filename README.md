@@ -59,7 +59,7 @@ See [Armbian NanoPi NEO2 ](https://www.armbian.com/nanopi-neo-2/) for additional
 A Mini PC N40 with Intel® Celeron® Processor N4020 , 2 Cores/2 Threads (4M Cache, up to 2.80 GHz).
 See [Minisforum N40 Mini PC](https://store.minisforum.com/products/minisforum-n40-mini-pc) and [how to Install Ubuntu on a fanless Mini PC](https://www.youtube.com/watch?v=2djTPJ02xK0).
 
-The [debian-packages.sh](debian-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
+The [ubuntu-packages.sh](ubuntu-packages.sh) script can be used to install all the packages required to compile and run the AES67 daemon, and the [platform compatibility test](#test).
 
 **_Important_** CPU scaling events could affect daemon streams causing unexpected distortions, see [CPU scaling events and scripts notes](#notes).
 
@@ -190,7 +190,6 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
-* added low latency optimization chnages from @DatanoiseTV, reducing minimum latency with zero xruns on isolated CPU cores (from driver v2.1). See [LOW LATENCY](LOW_LATENCY.md)
 * added support for ST-2022-7 (from driver version 2.0). This version breaks compatibility with the older and requires a new daemon. See [issue 248](https://github.com/bondagit/aes67-linux-daemon/issues/248)
 * patch to update the grand master clock ID of the current master clock when it gets updated in the ANNOUNCE messages (from driver version v1.18). See driver [issue 34](https://github.com/bondagit/ravenna-alsa-lkm/issues/34)
 * patch to fix the PTP master sync timeout and to have a less restrictive spin lock (from driver version v1.17). See [issue 246](https://github.com/bondagit/aes67-linux-daemon/issues/246)
@@ -343,9 +342,9 @@ The script allows a user to test the latency on a specific configuration and it 
            duration of the test in seconds
            frames buffer size in frames
 
-The specified buffer size in frames starts from _tic_frame_size_at_1fs_ * 2 in steps of _tic_frame_size_at_1fs_.
+The specified buffer size in frames starts from _tic_frame_size_at_1fs_ * 2 (96 by default) in steps of _tic_frame_size_at_1fs_.
 
-For example, condidering a _tic_frame_size_at_1fs_ set to 48 frames (the default) to test the typical AES67 configuration for 1 minute and a buffer size of 12 frames run:
+For example, to test the typical AES67 configuration for 1 minute and a buffer size of 96 frames run:
 
       ./run_latency_test.sh S24_3LE 48000 2 60 96
       
@@ -354,27 +353,29 @@ If no underrun errors occurred during the test the requested buffer size can be 
       Trying latency 96 frames, 2000.000us, 2.000000ms (500.0000Hz)
       Success
       Playback:
-      *** frames = 2880096 ***
+      *** frames = 480096 ***
         state       : RUNNING
-        trigger_time: 10157.969369
+        trigger_time: 170.196886
         tstamp      : 0.000000
         delay       : 96
         avail       : 0
         avail_max   : 48
       Capture:
-      *** frames = 2880000 ***
+      *** frames = 480000 ***
         state       : RUNNING
-        trigger_time: 10157.969369
+        trigger_time: 170.196887
         tstamp      : 0.000000
         delay       : 0
         avail       : 0
         avail_max   : 48
       Maximum read: 48 frames
       Maximum read latency: 1000.000us, 1.000000ms (1000.0000Hz)
-      Hardware sync
-      Playback time = 10157.969369, Record time = 10157.969369, diff = 0
-      End to end latency: 4.000 msecs
+      Playback time = 170.196886, Record time = 170.196887, diff = -1
+      End to end latency: 5.999 msecs
+      Terminating processes ...
+      daemon exiting with code: 0
 
+The previous test was run on a _NanoPi NEO2 board_ with Ubuntu distro.
 
 A 64 channels configuration was succesfully tested on the _Mini PC_ with Intel Celeron N4020 processor.
 
