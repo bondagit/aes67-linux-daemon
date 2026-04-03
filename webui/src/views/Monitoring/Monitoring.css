@@ -1,0 +1,64 @@
+.monitoring {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.monitoring__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.monitoring__title {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.monitoring__range {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.monitoring__range-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.monitoring__range-btn:hover {
+  color: var(--text-secondary);
+}
+
+.monitoring__range-btn--active {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.monitoring__charts {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.monitoring__empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+}

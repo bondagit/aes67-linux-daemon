@@ -87,7 +87,7 @@ bool HttpServer::init() {
 
   svr_.set_mount_point("/", config_->get_http_base_dir().c_str());
 
-  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser)",
+  svr_.Get("(/|/Config|/PTP|/Sources|/Sinks|/Browser|/matrix|/sources|/sinks|/browser|/settings|/monitoring)",
            [&](const Request& req, Response& res) {
              std::ifstream file(config_->get_http_base_dir() + "/index.html");
              std::stringstream buffer;
@@ -456,6 +456,160 @@ bool HttpServer::init() {
 #else
     set_error(400, "streamer support not compiled-in", res);
 #endif
+  });
+
+  /* get matrix */
+  svr_.Get("/api/matrix", [this](const Request& req, Response& res) {
+    auto const sources = session_manager_->get_sources();
+    auto const sinks = session_manager_->get_sinks();
+    set_headers(res, "application/json");
+    res.body = matrix_to_json(sources, sinks);
+  });
+
+  /* set single matrix route */
+  svr_.Put("/api/matrix/route", [this](const Request& req, Response& res) {
+    try {
+      MatrixRoute route = json_to_matrix_route(req.body);
+
+      // Get the target sink
+      StreamSink sink;
+      auto ret = session_manager_->get_sink(route.dst_stream, sink);
+      if (ret) {
+        set_error(ret, "failed to get sink " + std::to_string(route.dst_stream),
+                  res);
+        return;
+      }
+
+      if (route.action == "connect") {
+        // Get the source to find its ALSA channel mapping
+        StreamSource source;
+        ret = session_manager_->get_source(route.src_stream, source);
+        if (ret) {
+          set_error(ret,
+                    "failed to get source " + std::to_string(route.src_stream),
+                    res);
+          return;
+        }
+
+        // Set the sink's source reference to point to the source
+        if (sink.source.find(source.name) == std::string::npos) {
+          sink.source = source.name;
+        }
+
+        // Map the sink channel to the same ALSA channel as the source channel
+        if (route.src_channel < source.map.size() &&
+            route.dst_channel < sink.map.size()) {
+          sink.map[route.dst_channel] = source.map[route.src_channel];
+        } else {
+          set_error(400, "channel index out of range", res);
+          return;
+        }
+      } else if (route.action == "disconnect") {
+        // Set the map entry to unmapped
+        if (route.dst_channel < sink.map.size()) {
+          sink.map[route.dst_channel] = 255;
+        } else {
+          set_error(400, "channel index out of range", res);
+          return;
+        }
+      } else {
+        set_error(400, "invalid action: " + route.action, res);
+        return;
+      }
+
+      // Apply by removing and re-adding the sink
+      ret = session_manager_->remove_sink(sink.id);
+      if (ret) {
+        set_error(ret,
+                  "failed to remove sink " + std::to_string(sink.id), res);
+        return;
+      }
+      ret = session_manager_->add_sink(sink);
+      if (ret) {
+        set_error(ret, "failed to add sink " + std::to_string(sink.id), res);
+        return;
+      }
+      set_headers(res);
+    } catch (const std::runtime_error& e) {
+      set_error(400, e.what(), res);
+    }
+  });
+
+  /* set full matrix (bulk update) */
+  svr_.Put("/api/matrix", [this](const Request& req, Response& res) {
+    try {
+      boost::property_tree::ptree pt;
+      std::stringstream ss(req.body);
+      boost::property_tree::read_json(ss, pt);
+
+      // Get current sinks and sources
+      auto sinks = session_manager_->get_sinks();
+      auto sources = session_manager_->get_sources();
+
+      // Clear all current routing on all sinks
+      for (auto& sink : sinks) {
+        for (size_t i = 0; i < sink.map.size(); i++) {
+          sink.map[i] = 255;
+        }
+        sink.source = "";
+      }
+
+      // Apply each route from the request
+      for (auto const& v : pt.get_child("routes")) {
+        auto src_it = v.second.get_child("src").begin();
+        uint8_t src_stream = src_it->second.get_value<uint8_t>();
+        ++src_it;
+        uint8_t src_channel = src_it->second.get_value<uint8_t>();
+
+        auto dst_it = v.second.get_child("dst").begin();
+        uint8_t dst_stream = dst_it->second.get_value<uint8_t>();
+        ++dst_it;
+        uint8_t dst_channel = dst_it->second.get_value<uint8_t>();
+
+        // Find the source
+        const StreamSource* matched_source = nullptr;
+        for (auto const& source : sources) {
+          if (source.id == src_stream) {
+            matched_source = &source;
+            break;
+          }
+        }
+        if (!matched_source)
+          continue;
+
+        // Find the sink in our local copy
+        for (auto& sink : sinks) {
+          if (sink.id == dst_stream) {
+            if (src_channel < matched_source->map.size() &&
+                dst_channel < sink.map.size()) {
+              sink.map[dst_channel] = matched_source->map[src_channel];
+              sink.source = matched_source->name;
+            }
+            break;
+          }
+        }
+      }
+
+      // Apply all sinks
+      for (auto const& sink : sinks) {
+        auto ret = session_manager_->remove_sink(sink.id);
+        if (ret) {
+          set_error(ret,
+                    "failed to remove sink " + std::to_string(sink.id), res);
+          return;
+        }
+        ret = session_manager_->add_sink(sink);
+        if (ret) {
+          set_error(ret,
+                    "failed to add sink " + std::to_string(sink.id), res);
+          return;
+        }
+      }
+
+      set_headers(res);
+    } catch (const std::runtime_error& e) {
+      set_error(400, e.what(), res);
+    }
   });
 
   svr_.set_logger([](const Request& req, const Response& res) {

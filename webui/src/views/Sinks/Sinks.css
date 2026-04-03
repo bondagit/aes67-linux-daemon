@@ -1,0 +1,246 @@
+.sinks-view {
+  padding: 1.5rem 2rem;
+}
+
+.sinks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.sinks-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.sinks-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sinks-add-btn:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.sinks-table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sinks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.sinks-table th {
+  text-align: left;
+  padding: 10px 14px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.sinks-table td {
+  padding: 10px 14px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.sinks-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sinks-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.sinks-table .col-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sinks-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.sinks-action-btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.sinks-action-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.sinks-action-btn.delete:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(232, 85, 85, 0.08);
+}
+
+.sinks-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+}
+
+.sinks-loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+}
+
+/* Sink Edit Modal form */
+.sink-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sink-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sink-form-group label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sink-form-group input[type="text"],
+.sink-form-group input[type="number"],
+.sink-form-group input[type="url"],
+.sink-form-group textarea,
+.sink-form-group select {
+  padding: 8px 10px;
+  font-size: 0.8125rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+
+.sink-form-group input:focus,
+.sink-form-group textarea:focus,
+.sink-form-group select:focus {
+  border-color: var(--accent);
+}
+
+.sink-form-group input:disabled,
+.sink-form-group textarea:disabled,
+.sink-form-group select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sink-form-row {
+  display: flex;
+  gap: 14px;
+}
+
+.sink-form-row .sink-form-group {
+  flex: 1;
+}
+
+.sink-form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sink-form-check input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+.sink-form-check label {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.sink-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.sink-form-actions button {
+  padding: 7px 18px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sink-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.sink-btn-cancel:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.sink-btn-save {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+
+.sink-btn-save:hover {
+  opacity: 0.9;
+}
+
+.sink-btn-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

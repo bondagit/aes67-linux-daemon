@@ -300,6 +300,114 @@ std::string streamer_info_to_json(const StreamerInfo& info) {
 }
 #endif
 
+std::string matrix_to_json(
+    const std::list<StreamSource>& sources,
+    const std::list<StreamSink>& sinks) {
+  std::stringstream ss;
+  int count;
+
+  // Build inputs array from sources
+  ss << "{\n  \"inputs\": [";
+  count = 0;
+  for (auto const& source : sources) {
+    if (count++)
+      ss << ", ";
+    ss << "\n    {\"id\": " << unsigned(source.id)
+       << ", \"name\": \"" << escape_json(source.name)
+       << "\", \"channels\": [";
+    for (size_t ch = 0; ch < source.map.size(); ch++) {
+      if (ch > 0)
+        ss << ", ";
+      ss << "\"" << (ch + 1) << "\"";
+    }
+    ss << "]}";
+  }
+
+  // Build outputs array from sinks
+  ss << "\n  ],\n  \"outputs\": [";
+  count = 0;
+  for (auto const& sink : sinks) {
+    if (count++)
+      ss << ", ";
+    ss << "\n    {\"id\": " << unsigned(sink.id)
+       << ", \"name\": \"" << escape_json(sink.name)
+       << "\", \"channels\": [";
+    for (size_t ch = 0; ch < sink.map.size(); ch++) {
+      if (ch > 0)
+        ss << ", ";
+      ss << "\"" << (ch + 1) << "\"";
+    }
+    ss << "]}";
+  }
+
+  // Build routes array by matching ALSA channel mappings
+  ss << "\n  ],\n  \"routes\": [";
+  count = 0;
+  for (auto const& sink : sinks) {
+    if (sink.source.empty())
+      continue;
+
+    // Find the source that matches this sink's source URL
+    const StreamSource* matched_source = nullptr;
+    for (auto const& source : sources) {
+      // Check if the sink's source field references this source by name
+      if (sink.source.find(source.name) != std::string::npos) {
+        matched_source = &source;
+        break;
+      }
+    }
+
+    if (!matched_source)
+      continue;
+
+    // For each sink channel, find if it maps to a source channel
+    // via matching ALSA channel numbers
+    for (size_t dst_ch = 0; dst_ch < sink.map.size(); dst_ch++) {
+      uint8_t alsa_ch = sink.map[dst_ch];
+      if (alsa_ch == 255)
+        continue;
+
+      // Find the source channel that maps to the same ALSA channel
+      for (size_t src_ch = 0; src_ch < matched_source->map.size(); src_ch++) {
+        if (matched_source->map[src_ch] == alsa_ch) {
+          if (count++)
+            ss << ", ";
+          ss << "\n    {\"src\": [" << unsigned(matched_source->id)
+             << ", " << src_ch
+             << "], \"dst\": [" << unsigned(sink.id)
+             << ", " << dst_ch << "]}";
+          break;
+        }
+      }
+    }
+  }
+
+  ss << "\n  ]\n}\n";
+  return ss.str();
+}
+
+MatrixRoute json_to_matrix_route(const std::string& json) {
+  MatrixRoute route;
+  try {
+    boost::property_tree::ptree pt;
+    std::stringstream ss(json);
+    boost::property_tree::read_json(ss, pt);
+
+    route.src_stream = static_cast<uint8_t>(pt.get<int>("src_stream"));
+    route.src_channel = static_cast<uint8_t>(pt.get<int>("src_channel"));
+    route.dst_stream = static_cast<uint8_t>(pt.get<int>("dst_stream"));
+    route.dst_channel = static_cast<uint8_t>(pt.get<int>("dst_channel"));
+
+    route.action = pt.get<std::string>("action", "connect");
+  } catch (boost::property_tree::json_parser::json_parser_error& je) {
+    throw std::runtime_error("error parsing JSON at line " +
+                             std::to_string(je.line()) + " :" + je.message());
+  } catch (std::exception& e) {
+    throw std::runtime_error("error parsing JSON: " + std::string(e.what()));
+  }
+  return route;
+}
+
 Config json_to_config_(std::istream& js, Config& config) {
   try {
     boost::property_tree::ptree pt;

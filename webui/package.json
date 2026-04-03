@@ -11,14 +11,14 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-modal": "^3.13.1",
-    "react-router-dom": "^5.2.0",
-    "react-toastify": "^7.0.4"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "react-toastify": "^10.0.6",
+    "uplot": "^1.6.32"
   },
   "devDependencies": {
-    "@vitejs/plugin-react-refresh": "^1.3.3",
+    "@vitejs/plugin-react": "^4.3.4",
     "vite": "^6.4.1"
   },
   "browserslist": {
