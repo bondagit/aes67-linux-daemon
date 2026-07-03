@@ -147,8 +147,14 @@ static void nmos_not_found(httplib::Response& res) {
 std::shared_ptr<NmosManager> NmosManager::create(
     std::shared_ptr<SessionManager> session_manager,
     std::shared_ptr<Config> config) {
-  return std::shared_ptr<NmosManager>(
-      new NmosManager(std::move(session_manager), std::move(config)));
+  // no need to be thread-safe here
+  static std::weak_ptr<NmosManager> instance;
+  if (auto ptr = instance.lock()) {
+    return ptr;
+  }
+  auto ptr = std::shared_ptr<NmosManager>(new NmosManager(session_manager, config));
+  instance = ptr;
+  return ptr;
 }
 
 // ---------------------------------------------------------------------------
@@ -156,6 +162,7 @@ std::shared_ptr<NmosManager> NmosManager::create(
 // ---------------------------------------------------------------------------
 
 bool NmosManager::init() {
+  if (running_) return true;
   BOOST_LOG_TRIVIAL(info) << "NmosManager:: initializing";
   std::string node_id_str = config_->get_node_id();
 
@@ -165,10 +172,7 @@ bool NmosManager::init() {
 
   device_id_ = make_uuid5(node_id_, "device");
 
-  {
-    std::unique_lock lock(resources_mutex_);
-    rebuild_device_json_locked();
-  }
+  rebuild_device_json_locked();
   node_json_ = build_node_json();
 
   // Register session-manager observers
@@ -214,11 +218,13 @@ bool NmosManager::init() {
 }
 
 bool NmosManager::terminate() {
-  running_ = false;
-  events_cv_.notify_all();
-  node_api_svr_.stop();
-  if (svr_res_.valid()) svr_res_.get();
-  if (reg_res_.valid()) reg_res_.get();
+  if (running_) {
+    running_ = false;
+    events_cv_.notify_all();
+    node_api_svr_.stop();
+    if (svr_res_.valid()) svr_res_.get();
+    if (reg_res_.valid()) reg_res_.get();
+  }
   return true;
 }
 
