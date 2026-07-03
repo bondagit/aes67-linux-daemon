@@ -74,6 +74,12 @@ class Config {
   std::string get_node_id() const;
   bool get_auto_sinks_update() const { return auto_sinks_update_; };
 
+  bool get_nmos_enabled() const { return nmos_enabled_; }
+  const std::string& get_nmos_registry_address() const { return nmos_registry_address_; }
+  uint16_t get_nmos_registry_port() const { return nmos_registry_port_; }
+  uint16_t get_nmos_node_port() const { return nmos_node_port_; }
+  const std::string& get_nmos_label() const { return nmos_label_; }
+
   /* attributes set during init */
   const std::array<uint8_t, 6>& get_mac_addr() const { return mac_addr_; };
   const std::string& get_mac_addr_str() const { return mac_str_; };
@@ -171,6 +177,12 @@ class Config {
   };
   void set_driver_restart(bool restart) { driver_restart_ = restart; }
 
+  void set_nmos_enabled(bool v) { nmos_enabled_ = v; }
+  void set_nmos_registry_address(std::string_view v) { nmos_registry_address_ = v; }
+  void set_nmos_registry_port(uint16_t v) { nmos_registry_port_ = v; }
+  void set_nmos_node_port(uint16_t v) { nmos_node_port_ = v; }
+  void set_nmos_label(std::string_view v) { nmos_label_ = v; }
+
   friend bool operator!=(const Config& lhs, const Config& rhs) {
     return lhs.get_http_addr_str() != rhs.get_http_addr_str() ||
            lhs.get_http_port() != rhs.get_http_port() ||
@@ -202,7 +214,12 @@ class Config {
            lhs.get_interface_name() != rhs.get_interface_name() ||
            lhs.get_mdns_enabled() != rhs.get_mdns_enabled() ||
            lhs.get_auto_sinks_update() != rhs.get_auto_sinks_update() ||
-           lhs.get_custom_node_id() != rhs.get_custom_node_id();
+           lhs.get_custom_node_id() != rhs.get_custom_node_id() ||
+           lhs.get_nmos_enabled() != rhs.get_nmos_enabled() ||
+           lhs.get_nmos_registry_address() != rhs.get_nmos_registry_address() ||
+           lhs.get_nmos_registry_port() != rhs.get_nmos_registry_port() ||
+           lhs.get_nmos_node_port() != rhs.get_nmos_node_port() ||
+           lhs.get_nmos_label() != rhs.get_nmos_label();
   };
   friend bool operator==(const Config& lhs, const Config& rhs) {
     return !(lhs != rhs);
@@ -242,6 +259,12 @@ class Config {
   std::string custom_node_id_;
   std::string node_id_;
   bool auto_sinks_update_{true};
+
+  bool nmos_enabled_{false};
+  std::string nmos_registry_address_;
+  uint16_t nmos_registry_port_{8010};
+  uint16_t nmos_node_port_{3212};
+  std::string nmos_label_{"AES67 Daemon"};
 
   /* set during init */
   std::array<uint8_t, 6> mac_addr_{0, 0, 0, 0, 0, 0};

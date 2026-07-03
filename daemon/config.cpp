@@ -182,7 +182,12 @@ bool Config::save(const Config& config) {
         get_streamer_files_num() != config.get_streamer_files_num() ||
         get_streamer_player_buffer_files_num() !=
             config.get_streamer_player_buffer_files_num() ||
-        get_streamer_enabled() != config.get_streamer_enabled();
+        get_streamer_enabled() != config.get_streamer_enabled() ||
+        get_nmos_enabled() != config.get_nmos_enabled() ||
+        get_nmos_registry_address() != config.get_nmos_registry_address() ||
+        get_nmos_registry_port() != config.get_nmos_registry_port() ||
+        get_nmos_node_port() != config.get_nmos_node_port() ||
+        get_nmos_label() != config.get_nmos_label();
 
     if (!daemon_restart_)
       *this = config;

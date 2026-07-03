@@ -106,6 +106,9 @@ The daemon should work on all Ubuntu starting from 18.04 onward, it's possible t
 ## Devices and interoperability tests ##
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
+## Support for NMOS ##
+Starting from daemon version 4.x the support for NMOS (IS-04 and IS-05) was added.
+
 ## Support for ST-2022-7 ##
 Starting from the daemon version 3.0 and driver version 2.0 support for ST-2022-7 was added. 
 This feature is automatically enabled when 2 interfaces are configured via the daemon _interface_name_ parameter.

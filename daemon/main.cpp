@@ -35,6 +35,10 @@
 #include "streamer.hpp"
 #endif
 
+#ifdef _USE_NMOS_
+#include "nmos_manager.hpp"
+#endif
+
 #ifdef _USE_SYSTEMD_
 #include <systemd/sd-daemon.h>
 #endif
@@ -43,7 +47,7 @@ namespace po = boost::program_options;
 namespace postyle = boost::program_options::command_line_style;
 namespace logging = boost::log;
 
-static const std::string version("bondagit-3.1.0");
+static const std::string version("bondagit-4.0.0");
 static std::atomic<bool> terminate = false;
 
 void termination_handler(int signum) {
@@ -203,6 +207,17 @@ int main(int argc, char* argv[]) {
       /* load session status from file */
       session_manager->load_status();
 
+#ifdef _USE_NMOS_
+      /* start NMOS manager */
+      std::shared_ptr<NmosManager> nmos_manager;
+      if (config->get_nmos_enabled()) {
+        nmos_manager = NmosManager::create(session_manager, config);
+        if (nmos_manager == nullptr || !nmos_manager->init()) {
+          throw std::runtime_error(std::string("NmosManager:: init failed"));
+        }
+      }
+#endif
+
       BOOST_LOG_TRIVIAL(debug) << "main:: init done, entering loop...";
 
 #ifdef _USE_SYSTEMD_
@@ -248,6 +263,15 @@ int main(int argc, char* argv[]) {
 
       /* save session status to file */
       session_manager->save_status();
+
+#ifdef _USE_NMOS_
+      /* stop NMOS manager */
+      if (config->get_nmos_enabled() && nmos_manager) {
+        if (!nmos_manager->terminate()) {
+          throw std::runtime_error(std::string("NmosManager:: terminate failed"));
+        }
+      }
+#endif
 
       /* stop http server */
       if (!http_server.terminate()) {
