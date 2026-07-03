@@ -1,7 +1,3 @@
-This fork adds NMOS Functionnality to the project (IS-04 and IS-05)
-It is a work in progress, works seamlessly with a registry. 
-
-
 # AES67 Linux Daemon
 
 AES67 Linux Daemon is a Linux implementation of AES67 interoperability standard used to distribute and synchronize real time audio over Ethernet.
@@ -109,6 +105,9 @@ The daemon should work on all Ubuntu starting from 18.04 onward, it's possible t
 
 ## Devices and interoperability tests ##
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
+
+## Support for NMOS ##
+Starting from daemon version 4.x the support for NMOS (IS-04 and IS-05) was added.
 
 ## Support for ST-2022-7 ##
 Starting from the daemon version 3.0 and driver version 2.0 support for ST-2022-7 was added. 
