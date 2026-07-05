@@ -102,7 +102,7 @@ class NmosManager {
     int64_t deadline_ns;
   };
 
-  enum class EventType { SourceAdded, SourceRemoved, SinkAdded, SinkRemoved };
+  enum class EventType { SourceAdded, SourceRemoved, SinkAdded, SinkRemoved, PtpStatusChange };
   struct Event { EventType type; uint8_t id; };
 
   explicit NmosManager(std::shared_ptr<SessionManager> session_manager,
@@ -171,6 +171,7 @@ class NmosManager {
   bool heartbeat();
 
   bool full_registration();
+  bool register_node();
   // Update senders_[id] / receivers_[id] from session_manager (no network I/O).
   bool register_source_local(uint8_t id);
   bool register_sink_local(uint8_t id);
@@ -179,6 +180,7 @@ class NmosManager {
   bool register_sink(uint8_t id);
   bool unregister_sink(uint8_t id);
 
+  bool on_ptp_status_change(const std::string& status);
   bool on_source_added(uint8_t id, const std::string& name, const std::string& sdp);
   bool on_source_removed(uint8_t id, const std::string& name, const std::string& sdp);
   bool on_sink_added(uint8_t id, const std::string& name);

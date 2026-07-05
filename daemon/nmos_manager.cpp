@@ -176,6 +176,10 @@ bool NmosManager::init() {
   node_json_ = build_node_json();
 
   // Register session-manager observers
+  session_manager_->add_ptp_status_observer(
+      [this](const std::string& status) {
+        return on_ptp_status_change(status);
+      });
   session_manager_->add_source_observer(
       SessionManager::SourceObserverType::add_source,
       [this](uint8_t id, const std::string& name, const std::string& sdp) {
@@ -242,11 +246,15 @@ std::string NmosManager::make_resource_uuid(const std::string& type,
 // ---------------------------------------------------------------------------
 
 std::string NmosManager::build_node_json() const {
+  PTPStatus ptp_status;
+  session_manager_->get_ptp_status(ptp_status);
+  std::string gmid = ptp_status.gmid;
+  for (char& c : gmid) c = tolower(c);
   std::ostringstream ss;
   ss << "{"
      << "\n  \"id\": \"" << node_id_ << "\""
      << ",\n  \"version\": \"" << make_version() << "\""
-     << ",\n  \"label\": \"" << config_->get_nmos_label() << "\""
+     << ",\n  \"label\": \"" << config_->get_node_id() << "\""
      << ",\n  \"description\": \"AES67 Linux Daemon\""
      << ",\n  \"tags\": {}"
      << ",\n  \"href\": \"http://" << config_->get_ip_addr_str()
@@ -268,8 +276,8 @@ std::string NmosManager::build_node_json() const {
      << "\n    \"ref_type\": \"ptp\","
      << "\n    \"traceable\": false,"
      << "\n    \"version\": \"IEEE1588-2008\","
-     << "\n    \"gmid\": \"00-00-00-00-00-00-00-00\","
-     << "\n    \"locked\": false"
+     << "\n    \"gmid\": \"" << gmid << "\","
+     << "\n    \"locked\": " << std::boolalpha << (ptp_status.status == "locked")
      << "\n  }]"
      << ",\n  \"interfaces\": [{"
      << "\n    \"name\": \"" << config_->get_interface_name() << "\","
@@ -450,6 +458,7 @@ void NmosManager::setup_node_api() {
 
   // Self
   node_api_svr_.Get("/x-nmos/node/v1.3/self", [this](const httplib::Request&, httplib::Response& res) {
+    std::shared_lock lock(resources_mutex_);
     nmos_ok(res, node_json_);
   });
 
@@ -1537,7 +1546,7 @@ bool NmosManager::server_worker() {
   BOOST_LOG_TRIVIAL(info) << "NmosManager:: Node API listening on port "
                           << config_->get_nmos_node_port();
   node_api_svr_.listen("0.0.0.0", config_->get_nmos_node_port());
-  BOOST_LOG_TRIVIAL(info) << "NmosManager:: Node API server stopped";
+  BOOST_LOG_TRIVIAL(info) << "NmosManager:: Node API server started";
   return true;
 }
 
@@ -1617,6 +1626,15 @@ bool NmosManager::heartbeat() {
 // ---------------------------------------------------------------------------
 // Resource registration
 // ---------------------------------------------------------------------------
+
+
+bool NmosManager::register_node() {
+  auto node_json = build_node_json();
+  register_resource("node", node_json);
+  std::unique_lock lock(resources_mutex_);
+  node_json_ = node_json;
+  return true;
+}
 
 bool NmosManager::register_source_local(uint8_t id) {
   StreamSource src;
@@ -1786,6 +1804,16 @@ bool NmosManager::full_registration() {
 // Observer callbacks — push events to the queue
 // ---------------------------------------------------------------------------
 
+bool NmosManager::on_ptp_status_change(const std::string& status) {
+  if (!running_) return true;
+  {
+    std::unique_lock lock(events_mutex_);
+    pending_events_.push({EventType::PtpStatusChange, 0});
+  }
+  events_cv_.notify_one();
+  return true;
+}
+
 bool NmosManager::on_source_added(uint8_t id, const std::string& /*name*/,
                                    const std::string& /*sdp*/) {
   if (!running_) return true;
@@ -1854,6 +1882,7 @@ bool NmosManager::registration_worker() {
         lock.unlock();
 
         switch (ev.type) {
+          case EventType::PtpStatusChange: register_node(); break;
           case EventType::SourceAdded:   register_source(ev.id);   break;
           case EventType::SourceRemoved: unregister_source(ev.id); break;
           case EventType::SinkAdded:     register_sink(ev.id);     break;
