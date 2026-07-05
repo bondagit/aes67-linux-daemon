@@ -71,12 +71,19 @@ class Config extends Component {
       interfaceName: '',
       customNodeId: '',
       customNodeIdErr: false,
+      nodeId: '',
       macAddr: '',
       ipAddr: '',
       errors: 0,
       isConfigLoading: false,
       isVersionLoading: false,
-      autoSinksUpdate: false
+      autoSinksUpdate: false,
+      nmosRegistryAddress: '',
+      nmosRegistryAddressErr: false,
+      nmosRegistryPort: '',
+      nmosRegistryPortErr: false,
+      nmosNodePort: '',
+      nmosNodePortErr: false,
     };
     this.onSubmit = this.onSubmit.bind(this);
     this.inputIsValid = this.inputIsValid.bind(this);
@@ -130,6 +137,10 @@ class Config extends Component {
             ipAddr: data.ip_addr,
             nodeId: data.node_id,
             autoSinksUpdate: data.auto_sinks_update,
+            nmosEnabled: data.nmos_enabled,
+            nmosRegistryAddress: data.nmos_registry_address,
+            nmosRegistryPort: data.nmos_registry_port,
+            nmosNodePort: data.nmos_node_port,
             isConfigLoading: false
 	  }))
       .catch(err => this.setState({isConfigLoading: false}));
@@ -185,7 +196,11 @@ class Config extends Component {
       this.state.streamerChannels,
       this.state.streamerFiles,
       this.state.streamerFileDuration,
-      this.state.streamerPlayerBufferFiles)
+      this.state.streamerPlayerBufferFiles,
+      this.state.nmosEnabled,
+      this.state.nmosRegistryAddress,
+      this.state.nmosRegistryPort,
+      this.state.nmosNodePort)
     .then(response => toast.success('Applying new configuration ...'));
   }
 
@@ -308,11 +323,11 @@ class Config extends Component {
           </tr>
           <tr height="35">
             <th align="left"> <label>mDNS enabled</label> </th>
-            <th align="left"> <input type="checkbox" onChange={e => this.setState({mdnsEnabled: e.target.checked})} checked={this.state.mdnsEnabled ? true : undefined}/> </th>
+            <th align="left"> <input type="checkbox" onChange={e => this.setState({mdnsEnabled: e.target.checked})} checked={this.state.mdnsEnabled ? true : false}/> </th>
           </tr>
           <tr height="35">
             <th align="left"> <label>Auto Sinks update</label> </th>
-            <th align="left"> <input type="checkbox" onChange={e => this.setState({autoSinksUpdate: e.target.checked})} checked={this.state.autoSinksUpdate ? true : undefined}/> </th>
+            <th align="left"> <input type="checkbox" onChange={e => this.setState({autoSinksUpdate: e.target.checked})} checked={this.state.autoSinksUpdate ? true : false}/> </th>
           </tr>
           <tr>
             <th align="left"> <label>Network Interface</label> </th>
@@ -328,6 +343,54 @@ class Config extends Component {
           </tr>
         </tbody></table>
         <br/>
+	{this.state.isConfigLoading ? <Loader/> : <h3>NMOS Config</h3>}
+        <table><tbody>
+          <tr height="35">
+            <th align="left"> <label>NMOS enabled</label> </th>
+            <th align="left"> <input type="checkbox" onChange={e => this.setState({nmosEnabled: e.target.checked})} checked={this.state.nmosEnabled ? true : false}/> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>NMOS Registry Address</label> </th>
+            <th align="left"> <input value={this.state.nmosRegistryAddress} onChange={e => this.setState({nmosRegistryAddress: e.target.value, nmosRegistryAddressErr: !e.currentTarget.checkValidity()})} /> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>NMOS Registry Port</label> </th>
+            <th align="left"> <input type='number' min='0' max='65535' value={this.state.nmosRegistryPort} onChange={e => this.setState({nmosRegistryPort: e.target.value, nmosRegistryPortErr: !e.currentTarget.checkValidity()})} /> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>NMOS Node Port</label> </th>
+            <th align="left"> <input type='number' min='0' max='65535' value={this.state.nmosNodePort} onChange={e => this.setState({nmosNodePort: e.target.value, nmosNodePortErr: !e.currentTarget.checkValidity()})} /> </th>
+          </tr>
+        </tbody></table>
+	{this.state.isConfigLoading ? <Loader/> : <h3>Logging Config</h3>}
+        <table><tbody>
+          <tr>
+            <th align="left"> <label>Syslog protocol</label> </th>
+            <th align="left">
+	      <select value={this.state.syslogProto} onChange={e => this.setState({syslogProto: e.target.value})}>
+                <option value="none">none</option>
+                <option value="">local</option>
+                <option value="udp">UDP server</option>
+              </select>
+            </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Syslog server</label> </th>
+            <th align="left"> <input value={this.state.syslogServer} onChange={e => this.setState({syslogServer: e.target.value, syslogServerErr: !e.currentTarget.checkValidity()})} disabled={this.state.syslogProto === 'udp' ? undefined : true} /> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>Log severity</label> </th>
+            <th align="left">
+	      <select value={this.state.logSeverity} onChange={e => this.setState({logSeverity: e.target.value})}>
+                <option value="1">debug</option>
+                <option value="2">info</option>
+                <option value="3">warning</option>
+                <option value="4">error</option>
+                <option value="5">fatal</option>
+              </select>
+            </th>
+          </tr>
+        </tbody></table>        
 	{this.state.isConfigLoading ? <Loader/> : <h3>Logging Config</h3>}
         <table><tbody>
           <tr>
