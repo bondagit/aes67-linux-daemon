@@ -29,6 +29,8 @@
 #include "log.hpp"
 #include "nmos_manager.hpp"
 
+using namespace httplib;
+
 // ---------------------------------------------------------------------------
 // Static helpers
 // ---------------------------------------------------------------------------
@@ -120,19 +122,19 @@ static std::string make_channels_json(const std::vector<uint8_t>& map) {
   return ss.str();
 }
 
-static void set_nmos_headers(httplib::Response& res) {
+static void set_nmos_headers(Response& res) {
   res.set_header("Access-Control-Allow-Origin", "*");
   res.set_header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
   res.set_header("Access-Control-Allow-Headers", "Content-Type, Accept");
   res.set_header("Cache-Control", "no-cache, no-store");
 }
 
-static void nmos_ok(httplib::Response& res, const std::string& body) {
+static void nmos_ok(Response& res, const std::string& body) {
   set_nmos_headers(res);
   res.set_content(body, "application/json");
 }
 
-static void nmos_not_found(httplib::Response& res) {
+static void nmos_not_found(Response& res) {
   set_nmos_headers(res);
   res.status = 404;
   res.set_content(
@@ -439,37 +441,48 @@ std::string NmosManager::build_receiver_json(const StreamSink& sink,
 // ---------------------------------------------------------------------------
 
 void NmosManager::setup_node_api() {
+
+  node_api_svr_.set_logger([](const Request& req, const Response& res) {
+    if (res.status == 200) {
+      BOOST_LOG_TRIVIAL(info) << "nmos_node_svr:: " << req.method << " "
+                              << req.path << " response " << res.status;
+    } else {
+      BOOST_LOG_TRIVIAL(error)
+          << "nmos_node_svr:: " << req.method << " " << req.path << " response "
+          << res.status << " " << res.body;
+    }
+  });
   // CORS preflight
-  node_api_svr_.Options(R"(.*)", [](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Options(R"(.*)", [](const Request&, Response& res) {
     set_nmos_headers(res);
     res.status = 200;
   });
 
   // Base discovery paths
-  node_api_svr_.Get("/x-nmos/", [](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/?", [](const Request&, Response& res) {
     nmos_ok(res, "[\"node/\"]");
   });
-  node_api_svr_.Get("/x-nmos/node/", [](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/?", [](const Request&, Response& res) {
     nmos_ok(res, "[\"v1.3/\"]");
   });
-  node_api_svr_.Get("/x-nmos/node/v1.3/", [](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/?", [](const Request&, Response& res) {
     nmos_ok(res, "[\"self/\", \"devices/\", \"sources/\", \"flows/\", \"senders/\", \"receivers/\"]");
   });
 
   // Self
-  node_api_svr_.Get("/x-nmos/node/v1.3/self", [this](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/self", [this](const Request&, Response& res) {
     std::shared_lock lock(resources_mutex_);
     nmos_ok(res, node_json_);
   });
 
   // Devices - list
-  node_api_svr_.Get("/x-nmos/node/v1.3/devices/", [this](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/devices/?", [this](const Request&, Response& res) {
     std::shared_lock lock(resources_mutex_);
     nmos_ok(res, "[" + device_json_ + "]");
   });
   // Devices - single
   node_api_svr_.Get(R"(/x-nmos/node/v1.3/devices/([^/]+))",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string id = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       if (id == device_id_) {
@@ -480,7 +493,7 @@ void NmosManager::setup_node_api() {
     });
 
   // Sources - list
-  node_api_svr_.Get("/x-nmos/node/v1.3/sources/", [this](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/sources/?", [this](const Request&, Response& res) {
     std::shared_lock lock(resources_mutex_);
     std::ostringstream ss;
     ss << "[";
@@ -495,7 +508,7 @@ void NmosManager::setup_node_api() {
   });
   // Sources - single
   node_api_svr_.Get(R"(/x-nmos/node/v1.3/sources/([^/]+))",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -508,7 +521,7 @@ void NmosManager::setup_node_api() {
     });
 
   // Flows - list
-  node_api_svr_.Get("/x-nmos/node/v1.3/flows/", [this](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/flows/?", [this](const Request&, Response& res) {
     std::shared_lock lock(resources_mutex_);
     std::ostringstream ss;
     ss << "[";
@@ -523,7 +536,7 @@ void NmosManager::setup_node_api() {
   });
   // Flows - single
   node_api_svr_.Get(R"(/x-nmos/node/v1.3/flows/([^/]+))",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -537,7 +550,7 @@ void NmosManager::setup_node_api() {
 
   // Senders - SDP (must be registered before the single-sender handler)
   node_api_svr_.Get(R"(/x-nmos/node/v1.3/senders/([^/]+)/sdp)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string sender_uuid = req.matches[1];
       uint8_t daemon_id = 0;
       bool found = false;
@@ -564,7 +577,7 @@ void NmosManager::setup_node_api() {
       }
     });
   // Senders - list
-  node_api_svr_.Get("/x-nmos/node/v1.3/senders/", [this](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/senders/?", [this](const Request&, Response& res) {
     std::shared_lock lock(resources_mutex_);
     std::ostringstream ss;
     ss << "[";
@@ -579,7 +592,7 @@ void NmosManager::setup_node_api() {
   });
   // Senders - single
   node_api_svr_.Get(R"(/x-nmos/node/v1.3/senders/([^/]+))",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -592,7 +605,7 @@ void NmosManager::setup_node_api() {
     });
 
   // Receivers - list
-  node_api_svr_.Get("/x-nmos/node/v1.3/receivers/", [this](const httplib::Request&, httplib::Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/receivers/?", [this](const Request&, Response& res) {
     std::shared_lock lock(resources_mutex_);
     std::ostringstream ss;
     ss << "[";
@@ -607,7 +620,7 @@ void NmosManager::setup_node_api() {
   });
   // Receivers - single
   node_api_svr_.Get(R"(/x-nmos/node/v1.3/receivers/([^/]+))",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, rr] : receivers_) {
@@ -967,7 +980,7 @@ void NmosManager::fetch_remote_sender_sdp(const std::string& sender_uuid,
   std::string manifest_href;
 
   {
-    httplib::Client cli(reg_host.c_str(), reg_port);
+    Client cli(reg_host.c_str(), reg_port);
     cli.set_connection_timeout(3);
     cli.set_read_timeout(3);
     const std::string path = "/x-nmos/query/v1.3/senders/" + sender_uuid;
@@ -1016,7 +1029,7 @@ void NmosManager::fetch_remote_sender_sdp(const std::string& sender_uuid,
   };
 
   auto [mh_host, mh_port, mh_path] = trim_http(manifest_href);
-  httplib::Client mcli(mh_host.c_str(), mh_port);
+  Client mcli(mh_host.c_str(), mh_port);
   mcli.set_connection_timeout(3);
   mcli.set_read_timeout(3);
   auto mres = mcli.Get(mh_path.c_str());
@@ -1204,20 +1217,20 @@ void NmosManager::process_scheduled_activations() {
 
 // --- IS-05 HTTP routes ---
 
-static void conn_ok(httplib::Response& res, const std::string& body) {
+static void conn_ok(Response& res, const std::string& body) {
   res.set_header("Access-Control-Allow-Origin", "*");
   res.set_header("Cache-Control", "no-cache, no-store");
   res.set_content(body, "application/json");
 }
 
-static void conn_not_found(httplib::Response& res) {
+static void conn_not_found(Response& res) {
   res.set_header("Access-Control-Allow-Origin", "*");
   res.status = 404;
   res.set_content(R"({"code":404,"error":"Not Found","debug":""})",
                   "application/json");
 }
 
-static void conn_bad_request(httplib::Response& res, const std::string& msg) {
+static void conn_bad_request(Response& res, const std::string& msg) {
   res.set_header("Access-Control-Allow-Origin", "*");
   res.status = 400;
   res.set_content("{\"code\":400,\"error\":\"Bad Request\",\"debug\":\"" + msg + "\"}",
@@ -1227,19 +1240,19 @@ static void conn_bad_request(httplib::Response& res, const std::string& msg) {
 void NmosManager::setup_connection_api() {
   // Discovery roots
   node_api_svr_.Get("/x-nmos/connection/",
-    [](const httplib::Request&, httplib::Response& res) {
+    [](const Request&, Response& res) {
       conn_ok(res, "[\"v1.1/\"]");
     });
   node_api_svr_.Get("/x-nmos/connection/v1.1/",
-    [](const httplib::Request&, httplib::Response& res) {
+    [](const Request&, Response& res) {
       conn_ok(res, "[\"single/\", \"bulk/\"]");
     });
   node_api_svr_.Get("/x-nmos/connection/v1.1/single/",
-    [](const httplib::Request&, httplib::Response& res) {
+    [](const Request&, Response& res) {
       conn_ok(res, "[\"senders/\", \"receivers/\"]");
     });
   node_api_svr_.Get("/x-nmos/connection/v1.1/bulk/",
-    [](const httplib::Request&, httplib::Response& res) {
+    [](const Request&, Response& res) {
       conn_ok(res, "[\"senders/\", \"receivers/\"]");
     });
 
@@ -1247,7 +1260,7 @@ void NmosManager::setup_connection_api() {
 
   // List
   node_api_svr_.Get("/x-nmos/connection/v1.1/single/senders/",
-    [this](const httplib::Request&, httplib::Response& res) {
+    [this](const Request&, Response& res) {
       std::shared_lock lock(resources_mutex_);
       std::ostringstream ss;
       ss << "[";
@@ -1263,7 +1276,7 @@ void NmosManager::setup_connection_api() {
 
   // Index
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/senders/([^/]+)/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -1278,7 +1291,7 @@ void NmosManager::setup_connection_api() {
 
   // Constraints
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/senders/([^/]+)/constraints/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -1289,7 +1302,7 @@ void NmosManager::setup_connection_api() {
 
   // Staged GET
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/senders/([^/]+)/staged/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -1300,7 +1313,7 @@ void NmosManager::setup_connection_api() {
 
   // Staged PATCH
   node_api_svr_.Patch(R"(/x-nmos/connection/v1\.1/single/senders/([^/]+)/staged)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       uint8_t daemon_id = 0;
       bool found = false;
@@ -1320,7 +1333,7 @@ void NmosManager::setup_connection_api() {
 
   // Active GET
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/senders/([^/]+)/active/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -1331,7 +1344,7 @@ void NmosManager::setup_connection_api() {
 
   // Transport file (SDP)
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/senders/([^/]+)/transportfile/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       uint8_t daemon_id = 0;
       bool found = false, enabled = false;
@@ -1355,7 +1368,7 @@ void NmosManager::setup_connection_api() {
 
   // Transport type
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/senders/([^/]+)/transporttype)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, sr] : senders_) {
@@ -1369,7 +1382,7 @@ void NmosManager::setup_connection_api() {
   // ---- Single receivers ----
 
   node_api_svr_.Get("/x-nmos/connection/v1.1/single/receivers/",
-    [this](const httplib::Request&, httplib::Response& res) {
+    [this](const Request&, Response& res) {
       std::shared_lock lock(resources_mutex_);
       std::ostringstream ss;
       ss << "[";
@@ -1384,7 +1397,7 @@ void NmosManager::setup_connection_api() {
     });
 
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/receivers/([^/]+)/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, rr] : receivers_) {
@@ -1397,7 +1410,7 @@ void NmosManager::setup_connection_api() {
     });
 
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/receivers/([^/]+)/constraints/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, rr] : receivers_) {
@@ -1407,7 +1420,7 @@ void NmosManager::setup_connection_api() {
     });
 
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/receivers/([^/]+)/staged/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, rr] : receivers_) {
@@ -1417,7 +1430,7 @@ void NmosManager::setup_connection_api() {
     });
 
   node_api_svr_.Patch(R"(/x-nmos/connection/v1\.1/single/receivers/([^/]+)/staged)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       uint8_t daemon_id = 0;
       bool found = false;
@@ -1436,7 +1449,7 @@ void NmosManager::setup_connection_api() {
     });
 
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/receivers/([^/]+)/active/?)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, rr] : receivers_) {
@@ -1446,7 +1459,7 @@ void NmosManager::setup_connection_api() {
     });
 
   node_api_svr_.Get(R"(/x-nmos/connection/v1\.1/single/receivers/([^/]+)/transporttype)",
-    [this](const httplib::Request& req, httplib::Response& res) {
+    [this](const Request& req, Response& res) {
       std::string uuid = req.matches[1];
       std::shared_lock lock(resources_mutex_);
       for (const auto& [id, rr] : receivers_) {
@@ -1460,21 +1473,21 @@ void NmosManager::setup_connection_api() {
   // ---- Bulk endpoints ----
 
   node_api_svr_.Get("/x-nmos/connection/v1.1/bulk/senders",
-    [](const httplib::Request&, httplib::Response& res) {
+    [](const Request&, Response& res) {
       res.status = 405;
       res.set_header("Allow", "POST");
       res.set_content("{\"code\":405,\"error\":\"Method Not Allowed\",\"debug\":\"\"}",
                       "application/json");
     });
   node_api_svr_.Get("/x-nmos/connection/v1.1/bulk/receivers",
-    [](const httplib::Request&, httplib::Response& res) {
+    [](const Request&, Response& res) {
       res.status = 405;
       res.set_header("Allow", "POST");
       res.set_content("{\"code\":405,\"error\":\"Method Not Allowed\",\"debug\":\"\"}",
                       "application/json");
     });
 
-  auto bulk_handler = [this](const httplib::Request& req, httplib::Response& res,
+  auto bulk_handler = [this](const Request& req, Response& res,
                               bool is_sender) {
     // Body: [{id: "uuid", params: {...}}, ...]
     namespace pt_ns = boost::property_tree;
@@ -1533,11 +1546,11 @@ void NmosManager::setup_connection_api() {
   };
 
   node_api_svr_.Post("/x-nmos/connection/v1.1/bulk/senders",
-    [bulk_handler](const httplib::Request& req, httplib::Response& res) {
+    [bulk_handler](const Request& req, Response& res) {
       bulk_handler(req, res, true);
     });
   node_api_svr_.Post("/x-nmos/connection/v1.1/bulk/receivers",
-    [bulk_handler](const httplib::Request& req, httplib::Response& res) {
+    [bulk_handler](const Request& req, Response& res) {
       bulk_handler(req, res, false);
     });
 }
@@ -1556,7 +1569,7 @@ bool NmosManager::server_worker() {
 
 bool NmosManager::register_resource(const std::string& type,
                                      const std::string& data_json) {
-  httplib::Client cli(config_->get_nmos_registry_address(),
+  Client cli(config_->get_nmos_registry_address(),
                       config_->get_nmos_registry_port());
   cli.set_connection_timeout(5, 0);
   cli.set_read_timeout(10, 0);
@@ -1579,7 +1592,7 @@ bool NmosManager::register_resource(const std::string& type,
 
 bool NmosManager::unregister_resource(const std::string& type,
                                        const std::string& id) {
-  httplib::Client cli(config_->get_nmos_registry_address(),
+  Client cli(config_->get_nmos_registry_address(),
                       config_->get_nmos_registry_port());
   cli.set_connection_timeout(5, 0);
   cli.set_read_timeout(10, 0);
@@ -1600,7 +1613,7 @@ bool NmosManager::unregister_resource(const std::string& type,
 }
 
 bool NmosManager::heartbeat() {
-  httplib::Client cli(config_->get_nmos_registry_address(),
+  Client cli(config_->get_nmos_registry_address(),
                       config_->get_nmos_registry_port());
   cli.set_connection_timeout(5, 0);
   cli.set_read_timeout(10, 0);
