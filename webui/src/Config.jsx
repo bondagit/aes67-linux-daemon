@@ -391,35 +391,6 @@ class Config extends Component {
             </th>
           </tr>
         </tbody></table>        
-	{this.state.isConfigLoading ? <Loader/> : <h3>Logging Config</h3>}
-        <table><tbody>
-          <tr>
-            <th align="left"> <label>Syslog protocol</label> </th>
-            <th align="left">
-	      <select value={this.state.syslogProto} onChange={e => this.setState({syslogProto: e.target.value})}>
-                <option value="none">none</option>
-                <option value="">local</option>
-                <option value="udp">UDP server</option>
-              </select>
-            </th>
-          </tr>
-          <tr>
-            <th align="left"> <label>Syslog server</label> </th>
-            <th align="left"> <input value={this.state.syslogServer} onChange={e => this.setState({syslogServer: e.target.value, syslogServerErr: !e.currentTarget.checkValidity()})} disabled={this.state.syslogProto === 'udp' ? undefined : true} /> </th>
-          </tr>
-          <tr>
-            <th align="left"> <label>Log severity</label> </th>
-            <th align="left">
-	      <select value={this.state.logSeverity} onChange={e => this.setState({logSeverity: e.target.value})}>
-                <option value="1">debug</option>
-                <option value="2">info</option>
-                <option value="3">warning</option>
-                <option value="4">error</option>
-                <option value="5">fatal</option>
-              </select>
-            </th>
-          </tr>
-        </tbody></table>
         <br/>
         <table><tbody>
           <tr>
