@@ -119,10 +119,14 @@ class Streamer {
   std::future<bool> res_;
   snd_pcm_t* capture_handle_;
   std::atomic_bool running_{false};
+#if defined(FAAC_VERSION_MAJOR)
+  std::unordered_map<uint8_t, faac_encoder*> faac_;
+#else
   std::unordered_map<uint8_t, faacEncHandle> faac_;
+#endif
+  std::unordered_map<uint8_t, uint32_t> codec_in_samples_;
+  std::unordered_map<uint8_t, uint32_t> codec_out_buffer_size_;
   std::unordered_map<uint8_t, std::mutex> faac_mutex_;
-  std::unordered_map<uint8_t, unsigned long> codec_in_samples_;
-  std::unordered_map<uint8_t, unsigned long> codec_out_buffer_size_;
   std::map<std::pair<std::string, int>, StreamerLiveInfo> liveInfos_;
 };
 
