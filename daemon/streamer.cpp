@@ -60,8 +60,16 @@ bool Streamer::on_sink_add(uint8_t id) {
 bool Streamer::on_sink_remove(uint8_t id) {
   if (faac_[id]) {
     std::unique_lock faac_lock(faac_mutex_[id]);
+#if defined(FAAC_VERSION_MAJOR)
+    faac_status st = faac_encoder_close(&faac_[id]);
+    if (st != FAAC_OK) {
+      BOOST_LOG_TRIVIAL(error)
+          << "streamer:: faac close error: " << faac_strerror(st);
+    }
+#else
     faacEncClose(faac_[id]);
-    faac_[id] = 0;
+#endif
+    faac_[id] = nullptr;
   }
   total_sink_samples_[id] = 0;
   return true;
@@ -175,22 +183,68 @@ void Streamer::save_files(uint8_t files_id) {
 }
 
 bool Streamer::setup_codec(const StreamSink& sink) {
-  /* open and setup the encoder */
-  faac_[sink.id] = faacEncOpen(config_->get_sample_rate(), sink.map.size(),
-                               &codec_in_samples_[sink.id],
-                               &codec_out_buffer_size_[sink.id]);
-  if (!faac_[sink.id]) {
-    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot open codec";
+#if defined(FAAC_VERSION_MAJOR)
+  /* open and setup the encoder using libfaac v2 API */
+  faac_params params;
+  faac_status st = faac_params_init(&params);
+  if (st != FAAC_OK) {
+    BOOST_LOG_TRIVIAL(fatal)
+        << "streamer:: faac params init failed: " << faac_strerror(st);
     return false;
   }
+
+  params.sample_rate = config_->get_sample_rate();
+  params.num_channels = static_cast<uint32_t>(sink.map.size());
+  params.object_type = FAAC_OBJ_LOW;
+  params.mpeg_version = FAAC_MPEG4;
+  params.use_tns = false;
+  params.use_lfe = sink.map.size() > 6 ? true : false;
+  params.short_control = FAAC_SHORTCTL_NORMAL;
+  params.joint_mode = FAAC_JOINT_MS;
+  params.bit_rate = 64000 / sink.map.size();
+  params.output_format = FAAC_STREAM_ADTS;
+  params.input_format = FAAC_INPUT_16BIT;
+
+  faac_encoder* enc = nullptr;
+  st = faac_encoder_open(&params, &enc);
+  if (st != FAAC_OK || !enc) {
+    BOOST_LOG_TRIVIAL(fatal)
+        << "streamer:: cannot open codec: " << faac_strerror(st);
+    return false;
+  }
+  faac_[sink.id] = enc;
+
+  faac_encoder_info info;
+  info.struct_size = sizeof(info);
+  st = faac_encoder_get_info(faac_[sink.id], &info);
+  if (st != FAAC_OK) {
+    BOOST_LOG_TRIVIAL(fatal)
+        << "streamer:: cannot get codec info: " << faac_strerror(st);
+    faac_encoder_close(&enc);
+    faac_[sink.id] = nullptr;
+    return false;
+  }
+
+  codec_in_samples_[sink.id] = info.frame_samples * sink.map.size();
+  codec_out_buffer_size_[sink.id] = info.max_output_bytes;
+
   BOOST_LOG_TRIVIAL(debug) << "streamer: codec samples in "
                            << codec_in_samples_[sink.id] << " out buffer size "
                            << codec_out_buffer_size_[sink.id];
-  faacEncConfigurationPtr faac_cfg;
-  /* check faac version */
-  faac_cfg = faacEncGetCurrentConfiguration(faac_[sink.id]);
+#else
+  unsigned long input_samples = 0;
+  unsigned long max_output_bytes = 0;
+  auto enc = faacEncOpen(config_->get_sample_rate(), sink.map.size(),
+                         &input_samples, &max_output_bytes);
+  if (!enc) {
+    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot open legacy codec";
+    return false;
+  }
+
+  auto* faac_cfg = faacEncGetCurrentConfiguration(enc);
   if (!faac_cfg) {
-    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot get codec configuration";
+    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot get legacy codec config";
+    faacEncClose(enc);
     return false;
   }
 
@@ -207,11 +261,19 @@ bool Streamer::setup_codec(const StreamSink& sink) {
   // faac_cfg->jointmode = JOINT_MS;
   faac_cfg->outputFormat = 1;
   faac_cfg->inputFormat = FAAC_INPUT_16BIT;
-
-  if (!faacEncSetConfiguration(faac_[sink.id], faac_cfg)) {
-    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot set codec configuration";
+  if (!faacEncSetConfiguration(enc, faac_cfg)) {
+    BOOST_LOG_TRIVIAL(fatal) << "streamer:: cannot configure legacy codec";
+    faacEncClose(enc);
     return false;
   }
+
+  faac_[sink.id] = enc;
+  codec_in_samples_[sink.id] = input_samples;
+  codec_out_buffer_size_[sink.id] = max_output_bytes;
+#endif
+  BOOST_LOG_TRIVIAL(debug) << "streamer: codec samples in "
+                           << codec_in_samples_[sink.id] << " out buffer size "
+                           << codec_out_buffer_size_[sink.id];
 
   out_buffer_size_[sink.id] = 0;
   return true;
@@ -246,29 +308,46 @@ void Streamer::close_files(uint8_t files_id) {
         uint32_t in_samples = 0;
         bool end = false;
         while (!end) {
-          if (in_samples + codec_in_samples >=
-              buffer_samples_ * sink.map.size()) {
-            uint16_t diff = buffer_samples_ * sink.map.size() - in_samples;
-            codec_in_samples = diff;
+          uint32_t in_chunk = codec_in_samples;
+          if (in_samples + in_chunk >= buffer_samples_ * sink.map.size()) {
+            in_chunk = buffer_samples_ * sink.map.size() - in_samples;
             end = true;
           }
 
-          auto ret = faacEncEncode(
+#if defined(FAAC_VERSION_MAJOR)
+          unsigned int bytes_written = 0;
+          faac_status st = faac_encoder_encode(
               faac_[sink.id],
-              (int32_t*)(tmp_streams_[sink.id].str().c_str() +
-                         in_samples * sample_size),
-              codec_in_samples, out_buffer_[sink.id].get() + out_len,
+              tmp_streams_[sink.id].str().c_str() + in_samples * sample_size,
+              in_chunk, out_buffer_[sink.id].get() + out_len,
+              codec_out_buffer_size_[sink.id], &bytes_written);
+          if (st != FAAC_OK) {
+            BOOST_LOG_TRIVIAL(error)
+                << "streamer: cannot encode file id "
+                << std::to_string(files_id) << " for sink id "
+                << std::to_string(sink.id) << " : " << faac_strerror(st);
+            return false;
+          }
+#else
+          auto bytes_written = faacEncEncode(
+              faac_[sink.id],
+              reinterpret_cast<int32_t*>(
+                  const_cast<char*>(tmp_streams_[sink.id].str().c_str()) +
+                  in_samples * sample_size),
+              in_chunk,
+              out_buffer_[sink.id].get() + out_len,
               codec_out_buffer_size_[sink.id]);
-          if (ret < 0) {
+          if (bytes_written < 0) {
             BOOST_LOG_TRIVIAL(error)
                 << "streamer: cannot encode file id "
                 << std::to_string(files_id) << " for sink id "
                 << std::to_string(sink.id);
             return false;
           }
+#endif
 
-          in_samples += codec_in_samples;
-          out_len += ret;
+          in_samples += in_chunk;
+          out_len += bytes_written;
         }
       }
       std::unique_lock streams_lock(streams_mutex_[sink.id]);
@@ -296,8 +375,16 @@ bool Streamer::stop_capture() {
   bool ret = res_.get();
   for (const auto& sink : session_manager_->get_sinks()) {
     if (faac_[sink.id]) {
+#if defined(FAAC_VERSION_MAJOR)
+      faac_status st = faac_encoder_close(&faac_[sink.id]);
+      if (st != FAAC_OK) {
+        BOOST_LOG_TRIVIAL(error)
+            << "streamer:: faac close error: " << faac_strerror(st);
+      }
+#else
       faacEncClose(faac_[sink.id]);
-      faac_[sink.id] = 0;
+#endif
+      faac_[sink.id] = nullptr;
     }
   }
   capture_.close();
