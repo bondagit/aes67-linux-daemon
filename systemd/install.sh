@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Tested on Ubuntu 21.04
+# Tested on Ubuntu 21.04 and 6.18.2-arch2-1 kernel
 #
 
 #create a user for the daemon
@@ -17,8 +17,10 @@ sudo cp -r ../webui/dist/* /usr/local/share/aes67-daemon/webui/
 sudo install -o aes67-daemon status.json daemon.conf /etc
 #copy the daemon systemd service definition
 sudo cp aes67-daemon.service /etc/systemd/system
+#copy the "MergingRavennaALSA.ko" to system modules
+sudo cp ../3rdparty/ravenna-alsa-lkm/driver/MergingRavennaALSA.ko /usr/lib/modules/$(uname -r)/kernel/drivers/
+#automatically add MergingRavennaALSA driver to modules that are automatically loaded on boot
+sudo cp mergingRavennaALSA.conf /etc/modules-load.d/
 #enable the daemon service
 sudo systemctl enable aes67-daemon
 sudo systemctl daemon-reexec
-
-
