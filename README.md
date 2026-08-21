@@ -115,7 +115,7 @@ In order to test NMOS consider using the following tools:
  - [NMOS C++ from Sony](https://github.com/sony/nmos-cpp)
  - [Riedel NMOS explorer](https://www.dropbox.com/scl/fo/rglvostkvqz0h3tkzhgvk/AKzUDkdLlPheUGjbIG32gNQ?rlkey=stwvwslccvklmmrhz7eqd8q0s&st=tqyo5f1v&dl=0￼)
 
-In order to build the NMOS C++ clone the repositoy and use the script [daemon/scripts/nmos-cpp-build.sh](nmos-cpp-build.sh) from within the nmos-cpp directory to build the suite.
+In order to build the NMOS C++ clone the repositoy and use the script [nmos-cpp-build.sh](daemon/scripts/nmos-cpp-build.sh) from within the nmos-cpp directory to build the suite.
 
 Once the build is complete, start the NMOS Registry from the checkout directory:
 
