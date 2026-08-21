@@ -432,6 +432,11 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto streamer_file_duration = pt.get<int>("streamer_file_duration");
   auto streamer_player_buffer_files_num =
       pt.get<int>("streamer_player_buffer_files_num");
+  auto nmos_enabled = pt.get<bool>("nmos_enabled");
+  auto nmos_registry_address = pt.get<std::string>("nmos_registry_address");
+  auto nmos_registry_port = pt.get<int>("nmos_registry_port");
+  auto nmos_node_port = pt.get<int>("nmos_node_port");
+  auto nmos_label = pt.get<std::string>("nmos_label");
   BOOST_CHECK_MESSAGE(http_port == 9999, "config as excepcted");
   // BOOST_CHECK_MESSAGE(log_severity == 5, "config as excepcted");
   BOOST_CHECK_MESSAGE(playout_delay == 0, "config as excepcted");
@@ -467,6 +472,12 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(streamer_file_duration == 3, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_player_buffer_files_num == 2,
                       "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_enabled == false, "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_registry_address == "127.0.0.2",
+                      "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_registry_port == 3410, "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_node_port == 3418, "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_label == "AES67 Daemon test", "config as excepcted");
 }
 
 BOOST_AUTO_TEST_CASE(get_ptp_status) {
