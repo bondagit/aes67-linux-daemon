@@ -222,6 +222,7 @@ Example
       "streamer_files_num": 6,
       "streamer_file_duration": 1,
       "streamer_player_buffer_files_num": 1
+      "nmos_enabled": false,
       "nmos_registry_address": "127.0.0.1",
       "nmos_registry_port": 8010,
       "nmos_node_port": 3212,
@@ -346,6 +347,9 @@ where:
 
 > **streamer\_player\_buffer\_files\_num**
 > JSON number specifying the player buffer in number of files.
+
+> **nmos\_enabled**
+> JSON boolean specifying the NMOS support is enabled or disable.
 
 > **nmos\_registry\_address**
 > JSON string specifying the address of the NMOS registry to connect to.
