@@ -115,6 +115,30 @@ In order to test NMOS consider using the following tools:
  - [NMOS C++ from Sony](https://github.com/sony/nmos-cpp)
  - [Riedel NMOS explorer](https://www.dropbox.com/scl/fo/rglvostkvqz0h3tkzhgvk/AKzUDkdLlPheUGjbIG32gNQ?rlkey=stwvwslccvklmmrhz7eqd8q0s&st=tqyo5f1v&dl=0￼)
 
+In order to build the NMOS C++ clone the repositoy and use the script [daemon/scripts/nmos-cpp-build.sh](nmos-cpp-build.sh) from within the nmos-cpp directory to build the suite.
+
+Once the build is complete, start the NMOS Registry from the checkout directory:
+
+     cd build
+     ./nmos-cpp-registry
+
+By default, the registry listens on port 3210, while the NMOS Node listens on port 3212.
+
+Download and extract the Riedel NMOS Explorer, then run the start.sh script from its main directory.
+
+Start the daemon and open the WebUI. In the NMOS Config section, verify that the following parameters are set:
+
+```
+NMOS Enabled              Yes
+NMOS Registry Address     127.0.0.1
+NMOS Registry Port        3210
+NMOS Node Port            3218```
+```
+
+Using the daemon WebUI, create a Source and a Sink.
+
+Then open the Riedel NMOS Explorer and verify that both the Source and Sink are correctly discovered and displayed, as shown in the image below.
+
 ## Support for ST-2022-7 ##
 Starting from the daemon version 3.0 and driver version 2.0 support for ST-2022-7 was added. 
 This feature is automatically enabled when 2 interfaces are configured via the daemon _interface_name_ parameter.
