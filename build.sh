@@ -14,7 +14,14 @@ git submodule update --init --recursive
 
 cd 3rdparty/ravenna-alsa-lkm/driver
 git checkout aes67-daemon
-make
+
+# Use clang for kernel 7.2+
+KERNEL_VERSION=$(uname -r | cut -d. -f1,2 | tr -d '.')
+if [ "$KERNEL_VERSION" -ge 72 ]; then
+  make CC=clang
+else
+  make
+fi
 cd -
 
 cd webui
