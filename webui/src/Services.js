@@ -116,7 +116,7 @@ export default class RestAPI {
         transcriber_files_num: parseInt(transcriber_files_num, 10),
         transcriber_file_duration: parseInt(transcriber_file_duration, 10),
         transcriber_model: transcriber_model,
-        transcriber_language: transcriber_language
+        transcriber_language: transcriber_language,
         nmos_enabled: nmos_enabled,
         nmos_registry_address: nmos_registry_address,
         nmos_registry_port: parseInt(nmos_registry_port, 10),

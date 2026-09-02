@@ -224,7 +224,7 @@ class Config extends Component {
       this.state.transcriberFiles,
       this.state.transcriberFileDuration,
       this.state.transcriberModel,
-      this.state.transcriberLanguage)
+      this.state.transcriberLanguage,
       this.state.nmosEnabled,
       this.state.nmosRegistryAddress,
       this.state.nmosRegistryPort,
