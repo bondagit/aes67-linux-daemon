@@ -21,8 +21,7 @@ cmake \
 	-DWITH_AVAHI=OFF \
 	-DFAKE_DRIVER=ON \
 	-DWITH_STREAMER=OFF \
-	-DWITH_NMOS=OFF \
-
+	-DWITH_NMOS=ON \
 	.
 make
 cd ..
