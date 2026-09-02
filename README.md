@@ -239,6 +239,16 @@ To build the Docker image for the daemon regression tests run:
 To run the tests:
       
       docker run aes67-daemon-tests
+
+You can also run the regression test on your host, in this case if mDNS via Avahi daemon is enabled make sure the loopback interface is allowed in its configuration file:
+
+      sudo vim /etc/avahi/avahi-daemon.conf
+
+Locate the [server] section, find the allow-interfaces= line and amke sure it contains "lo":
+
+      [server]
+      allow-interfaces=lo,eth0
+
       
 ### [webui](webui) directory ###
 
