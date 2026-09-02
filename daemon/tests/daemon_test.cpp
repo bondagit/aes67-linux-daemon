@@ -38,6 +38,7 @@ namespace process = boost::process::v1;
 #include <boost/algorithm/string/replace.hpp>
 
 #include <set>
+#include <optional>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE DaemonTest
@@ -49,6 +50,7 @@ namespace process = boost::process::v1;
 
 constexpr static const char g_daemon_address[] = "127.0.0.1";
 constexpr static uint16_t g_daemon_port = 9999;
+constexpr static uint16_t g_nmos_node_port = 3418;
 constexpr static const char g_sap_address[] = "224.2.127.254";
 constexpr static uint16_t g_sap_port = 9875;
 constexpr static uint16_t g_udp_size = 1024;
@@ -117,6 +119,12 @@ struct Client {
     cli_.set_connection_timeout(30);
     cli_.set_read_timeout(30);
     cli_.set_write_timeout(30);
+
+#ifdef _USE_NMOS_
+    nmos_cli_.set_connection_timeout(30);
+    nmos_cli_.set_read_timeout(30);
+    nmos_cli_.set_write_timeout(30);
+#endif
   }
 
   bool is_alive() {
@@ -362,7 +370,7 @@ struct Client {
 
   bool wait_for_remote_mdns_sources(unsigned int num) {
     boost::property_tree::ptree pt;
-    int retry = 10;
+    int retry = 20;
     do {
       std::this_thread::sleep_for(std::chrono::seconds(1));
       auto json = get_remote_mdns_sources();
@@ -374,8 +382,29 @@ struct Client {
     return (retry > 0);
   }
 
+#ifdef _USE_NMOS_
+  auto nmos_get(const char* path, int expected_status = 200) {
+    std::optional<httplib::Result> res;
+    for (int retry = 10; retry-- && !res;) {
+      auto result = nmos_cli_.Get(path);
+      if (result)
+        res.emplace(std::move(result));
+      else
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    BOOST_REQUIRE_MESSAGE(res.has_value(),
+                          std::string("NMOS request returned no response: ") + path);
+    BOOST_REQUIRE_MESSAGE(res->value().status == expected_status,
+                std::string("Unexpected NMOS response: ") + path);
+    return res->value().body;
+  };
+#endif
+
  private:
   httplib::Client cli_{g_daemon_address, g_daemon_port};
+#ifdef _USE_NMOS_
+  httplib::Client nmos_cli_{g_daemon_address, g_nmos_node_port};
+#endif
 #if BOOST_VERSION < 108700
   io_service io_service_;
 #else
@@ -440,7 +469,11 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto transcriber_language = pt.get<std::string>("transcriber_language");
   auto transcriber_openvino_device =
       pt.get<std::string>("transcriber_openvino_device");
-
+  auto nmos_enabled = pt.get<bool>("nmos_enabled");
+  auto nmos_registry_address = pt.get<std::string>("nmos_registry_address");
+  auto nmos_registry_port = pt.get<int>("nmos_registry_port");
+  auto nmos_node_port = pt.get<int>("nmos_node_port");
+  auto nmos_label = pt.get<std::string>("nmos_label");
   BOOST_CHECK_MESSAGE(http_port == 9999, "config as excepcted");
   // BOOST_CHECK_MESSAGE(log_severity == 5, "config as excepcted");
   BOOST_CHECK_MESSAGE(playout_delay == 0, "config as excepcted");
@@ -465,11 +498,7 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(custom_node_id == "test node", "config as excepcted");
   BOOST_CHECK_MESSAGE(auto_sinks_update == true, "config as excepcted");
-#ifdef _USE_AVAHI_
   BOOST_CHECK_MESSAGE(mdns_enabled == true, "config as excepcted");
-#else
-  BOOST_CHECK_MESSAGE(mdns_enabled == false, "config as excepcted");
-#endif
   BOOST_CHECK_MESSAGE(streamer_enabled == false, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_channels == 8, "config as excepcted");
   BOOST_CHECK_MESSAGE(streamer_files_num == 6, "config as excepcted");
@@ -486,7 +515,247 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(transcriber_language == "en", "config as excepcted");
   BOOST_CHECK_MESSAGE(transcriber_openvino_device == "CPU",
                       "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_enabled == true, "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_registry_address == "127.0.0.2",
+                      "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_registry_port == 3410, "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_node_port == 3418, "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_label == "AES67 Daemon test", "config as excepcted");
 }
+
+#ifdef _USE_NMOS_
+BOOST_AUTO_TEST_CASE(nmos_node_api) {
+  Client cli;
+  BOOST_CHECK_EQUAL(cli.nmos_get("/x-nmos/"), "[\"node/\"]");
+  BOOST_CHECK_EQUAL(cli.nmos_get("/x-nmos/node/"), "[\"v1.3/\"]");
+
+  auto versions = cli.nmos_get("/x-nmos/node/v1.3/");
+  boost::property_tree::ptree pt;
+  std::stringstream ss(versions);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_CHECK_EQUAL(pt.size(), 6);
+
+  auto self = cli.nmos_get("/x-nmos/node/v1.3/self");
+  pt.clear();
+  ss.clear();
+  ss.str(self);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_CHECK(!pt.get<std::string>("id").empty());
+  BOOST_CHECK(!pt.get<std::string>("version").empty());
+  BOOST_CHECK_EQUAL(pt.get<std::string>("label"), "test node");
+  BOOST_CHECK_EQUAL(pt.get<std::string>("description"),
+                    "AES67 Linux Daemon");
+  BOOST_CHECK_EQUAL(pt.get<std::string>("href"),
+                    "http://127.0.0.1:3418/");
+  BOOST_CHECK(!pt.get<std::string>("hostname").empty());
+  BOOST_REQUIRE_EQUAL(pt.get_child("api.versions").size(), 1);
+  BOOST_CHECK_EQUAL(pt.get_child("api.versions").front().second.data(),
+                    "v1.3");
+  const auto& endpoint = pt.get_child("api.endpoints").front().second;
+  BOOST_CHECK_EQUAL(endpoint.get<int>("port"), g_nmos_node_port);
+  BOOST_CHECK_EQUAL(endpoint.get<std::string>("protocol"), "http");
+  BOOST_CHECK_EQUAL(endpoint.get<bool>("authorization"), false);
+  BOOST_REQUIRE_EQUAL(pt.get_child("services").size(), 0);
+  BOOST_REQUIRE_EQUAL(pt.get_child("caps").size(), 0);
+  BOOST_REQUIRE_EQUAL(pt.get_child("clocks").size(), 1);
+  const auto& clock = pt.get_child("clocks").front().second;
+  BOOST_CHECK_EQUAL(clock.get<std::string>("name"), "clk0");
+  BOOST_CHECK_EQUAL(clock.get<std::string>("ref_type"), "ptp");
+  BOOST_CHECK_EQUAL(clock.get<bool>("traceable"), false);
+  BOOST_CHECK_EQUAL(clock.get<std::string>("version"), "IEEE1588-2008");
+  BOOST_CHECK(!clock.get<std::string>("gmid").empty());
+  BOOST_REQUIRE_EQUAL(pt.get_child("interfaces").size(), 1);
+  const auto& interface = pt.get_child("interfaces").front().second;
+  BOOST_CHECK(!interface.get<std::string>("name").empty());
+  BOOST_CHECK(!interface.get<std::string>("port_id").empty());
+  BOOST_CHECK(!interface.get<std::string>("chassis_id").empty());
+
+  const std::vector<std::string> resource_paths = {
+      "/x-nmos/node/v1.3/devices/", "/x-nmos/node/v1.3/sources/",
+      "/x-nmos/node/v1.3/flows/", "/x-nmos/node/v1.3/senders/",
+      "/x-nmos/node/v1.3/receivers/"};
+  for (const auto& path : resource_paths) {
+    auto resources = cli.nmos_get(path.c_str());
+    pt.clear();
+    ss.clear();
+    ss.str(resources);
+    boost::property_tree::read_json(ss, pt);
+    if (path == "/x-nmos/node/v1.3/devices/") {
+      BOOST_CHECK_EQUAL(pt.size(), 1);
+      const auto& device = pt.front().second;
+      BOOST_CHECK_EQUAL(device.get<std::string>("id").empty(), false);
+      BOOST_CHECK_EQUAL(device.get<std::string>("version").empty(), false);
+      BOOST_CHECK_EQUAL(device.get<std::string>("label").empty(), false);
+      BOOST_CHECK_EQUAL(device.get<std::string>("type"),
+                        "urn:x-nmos:device:generic");
+      BOOST_CHECK_EQUAL(device.get<std::string>("node_id").empty(), false);
+      BOOST_REQUIRE_EQUAL(device.get_child("senders").size(), 0);
+      BOOST_REQUIRE_EQUAL(device.get_child("receivers").size(), 0);
+      BOOST_REQUIRE_EQUAL(device.get_child("controls").size(), 1);
+      const auto device_id = device.get<std::string>("id");
+
+      auto device_resource = cli.nmos_get(
+          (std::string("/x-nmos/node/v1.3/devices/") + device_id).c_str());
+      pt.clear();
+      ss.clear();
+      ss.str(device_resource);
+      boost::property_tree::read_json(ss, pt);
+      BOOST_CHECK_EQUAL(pt.get<std::string>("id"), device_id);
+    } else {
+      BOOST_CHECK(pt.empty());
+    }
+  }
+
+  Client daemon_cli;
+  BOOST_REQUIRE_MESSAGE(daemon_cli.add_source(0), "added source 0 for NMOS");
+  BOOST_REQUIRE_MESSAGE(daemon_cli.add_sink_sdp(0), "added sink 0 for NMOS");
+
+  boost::property_tree::ptree sources_pt;
+  bool source_registered = false;
+  for (int retry = 10; retry-- && !source_registered;) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto sources = cli.nmos_get("/x-nmos/node/v1.3/sources/");
+    sources_pt.clear();
+    ss.clear();
+    ss.str(sources);
+    boost::property_tree::read_json(ss, sources_pt);
+    source_registered = sources_pt.size() == 1;
+  }
+  BOOST_REQUIRE_MESSAGE(source_registered, "source registered in NMOS Node API");
+  const auto source_id = sources_pt.front().second.get<std::string>("id");
+  BOOST_CHECK_EQUAL(sources_pt.front().second.get<std::string>("format"),
+                    "urn:x-nmos:format:audio");
+
+  auto source = cli.nmos_get((std::string("/x-nmos/node/v1.3/sources/") + source_id).c_str());
+  pt.clear();
+  ss.clear();
+  ss.str(source);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_CHECK_EQUAL(pt.get<std::string>("id"), source_id);
+  BOOST_CHECK_EQUAL(pt.get<std::string>("device_id").empty(), false);
+
+  bool flow_registered = false;
+  for (int retry = 10; retry-- && !flow_registered;) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto flows = cli.nmos_get("/x-nmos/node/v1.3/flows/");
+    pt.clear();
+    ss.clear();
+    ss.str(flows);
+    boost::property_tree::read_json(ss, pt);
+    flow_registered = pt.size() == 1;
+  }
+  BOOST_REQUIRE_MESSAGE(flow_registered, "flow registered in NMOS Node API");
+  const auto& flow = pt.front().second;
+  BOOST_CHECK_EQUAL(flow.get<std::string>("id").empty(), false);
+  BOOST_CHECK_EQUAL(flow.get<std::string>("version").empty(), false);
+  BOOST_CHECK_EQUAL(flow.get<std::string>("label").empty(), false);
+  BOOST_CHECK_EQUAL(flow.get<std::string>("source_id"), source_id);
+  BOOST_CHECK_EQUAL(flow.get<std::string>("device_id").empty(), false);
+  BOOST_CHECK_EQUAL(flow.get<std::string>("format"),
+                    "urn:x-nmos:format:audio");
+  BOOST_CHECK_EQUAL(flow.get<std::string>("media_type"), "audio/L16");
+  BOOST_CHECK_EQUAL(flow.get<int>("grain_rate.numerator"), 44100);
+  BOOST_CHECK_EQUAL(flow.get<int>("grain_rate.denominator"), 48);
+  BOOST_CHECK_EQUAL(flow.get<int>("sample_rate.numerator"), 44100);
+  BOOST_CHECK_EQUAL(flow.get<int>("sample_rate.denominator"), 1);
+  BOOST_CHECK_EQUAL(flow.get<int>("bit_depth"), 16);
+  BOOST_REQUIRE_EQUAL(flow.get_child("channels").size(), 2);
+  const auto flow_id = flow.get<std::string>("id");
+
+  auto flow_resource = cli.nmos_get(
+      (std::string("/x-nmos/node/v1.3/flows/") + flow_id).c_str());
+  pt.clear();
+  ss.clear();
+  ss.str(flow_resource);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_CHECK_EQUAL(pt.get<std::string>("id"), flow_id);
+
+  auto senders = cli.nmos_get("/x-nmos/node/v1.3/senders/");
+  pt.clear();
+  ss.clear();
+  ss.str(senders);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_REQUIRE_EQUAL(pt.size(), 1);
+  const auto& sender = pt.front().second;
+  BOOST_CHECK_EQUAL(sender.get<std::string>("id").empty(), false);
+  BOOST_CHECK_EQUAL(sender.get<std::string>("version").empty(), false);
+  BOOST_CHECK_EQUAL(sender.get<std::string>("label").empty(), false);
+  BOOST_CHECK_EQUAL(sender.get<std::string>("flow_id").empty(), false);
+  BOOST_CHECK_EQUAL(sender.get<std::string>("flow_id"),
+                    flow_id);
+  const auto sender_id = sender.get<std::string>("id");
+  BOOST_CHECK_EQUAL(sender.get<std::string>("transport"),
+                    "urn:x-nmos:transport:rtp.mcast");
+  BOOST_CHECK_EQUAL(sender.get<std::string>("device_id").empty(), false);
+  BOOST_CHECK_EQUAL(sender.get<std::string>("manifest_href").empty(), false);
+  BOOST_REQUIRE_EQUAL(sender.get_child("interface_bindings").size(), 1);
+  BOOST_CHECK(sender.get_child_optional("subscription.receiver_id"));
+  BOOST_CHECK_EQUAL(sender.get<bool>("subscription.active"), true);
+
+  auto sender_resource = cli.nmos_get(
+      (std::string("/x-nmos/node/v1.3/senders/") + sender_id).c_str());
+  pt.clear();
+  ss.clear();
+  ss.str(sender_resource);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_CHECK_EQUAL(pt.get<std::string>("id"), sender_id);
+
+  bool receiver_registered = false;
+  for (int retry = 10; retry-- && !receiver_registered;) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto receivers = cli.nmos_get("/x-nmos/node/v1.3/receivers/");
+    pt.clear();
+    ss.clear();
+    ss.str(receivers);
+    boost::property_tree::read_json(ss, pt);
+    receiver_registered = pt.size() == 1;
+  }
+  BOOST_REQUIRE_MESSAGE(receiver_registered, "sink registered in NMOS Node API");
+  const auto& receiver = pt.front().second;
+  BOOST_CHECK_EQUAL(receiver.get<std::string>("id").empty(), false);
+  BOOST_CHECK_EQUAL(receiver.get<std::string>("version").empty(), false);
+  BOOST_CHECK_EQUAL(receiver.get<std::string>("label").empty(), false);
+  BOOST_CHECK_EQUAL(receiver.get<std::string>("device_id").empty(), false);
+  BOOST_CHECK_EQUAL(receiver.get<std::string>("transport"),
+                    "urn:x-nmos:transport:rtp.mcast");
+  BOOST_REQUIRE_EQUAL(receiver.get_child("interface_bindings").size(), 1);
+  BOOST_CHECK_EQUAL(receiver.get<std::string>("format"),
+                    "urn:x-nmos:format:audio");
+  BOOST_REQUIRE_EQUAL(receiver.get_child("caps.media_types").size(), 2);
+  BOOST_CHECK(receiver.get_child_optional("subscription.sender_id"));
+  BOOST_CHECK_EQUAL(receiver.get<bool>("subscription.active"), false);
+  const auto receiver_id = receiver.get<std::string>("id");
+
+  auto receiver_resource = cli.nmos_get(
+      (std::string("/x-nmos/node/v1.3/receivers/") + receiver_id).c_str());
+  pt.clear();
+  ss.clear();
+  ss.str(receiver_resource);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_CHECK_EQUAL(pt.get<std::string>("id"), receiver_id);
+
+  cli.nmos_get("/x-nmos/node/v1.3/sources/00000000-0000-0000-0000-000000000000", 404);
+  cli.nmos_get("/x-nmos/node/v1.3/receivers/00000000-0000-0000-0000-000000000000", 404);
+  cli.nmos_get("/x-nmos/node/v1.3/senders/00000000-0000-0000-0000-000000000000", 404);
+  cli.nmos_get("/x-nmos/node/v1.3/flows/00000000-0000-0000-0000-000000000000", 404);
+  cli.nmos_get("/x-nmos/node/v1.3/devices/00000000-0000-0000-0000-000000000000", 404);
+
+  BOOST_REQUIRE_MESSAGE(daemon_cli.remove_source(0), "removed source 0 after NMOS test");
+  BOOST_REQUIRE_MESSAGE(daemon_cli.remove_sink(0), "removed sink 0 after NMOS test");
+
+  for (const auto& path : resource_paths) {
+    auto resources = cli.nmos_get(path.c_str());
+    pt.clear();
+    ss.clear();
+    ss.str(resources);
+    boost::property_tree::read_json(ss, pt);
+    if (path == "/x-nmos/node/v1.3/devices/")
+      BOOST_CHECK_EQUAL(pt.size(), 1);
+    else
+      BOOST_CHECK(pt.empty());
+  }
+}
+#endif
 
 BOOST_AUTO_TEST_CASE(get_ptp_status) {
   Client cli;

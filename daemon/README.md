@@ -244,6 +244,12 @@ Example
       "transcriber_model": "../3rdparty/whisper.cpp/models/ggml-base.en.bin",
       "transcriber_language": "en",
       "transcriber_openvino_device": "CPU"
+      "streamer_player_buffer_files_num": 1
+      "nmos_enabled": false,
+      "nmos_registry_address": "127.0.0.1",
+      "nmos_registry_port": 8010,
+      "nmos_node_port": 3212,
+      "nmos_label": "AES67 Daemon"
     }
 
 where:
@@ -385,6 +391,23 @@ where:
 
 > **transcriber\_openvino\_device**: 
 > JSON string specifying the OpenVINO device for transcription inference, if supported by the current model. Default is "CPU".
+
+> **nmos\_enabled**
+> JSON boolean specifying the NMOS support is enabled or disable.
+
+> **nmos\_registry\_address**
+> JSON string specifying the address of the NMOS registry to connect to.
+
+> **nmos\_registry\_port**
+> JSON number specifying the port of the NMOS registry to connect to.
+
+> **nmos\_node\_port**
+> JSON number specifying the port of the local NMOS node.
+> The NMOS node binds to any network interface on this port.
+
+> **nmos\_label**
+> JSON string specifying the NMOS label.
+
 
 ### JSON PTP Config<a name="ptp-config"></a> ###
 

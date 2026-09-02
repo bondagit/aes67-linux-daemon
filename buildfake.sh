@@ -22,6 +22,7 @@ cmake \
 	-DFAKE_DRIVER=ON \
 	-DWITH_STREAMER=OFF \
 	-DWITH_TRANSCRIBER=OFF \
+	-DWITH_NMOS=ON \
 	.
 make
 cd ..

@@ -201,6 +201,11 @@ bool Config::save(const Config& config) {
             config.get_transcriber_openvino_device() ||
         get_transcriber_language() != config.get_transcriber_language() ||
         get_transcriber_enabled() != config.get_transcriber_enabled();
+        get_nmos_enabled() != config.get_nmos_enabled() ||
+        get_nmos_registry_address() != config.get_nmos_registry_address() ||
+        get_nmos_registry_port() != config.get_nmos_registry_port() ||
+        get_nmos_node_port() != config.get_nmos_node_port() ||
+        get_nmos_label() != config.get_nmos_label();
 
     if (!daemon_restart_)
       *this = config;

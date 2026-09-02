@@ -106,6 +106,39 @@ The daemon should work on all Ubuntu starting from 18.04 onward, it's possible t
 ## Devices and interoperability tests ##
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
+## Support for NMOS ##
+Starting from daemon version 4.x the support for NMOS (IS-04 and IS-05) was added.
+
+To enable it recompile the daemon with the CMake option _-DWITH_NMOS=ON_
+
+In order to test NMOS consider using the following tools:
+ - [NMOS C++ from Sony](https://github.com/sony/nmos-cpp)
+ - [Riedel NMOS explorer](https://www.dropbox.com/scl/fo/rglvostkvqz0h3tkzhgvk/AKzUDkdLlPheUGjbIG32gNQ?rlkey=stwvwslccvklmmrhz7eqd8q0s&st=tqyo5f1v&dl=0￼)
+
+In order to build the NMOS C++ clone the repositoy and use the script [nmos-cpp-build.sh](daemon/scripts/nmos-cpp-build.sh) from within the nmos-cpp directory to build the suite.
+
+Once the build is complete, start the NMOS Registry from the checkout directory:
+
+     cd build
+     ./nmos-cpp-registry
+
+By default, the registry listens on port 3210, while the NMOS Node listens on port 3212.
+
+Download and extract the Riedel NMOS Explorer, then run the start.sh script from its main directory.
+
+Start the daemon and open the WebUI. In the NMOS Config section, verify that the following parameters are set:
+
+```
+NMOS Enabled              Yes
+NMOS Registry Address     127.0.0.1
+NMOS Registry Port        3210
+NMOS Node Port            3218
+```
+
+Using the daemon WebUI, create a Source and a Sink.
+
+Then open the Riedel NMOS Explorer and verify that both the Source and Sink are correctly discovered and displayed, as shown in the image below.
+<img width="1598" height="1038" alt="Screenshot from 2026-08-21 11-36-12" src="https://github.com/user-attachments/assets/4ee621be-4cc0-49c2-94e5-5f71da30d39c" />
 ## Support for ST-2022-7 ##
 Starting from the daemon version 3.0 and driver version 2.0 support for ST-2022-7 was added. 
 This feature is automatically enabled when 2 interfaces are configured via the daemon _interface_name_ parameter.
@@ -214,6 +247,16 @@ To build the Docker image for the daemon regression tests run:
 To run the tests:
       
       docker run aes67-daemon-tests
+
+You can also run the regression test on your host, in this case if mDNS via Avahi daemon is enabled make sure the loopback interface is allowed in its configuration file:
+
+      sudo vim /etc/avahi/avahi-daemon.conf
+
+Locate the [server] section, find the allow-interfaces= line and amke sure it contains "lo":
+
+      [server]
+      allow-interfaces=lo,eth0
+
       
 ### [webui](webui) directory ###
 

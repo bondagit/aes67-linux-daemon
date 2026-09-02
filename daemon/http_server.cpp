@@ -259,6 +259,7 @@ bool HttpServer::init() {
         set_error(ret, "failed to add source " + std::to_string(source.id),
                   res);
       } else {
+        session_manager_->save_status();
         set_headers(res);
       }
     } catch (const std::runtime_error& e) {
@@ -280,6 +281,7 @@ bool HttpServer::init() {
         if (ret) {
           set_error(ret, "failed to remove source " + std::to_string(id), res);
         } else {
+          session_manager_->save_status();
           set_headers(res);
         }
       });
@@ -292,6 +294,7 @@ bool HttpServer::init() {
       if (ret) {
         set_error(ret, "failed to add sink " + std::to_string(sink.id), res);
       } else {
+        session_manager_->save_status();
         set_headers(res);
       }
     } catch (const std::runtime_error& e) {
@@ -312,6 +315,7 @@ bool HttpServer::init() {
     if (ret) {
       set_error(ret, "failed to remove sink " + std::to_string(id), res);
     } else {
+      session_manager_->save_status();
       set_headers(res);
     }
   });

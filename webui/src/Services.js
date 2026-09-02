@@ -86,7 +86,7 @@ export default class RestAPI {
     });
   }
 
-  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_mcast_base_sec, rtp_port, rtp_port_sec, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id, auto_sinks_update, streamer_enabled, streamer_channels, streamer_files_num, streamer_file_duration, streamer_player_buffer_files_num, transcriber_enabled, transcriber_channels, transcriber_files_num, transcriber_file_duration, transcriber_model, transcriber_language) {
+  static setConfig(log_severity, syslog_proto, syslog_server, rtp_mcast_base, rtp_mcast_base_sec, rtp_port, rtp_port_sec, rtsp_port, playout_delay, tic_frame_size_at_1fs, sample_rate, max_tic_frame_size, sap_mcast_addr, sap_interval, mdns_enabled, custom_node_id, auto_sinks_update, streamer_enabled, streamer_channels, streamer_files_num, streamer_file_duration, streamer_player_buffer_files_num, transcriber_enabled, transcriber_channels, transcriber_files_num, transcriber_file_duration, transcriber_model, transcriber_language,mos_enabled, nmos_registry_address, nmos_registry_port, nmos_node_port) {
     return this.doFetch(config, {
       body: JSON.stringify({
         log_severity: parseInt(log_severity, 10),
@@ -117,6 +117,10 @@ export default class RestAPI {
         transcriber_file_duration: parseInt(transcriber_file_duration, 10),
         transcriber_model: transcriber_model,
         transcriber_language: transcriber_language
+        nmos_enabled: nmos_enabled,
+        nmos_registry_address: nmos_registry_address,
+        nmos_registry_port: parseInt(nmos_registry_port, 10),
+        nmos_node_port: parseInt(nmos_node_port, 10)
       }),
       method: 'POST'
     }).catch(err => {

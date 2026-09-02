@@ -14,6 +14,7 @@ option(FAKE_DRIVER "Use fake driver instead of RAVENNA" OFF)
 option(WITH_SYSTEMD "Include systemd notify and watchdog support" OFF)
 option(WITH_STREAMER "Enable streamer support" ON)
 option(WITH_TRANSCRIBER "Enable transcriber support" ON)
+option(WITH_NMOS "Include NMOS IS-04 Node API and Registration support" OFF)
 
 # ravena lkm _should_ be provided by the CLI. Nonetheless, we should be able
 # to find it in system dirs too...
@@ -58,6 +59,12 @@ if(WITH_TRANSCRIBER)
   MESSAGE(STATUS "WITH_TRANSCRIBER")
   add_definitions(-D_USE_TRANSCRIBER_)
   list(APPEND SOURCES transcriber.cpp whisper.cpp)
+endif()
+
+if(WITH_NMOS)
+  MESSAGE(STATUS "WITH_NMOS")
+  add_definitions(-D_USE_NMOS_)
+  list(APPEND SOURCES nmos_manager.cpp)
 endif()
 
 if(FAKE_DRIVER)
