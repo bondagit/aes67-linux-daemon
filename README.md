@@ -71,6 +71,16 @@ The [debian-packages.sh](debian-packages.sh) script can be used to install all t
 Install on your target machine (both ARM or X86) an Ubuntu Linux distribution. **NO Virtual machines**. 
 The daemon should work on all Ubuntu starting from 18.04 onward, it's possible to use other distros.
 
+When cloning the repository manually, include its required submodules. The
+RAVENNA/AES67 driver submodule provides the public headers used by the daemon
+(including `driver/RTP_stream_info.h`):
+
+      git clone --recurse-submodules https://github.com/bondagit/aes67-linux-daemon.git
+
+For an existing checkout, run `git submodule update --init --recursive` before
+configuring with CMake. The supplied `build.sh` performs this initialization
+automatically.
+
 * Install all the required packages by running the script [ubuntu-packages.sh](ubuntu-packages.sh)
 * execute the [build.sh](build.sh) script to download and build the driver, the daemon and the WebUI, see [script notes](#notes).
   The script performs the following operations:
