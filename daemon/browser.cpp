@@ -218,6 +218,11 @@ bool Browser::init() {
 bool Browser::terminate() {
   if (running_) {
     running_ = false;
+    // running_ is observed only after SAP::receive returns.  Closing the
+    // socket completes its pending asynchronous receive with operation_aborted
+    // and wakes the worker immediately; merely changing running_ leaves the
+    // worker blocked while the network is being torn down at system shutdown.
+    sap_.terminate();
     /* wait for worker to exit */
     res_.get();
     /* terminate mDNS client */

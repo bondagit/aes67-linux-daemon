@@ -49,6 +49,9 @@ class SAP {
                uint32_t& addr,
                std::string& sdp,
                int tout_secs = 1);
+  // Abort an outstanding receive so the Browser worker can be joined during
+  // daemon shutdown, even after network teardown has begun.
+  void terminate();
 
  private:
   static void handle_receive(const boost::system::error_code& ec,
