@@ -49,6 +49,7 @@ class SAP {
                uint32_t& addr,
                std::string& sdp,
                int tout_secs = 1);
+  void terminate();
 
  private:
   static void handle_receive(const boost::system::error_code& ec,

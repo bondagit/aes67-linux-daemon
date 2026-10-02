@@ -170,3 +170,14 @@ bool SAP::send(bool is_announce,
   }
   return true;
 }
+
+void SAP::terminate() {
+  // Keep all socket operations on the receive thread.  post() wakes run_one()
+  // even when it is blocked waiting for a datagram.
+  boost::asio::post(io_service_, [this] {
+    boost::system::error_code ec;
+    deadline_.cancel();
+    socket_.cancel(ec);
+    socket_.close(ec);
+  });
+}
