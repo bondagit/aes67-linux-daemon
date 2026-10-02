@@ -222,15 +222,18 @@ bool SessionManager::parse_sdp(const std::string& sdp, StreamInfo& info) const {
                 boost::split(fields, value,
                              [line](char c) { return c == ':'; });
                 if (fields.size() == 3) {
-                  if (fields[1] != ptp_status_.gmid ||
-                      stoi(fields[2]) != ptp_config_.domain) {
+                  if (ptp_status_.status == "locked" &&
+                      fields[1] != ptp_status_.gmid) {
                     BOOST_LOG_TRIVIAL(warning)
-                        << "session_manager:: configured PTP grand master "
+                        << "session_manager:: Sink configured PTP grand master "
                            "clock "
                            "doesn't match the PTP clock in SDP at line "
                         << num;
-
-                    return false;
+                  } else if (stoi(fields[2]) != ptp_config_.domain) {
+                    BOOST_LOG_TRIVIAL(warning)
+                        << "session_manager:: Sink configured PTP domain "
+                           "doesn't match the PTP domain in SDP at line "
+                        << num;
                   }
                 }
               } else if (name == "mid") {
@@ -676,15 +679,15 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
         memcpy(&info.stream[1], &info.stream[0], sizeof(info.stream[0]));
         if (!use_source_address) {
           info.stream[1].m_ui32DestIP =
-  #if BOOST_VERSION < 108700
+#if BOOST_VERSION < 108700
               ip::address_v4::from_string(
                   config_->get_rtp_mcast_base_sec().c_str())
                   .to_ulong() +
-  #else
+#else
               ip::make_address(config_->get_rtp_mcast_base_sec().c_str())
                   .to_v4()
                   .to_uint() +
-  #endif
+#endif
               source.id;
         }
         info.stream[1].m_ui32RTCPSrcIP = ip_addr;
@@ -737,9 +740,9 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
   uint32_t sample_rate = driver_->get_current_sample_rate();
   auto [ip_addr, sec_ip_str] = get_interface_ip(config_->get_interface_name(1));
   bool dup_entry =
-      info.st20227_enabled && !sec_ip_str.empty()/* &&
-      (info.stream[0].m_ui32DestIP != info.stream[1].m_ui32DestIP ||
-       info.stream[0].m_usDestPort != info.stream[1].m_usDestPort)*/;
+      info.st20227_enabled && !sec_ip_str.empty() /* &&
+       (info.stream[0].m_ui32DestIP != info.stream[1].m_ui32DestIP ||
+        info.stream[0].m_usDestPort != info.stream[1].m_usDestPort)*/;
 
   // need a 12 digit precision for ptime
   std::ostringstream ss_ptime;
@@ -757,7 +760,7 @@ std::string SessionManager::get_source_sdp_(uint32_t id,
      << "o=- " << info.session_id << " " << info.session_version << " IN IP4 "
      << ip::address_v4(info.stream[0].m_ui32SrcIP).to_string() << "\n"
      << "s=" << config_->get_node_id() << " " << info.stream[0].m_cName << "\n";
-    ss << "t=0 0\n";
+  ss << "t=0 0\n";
   if (dup_entry) {
     ss << "a=group:DUP 1 2\n";
   }
