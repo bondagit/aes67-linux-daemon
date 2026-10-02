@@ -219,6 +219,7 @@ bool Browser::terminate() {
   if (running_) {
     running_ = false;
     /* wait for worker to exit */
+    sap_.terminate();
     res_.get();
     /* terminate mDNS client */
     if (config_->get_mdns_enabled()) {

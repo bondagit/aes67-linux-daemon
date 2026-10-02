@@ -22,7 +22,18 @@ if (NOT RAVENNNA_ALSA_LKM_DIR)
     find_path(RAVENNA_ALSA_LKM_DIR "common/MergingRAVENNACommon.h" REQUIRED)
 endif()
 
-# use sysroot cpp-http lib unless one was explicitly provided in cmdline
+# The daemon also consumes the public RTP/netlink headers from the driver
+# checkout.  A partial clone (without submodules) can satisfy the common
+# header lookup and fail later with the much less actionable
+# "RTP_stream_info.h: No such file or directory" compiler error.
+if (NOT EXISTS "${RAVENNA_ALSA_LKM_DIR}/driver/RTP_stream_info.h")
+  message(FATAL_ERROR
+    "RAVENNA_ALSA_LKM_DIR does not contain driver/RTP_stream_info.h. "
+    "Initialize the ravenna-alsa-lkm submodule (git submodule update --init --recursive) "
+    "or pass -DRAVENNA_ALSA_LKM_DIR=/path/to/ravenna-alsa-lkm.")
+endif()
+
+# use sysroot cpp-http lib unless one was explicitly provided  in cmdline
 if (NOT CPP_HTTPLIB_DIR)
     find_path(CPP_HTTPLIB_DIR "httplib.h" REQUIRED)
 endif()

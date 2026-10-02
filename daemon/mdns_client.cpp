@@ -188,10 +188,14 @@ void MDNSClient::client_callback(AvahiClient* client,
       avahi_threaded_poll_quit(mdns.poll_.get());
       break;
 
-    case AVAHI_CLIENT_S_REGISTERING:
     case AVAHI_CLIENT_S_RUNNING:
-    case AVAHI_CLIENT_S_COLLISION:
-      /* Create the service browser */
+      /*
+       * A browser remains valid across client state transitions. Recreating it
+       * replays cached services as NEW events and starts duplicate RTSP clients.
+       */
+      if (mdns.sb_ != nullptr) {
+        break;
+      }
       mdns.sb_.reset(avahi_service_browser_new(
           client, mdns.config_->get_interface_idx(), AVAHI_PROTO_INET,
           "_ravenna_session._sub._rtsp._tcp", nullptr, {}, browse_callback,
@@ -204,6 +208,8 @@ void MDNSClient::client_callback(AvahiClient* client,
       }
       break;
 
+    case AVAHI_CLIENT_S_REGISTERING:
+    case AVAHI_CLIENT_S_COLLISION:
     case AVAHI_CLIENT_CONNECTING:
       break;
   }

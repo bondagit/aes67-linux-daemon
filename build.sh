@@ -7,13 +7,30 @@
 #export CC=/usr/bin/clang
 #export CXX=/usr/bin/clang++
 
-TOPDIR=$(pwd)
+TOPDIR=$(pwd -P)
+REPO_TOP=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ $? -ne 0 ] || [ "$(cd "$REPO_TOP" 2>/dev/null && pwd -P)" != "$TOPDIR" ]; then
+  echo "ERROR: build.sh must be run from the root of a Git checkout."
+  echo "GitHub source archives do not contain the required submodules."
+  echo "Clone the repository with:"
+  echo "  git clone --recurse-submodules https://github.com/bondagit/aes67-linux-daemon.git"
+  exit 1
+fi
 
 echo "Init git submodules ..."
-git submodule update --init --recursive
+if ! git submodule update --init --recursive; then
+  echo "ERROR: failed to initialize required Git submodules."
+  exit 1
+fi
 
-cd 3rdparty/ravenna-alsa-lkm/driver
-git checkout aes67-daemon
+if [ ! -f 3rdparty/ravenna-alsa-lkm/driver/RTP_stream_info.h ]; then
+  echo "ERROR: 3rdparty/ravenna-alsa-lkm is incomplete: driver/RTP_stream_info.h is missing."
+  echo "Run: git submodule update --init --recursive"
+  exit 1
+fi
+
+cd 3rdparty/ravenna-alsa-lkm/driver || exit 1
+git checkout aes67-daemon || exit 1
 
 # Use clang for kernel 7.2+
 KERNEL_VERSION=$(uname -r | cut -d. -f1,2 | tr -d '.')
