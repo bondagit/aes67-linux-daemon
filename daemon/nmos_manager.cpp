@@ -28,6 +28,7 @@
 
 #include "log.hpp"
 #include "nmos_manager.hpp"
+#include "interface.hpp"
 
 using namespace httplib;
 
@@ -247,6 +248,91 @@ std::string NmosManager::make_resource_uuid(const std::string& type,
 // JSON builders
 // ---------------------------------------------------------------------------
 
+std::string NmosManager::build_api_endpoints() const {
+  struct ifaddrs *ifap, *ifa;
+  struct sockaddr_in* sa;
+  char* saddr;
+
+  std::ostringstream ss;
+  bool first = true;
+
+  getifaddrs(&ifap);
+  for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+    if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
+      sa = (struct sockaddr_in*)ifa->ifa_addr;
+      saddr = inet_ntoa(sa->sin_addr);
+
+      if (first) {
+          first = false;
+      } else {
+          ss << "\n    ,";
+      }
+
+      ss << "\n    {"
+         << "\n      \"host\": \"" << saddr << "\","
+         << "\n      \"port\": " << config_->get_nmos_node_port() << ","
+         << "\n      \"protocol\": \"http\","
+         << "\n      \"authorization\": false"
+         << "\n    }";
+    }
+  }
+
+  freeifaddrs(ifap);
+  return ss.str();
+}
+
+std::string NmosManager::build_connections() const {
+  struct ifaddrs *ifap, *ifa;
+  struct sockaddr_in* sa;
+  char* saddr;
+
+  std::ostringstream ss;
+  bool first = true;
+
+  getifaddrs(&ifap);
+  for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+    if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
+      sa = (struct sockaddr_in*)ifa->ifa_addr;
+      saddr = inet_ntoa(sa->sin_addr);
+
+      if (first) {
+          first = false;
+      } else {
+          ss << "\n    ,";
+      }
+
+      ss << "\n    {"
+         << "\n    \"href\": \"http://" << saddr
+         << ":" << config_->get_nmos_node_port() << "/x-nmos/connection/v1.1/\","
+         << "\n    \"type\": \"urn:x-nmos:control:sr-ctrl/v1.1\","
+         << "\n    \"authorization\": false"
+         << "\n  }";
+    }
+  }
+
+  freeifaddrs(ifap);
+  return ss.str();
+}
+
+std::string NmosManager::build_interfaces() const {
+  std::ostringstream ss;
+  ss << "\n    {"
+     << "\n      \"name\": \"" << config_->get_interface_name(0) << "\","
+     << "\n      \"port_id\": \"" << colon_to_dash_mac(get_interface_mac(config_->get_interface_name(0)).second) << "\","
+     << "\n      \"chassis_id\": \"" << colon_to_dash_mac(config_->get_mac_addr_str()) << "\""
+     << "\n    }";
+
+  if (config_->get_interface_name(1).length() > 0) {
+    ss << "\n    ,{"
+       << "\n      \"name\": \"" << config_->get_interface_name(1) << "\","
+       << "\n      \"port_id\": \"" << colon_to_dash_mac(get_interface_mac(config_->get_interface_name(1)).second) << "\","
+       << "\n      \"chassis_id\": \"" << colon_to_dash_mac(config_->get_mac_addr_str()) << "\""
+       << "\n    }";
+  }
+
+  return ss.str();
+}
+
 std::string NmosManager::build_node_json() const {
   PTPStatus ptp_status;
   session_manager_->get_ptp_status(ptp_status);
@@ -264,12 +350,7 @@ std::string NmosManager::build_node_json() const {
      << ",\n  \"hostname\": \"" << get_system_hostname() << "\""
      << ",\n  \"api\": {"
      << "\n    \"versions\": [\"v1.3\"],"
-     << "\n    \"endpoints\": [{"
-     << "\n      \"host\": \"" << config_->get_ip_addr_str() << "\","
-     << "\n      \"port\": " << config_->get_nmos_node_port() << ","
-     << "\n      \"protocol\": \"http\","
-     << "\n      \"authorization\": false"
-     << "\n    }]"
+     << "\n    \"endpoints\": [" << build_api_endpoints() << "\n    ]"
      << "\n  }"
      << ",\n  \"services\": []"
      << ",\n  \"caps\": {}"
@@ -281,11 +362,7 @@ std::string NmosManager::build_node_json() const {
      << "\n    \"gmid\": \"" << gmid << "\","
      << "\n    \"locked\": " << std::boolalpha << (ptp_status.status == "locked")
      << "\n  }]"
-     << ",\n  \"interfaces\": [{"
-     << "\n    \"name\": \"" << config_->get_interface_name() << "\","
-     << "\n    \"port_id\": \"" << colon_to_dash_mac(config_->get_mac_addr_str()) << "\","
-     << "\n    \"chassis_id\": \"" << colon_to_dash_mac(config_->get_mac_addr_str()) << "\""
-     << "\n  }]"
+     << ",\n  \"interfaces\": [" << build_interfaces() << "\n  ]"
      << "\n}";
   return ss.str();
 }
@@ -316,12 +393,7 @@ void NmosManager::rebuild_device_json_locked() {
     first = false;
   }
   ss << "]"
-     << ",\n  \"controls\": [{"
-     << "\n    \"href\": \"http://" << config_->get_ip_addr_str()
-     << ":" << config_->get_nmos_node_port() << "/x-nmos/connection/v1.1/\","
-     << "\n    \"type\": \"urn:x-nmos:control:sr-ctrl/v1.1\","
-     << "\n    \"authorization\": false"
-     << "\n  }]"
+     << ",\n  \"controls\": [" << build_connections() << "\n  ]"
      << "\n}";
   device_json_ = ss.str();
 }
@@ -470,7 +542,7 @@ void NmosManager::setup_node_api() {
   });
 
   // Self
-  node_api_svr_.Get("/x-nmos/node/v1.3/self", [this](const Request&, Response& res) {
+  node_api_svr_.Get("/x-nmos/node/v1.3/self/?", [this](const Request&, Response& res) {
     std::shared_lock lock(resources_mutex_);
     nmos_ok(res, node_json_);
   });

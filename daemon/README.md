@@ -26,7 +26,7 @@ See [JSON streams](#rtp-streams) for additional info on the status file format a
 
 ## HTTP REST API ##
 
-The daemon implements a REST API interface to configure and control the driver.    
+The daemon implements a REST API interface to configure and control the driver.
 All operations returns HTTP *200* status code in case of success and HTTP *4xx* or *5xx* status code in case of failure.    
 In case of failure the server returns a **text/plain** content type with the category and a description of the error occurred.    
 **_NOTE:_** At present the embedded HTTP server doesn't implement neither HTTPS nor user authentication.

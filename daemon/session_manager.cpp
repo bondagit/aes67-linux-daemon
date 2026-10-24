@@ -1211,7 +1211,7 @@ size_t SessionManager::process_sap() {
                                          info.session_id, info.session_version};
       // add this source to the currently active sources
       active_sources.insert(msg_id_hash);
-      // remove this source from deleted sources (if present)
+      // remove this source from deleted sources (if presen t)
       deleted_sources_count_.erase(msg_id_hash);
       // send announcement for this source
       sap_.announcement(msg_crc, info.stream[0].m_ui32RTCPSrcIP, sdp);
