@@ -285,6 +285,7 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
+* fixed ALSA DMA lifecycle race in capture/playback, see [issue-43](https://github.com/bondagit/ravenna-alsa-lkm/issues/43) and issue related to the usage of soft hrtimer for audio tick on kernels >= 6.15 causing RTP packets are emitted in burst, see [issue-39](https://github.com/bondagit/ravenna-alsa-lkm/issues/39) (from driver version 2.3)
 * set of patches to improve driver stability and performance, see [367c166](https://github.com/bondagit/ravenna-alsa-lkm/commit/367c1665e8038272514a637ea03799350e8e12a8). Added _audio_cpu_affinity_ module parameter to have the audio timer pinned to a specific CPU (from driver 2.1).
 * added support for ST-2022-7 (from driver version 2.0). This version breaks compatibility with the older and requires a new daemon. See [issue 248](https://github.com/bondagit/aes67-linux-daemon/issues/248)
 * patch to update the grand master clock ID of the current master clock when it gets updated in the ANNOUNCE messages (from driver version v1.18). See driver [issue 34](https://github.com/bondagit/ravenna-alsa-lkm/issues/34)

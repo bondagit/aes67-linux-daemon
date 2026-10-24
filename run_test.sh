@@ -188,12 +188,12 @@ sleep 30
 
 #starting record on sink
 echo "Starting to record $SEC sec from sink ..."
-arecord -M -d $SEC -D plughw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS -t raw /tmp/sink_test.raw  &
+arecord -M -d $SEC -D hw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS -t raw /tmp/sink_test.raw  &
 sleep 10
 
 #starting playback on source
 echo "Starting to playback test on source ..."
-aplay -M -D plughw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS ./test/test.raw > /dev/null 2>&1 &
+aplay -M -D hw:RAVENNA -f $SAMPLE_FORMAT -r $SAMPLE_RATE -c $CHANNELS ./test/test.raw > /dev/null 2>&1 &
 
 while killall -0 arecord 2>/dev/null ; do
   sleep 1

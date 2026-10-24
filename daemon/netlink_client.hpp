@@ -21,16 +21,23 @@
 #define _NETLINK_CLIENT_HPP_
 
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 106600
+#include <boost/asio/system_timer.hpp>
+#include <chrono>
+using netlink_deadline_timer = boost::asio::system_timer;
+#else
+#include <boost/asio/deadline_timer.hpp>
+using netlink_deadline_timer = boost::asio::deadline_timer;
+#endif
 #include <cstdlib>
 #include <iostream>
 
 #include "netlink.hpp"
 
 using namespace boost::placeholders;
-using boost::asio::deadline_timer;
 
 class NetlinkClient {
  public:
@@ -41,7 +48,11 @@ class NetlinkClient {
             const nl_protocol& protocol) {
     socket_.open(protocol);
     socket_.bind(listen_endpoint);
+#if BOOST_VERSION >= 106600
+    deadline_.expires_at(netlink_deadline_timer::time_point::max());
+#else
     deadline_.expires_at(boost::posix_time::pos_infin);
+#endif
     check_deadline();
   }
 
@@ -51,7 +62,12 @@ class NetlinkClient {
                       boost::posix_time::time_duration timeout,
                       boost::system::error_code& ec) {
     // Set a deadline for the asynchronous operation.
+#if BOOST_VERSION >= 106600
+    deadline_.expires_after(
+        std::chrono::microseconds(timeout.total_microseconds()));
+#else
     deadline_.expires_from_now(timeout);
+#endif
 
     ec = boost::asio::error::would_block;
     std::size_t length = 0;
@@ -74,9 +90,18 @@ class NetlinkClient {
 
  private:
   void check_deadline() {
-    if (deadline_.expires_at() <= deadline_timer::traits_type::now()) {
+#if BOOST_VERSION >= 106600
+    if (deadline_.expiry() <= netlink_deadline_timer::clock_type::now()) {
+#else
+    if (deadline_.expires_at() <=
+        netlink_deadline_timer::traits_type::now()) {
+#endif
       socket_.cancel();
+#if BOOST_VERSION >= 106600
+      deadline_.expires_at(netlink_deadline_timer::time_point::max());
+#else
       deadline_.expires_at(boost::posix_time::pos_infin);
+#endif
       // BOOST_LOG_TRIVIAL(debug) << "netlink_client:: (" << name_ << ") timeout
       // expired";
     }
@@ -99,7 +124,7 @@ class NetlinkClient {
   boost::asio::io_context io_service_;
 #endif
   boost::asio::basic_raw_socket<nl_protocol> socket_{io_service_};
-  deadline_timer deadline_{io_service_};
+  netlink_deadline_timer deadline_{io_service_};
   std::string name_;
 };
 
