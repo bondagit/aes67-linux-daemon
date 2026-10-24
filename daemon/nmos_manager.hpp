@@ -114,6 +114,9 @@ class NmosManager {
   void rebuild_device_json_locked();
 
   std::string make_resource_uuid(const std::string& type, uint8_t id) const;
+  std::string build_api_endpoints() const;
+  std::string build_connections() const;
+  std::string build_interfaces() const;
   std::string build_node_json() const;
   std::string build_source_json(const StreamSource& src,
                                 const std::string& source_id) const;

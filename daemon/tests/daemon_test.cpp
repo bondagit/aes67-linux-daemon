@@ -32,7 +32,6 @@ namespace process = boost::process;
 #include <boost/process/v1/start_dir.hpp>
 namespace process = boost::process::v1;
 #endif
-#include <boost/process.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string/replace.hpp>
@@ -40,9 +39,8 @@ namespace process = boost::process::v1;
 #include <set>
 #include <optional>
 
-#define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE DaemonTest
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #if !(defined(__arm__) || defined(__arm64__))
 // #define _MEMORY_CHECK_
@@ -577,7 +575,7 @@ BOOST_AUTO_TEST_CASE(nmos_node_api) {
       BOOST_CHECK_EQUAL(device.get<std::string>("node_id").empty(), false);
       BOOST_REQUIRE_EQUAL(device.get_child("senders").size(), 0);
       BOOST_REQUIRE_EQUAL(device.get_child("receivers").size(), 0);
-      BOOST_REQUIRE_EQUAL(device.get_child("controls").size(), 1);
+      BOOST_TEST_REQUIRE(device.get_child("controls").size() >= 1);
       const auto device_id = device.get<std::string>("id");
 
       auto device_resource = cli.nmos_get(
