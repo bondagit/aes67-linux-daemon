@@ -13,7 +13,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 option(WITH_SYSTEMD "Include systemd notify and watchdog support" OFF)
 option(WITH_STREAMER "Enable streamer support" ON)
-option(WITH_NMOS "Include NMOS IS-04 Node API and Registration support" OFF)
 
 # ravena lkm _should_ be provided by the CLI. Nonetheless, we should be able
 # to find it in system dirs too...
