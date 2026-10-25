@@ -293,7 +293,8 @@ The [aes67-daemon branch of ravenna-alsa-lkm repository](https://github.com/bond
 
  The following patches have been applied to the original module:
 
-* fixed ALSA DMA lifecycle race in capture/playback, see [issue-43](https://github.com/bondagit/ravenna-alsa-lkm/issues/43) and issue related to the usage of soft hrtimer for audio tick on kernels >= 6.15 causing RTP packets are emitted in burst, see [issue-39](https://github.com/bondagit/ravenna-alsa-lkm/issues/39) (from driver version 2.3)
+* added support for a Sink RTP SSRC failover, see driver [issue-46](https://github.com/bondagit/ravenna-alsa-lkm/issues/46) and reordered playback packetization to send the period just copied from ALSA, see [pull 45](https://github.com/bondagit/ravenna-alsa-lkm/pull/45) (from driver version 2.4)
+* fixed ALSA DMA lifecycle race in capture/playback, see [issue-43](https://github.com/bondagit/ravenna-alsa-lkm/issues/43) and issue related to the usage of soft hrtimer for audio tick on kernels >= 6.15 causing RTP packets emitted in burst, see [issue-39](https://github.com/bondagit/ravenna-alsa-lkm/issues/39) (from driver version 2.3)
 * set of patches to improve driver stability and performance, see [367c166](https://github.com/bondagit/ravenna-alsa-lkm/commit/367c1665e8038272514a637ea03799350e8e12a8). Added _audio_cpu_affinity_ module parameter to have the audio timer pinned to a specific CPU (from driver 2.1).
 * added support for ST-2022-7 (from driver version 2.0). This version breaks compatibility with the older and requires a new daemon. See [issue 248](https://github.com/bondagit/aes67-linux-daemon/issues/248)
 * patch to update the grand master clock ID of the current master clock when it gets updated in the ANNOUNCE messages (from driver version v1.18). See driver [issue 34](https://github.com/bondagit/ravenna-alsa-lkm/issues/34)
@@ -476,7 +477,7 @@ If no underrun errors occurred during the test the requested buffer size can be 
       Maximum read: 48 frames
       Maximum read latency: 1000.000us, 1.000000ms (1000.0000Hz)
       Playback time = 170.196886, Record time = 170.196887, diff = -1
-      End to end latency: 5.999 msecs
+      End to end latency: 3.999 msecs
       Terminating processes ...
       daemon exiting with code: 0
 
