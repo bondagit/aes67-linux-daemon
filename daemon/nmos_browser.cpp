@@ -172,7 +172,9 @@ bool NmosBrowser::get_remote_sources(std::list<NmosSource>& sources) {
     const bool rtp_transport = transport == "urn:x-nmos:transport:rtp" ||
                                transport == "urn:x-nmos:transport:rtp.ucast" ||
                                transport == "urn:x-nmos:transport:rtp.mcast";
-    if (sender_id.empty() || !rtp_transport || device_id == local_device_id) {
+    if (sender_id.empty() || !rtp_transport || 
+         // do not ignore local sender if it is on the loopback interface
+        (device_id == local_device_id && config_->get_interface_name(0) != "lo")) {
       continue;
     }
 
@@ -180,13 +182,13 @@ bool NmosBrowser::get_remote_sources(std::list<NmosSource>& sources) {
     if (flow_id.empty()) {
       BOOST_LOG_TRIVIAL(warning)
           << "NmosBrowser:: RTP sender " << sender_id << " has no flow_id";
-      return false;
+      continue;
     }
 
     boost::property_tree::ptree flow;
     if (!get_json_resource(query_address, query_port,
                            "/x-nmos/query/v1.3/flows/" + flow_id, flow)) {
-      return false;
+      continue;
     }
 
     const auto format = flow.get<std::string>("format", "");
@@ -203,26 +205,26 @@ bool NmosBrowser::get_remote_sources(std::list<NmosSource>& sources) {
     if (manifest_href.empty() || !parse_http_url(manifest_href, manifest_url)) {
       BOOST_LOG_TRIVIAL(warning) << "NmosBrowser:: audio sender " << sender_id
                                  << " has an invalid manifest_href";
-      return false;
+      continue;
     }
 
     std::string sdp;
     if (!http_get(manifest_url.host, manifest_url.port, manifest_url.path,
                   sdp)) {
-      return false;
+      continue;
     }
     if (!is_audio_sdp(sdp)) {
       BOOST_LOG_TRIVIAL(warning)
           << "NmosBrowser:: sender " << sender_id
           << " manifest does not contain an audio SDP media section";
-      return false;
+      continue;
     }
 
     const auto origin = sdp_get_origin(sdp);
     if (origin.session_id.empty() || origin.unicast_address.empty()) {
       BOOST_LOG_TRIVIAL(warning) << "NmosBrowser:: sender " << sender_id
                                  << " manifest has no valid SDP origin";
-      return false;
+      continue;
     }
     auto name = sender.get<std::string>("label", "");
     if (name.empty()) {
@@ -241,5 +243,5 @@ bool NmosBrowser::get_remote_sources(std::list<NmosSource>& sources) {
                           origin, std::move(sdp)});
   }
 
-  return !sources.empty();
+  return true;
 }

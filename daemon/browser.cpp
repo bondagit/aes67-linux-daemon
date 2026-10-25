@@ -192,7 +192,7 @@ bool Browser::update_nmos_sources() {
     auto existing = ids.find(source.id);
     if (existing == ids.end()) {
       BOOST_LOG_TRIVIAL(info)
-          << "browser:: adding  NMOS source " << source.id
+          << "browser:: adding NMOS source " << source.id
           << " name " << source.name;
       ids.insert(std::move(source));
       last_update_ = elapsed == 0 ? 1 : elapsed;
