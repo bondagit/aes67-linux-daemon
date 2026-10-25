@@ -128,6 +128,8 @@ std::string config_to_json(const Config& config) {
      << ",\n  \"nmos_registry_address\": \""
      << escape_json(config.get_nmos_registry_address()) << "\""
      << ",\n  \"nmos_registry_port\": " << config.get_nmos_registry_port()
+     << ",\n  \"nmos_query_address\": \"" << escape_json(config.get_nmos_query_address()) << "\""
+     << ",\n  \"nmos_query_port\": " << config.get_nmos_query_port()
      << ",\n  \"nmos_node_port\": " << config.get_nmos_node_port()
      << ",\n  \"nmos_label\": \"" << escape_json(config.get_nmos_label()) << "\""
      << "\n}\n";
@@ -393,6 +395,11 @@ Config json_to_config_(std::istream& js, Config& config) {
             remove_undesired_chars(val.get_value<std::string>()));
       } else if (key == "nmos_registry_port") {
         config.set_nmos_registry_port(val.get_value<uint16_t>());
+      } else if (key == "nmos_query_address") {
+        config.set_nmos_query_address(
+            remove_undesired_chars(val.get_value<std::string>()));
+      } else if (key == "nmos_query_port") {
+        config.set_nmos_query_port(val.get_value<uint16_t>());
       } else if (key == "nmos_node_port") {
         config.set_nmos_node_port(val.get_value<uint16_t>());
       } else if (key == "nmos_label") {

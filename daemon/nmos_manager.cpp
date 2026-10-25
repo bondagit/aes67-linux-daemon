@@ -16,19 +16,11 @@
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 106700
-#  include <boost/uuid/name_generator_sha1.hpp>
-#else
-#  include <boost/uuid/name_generator.hpp>
-#endif
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 #include "log.hpp"
 #include "nmos_manager.hpp"
 #include "interface.hpp"
+#include "utils.hpp"
 
 using namespace httplib;
 
@@ -60,17 +52,6 @@ static std::string make_nmos_label(const std::vector<uint8_t>& map) {
   if (map.empty()) return h + " ALSA";
   return h + " ALSA " + std::to_string(map.front() + 1)
          + "-" + std::to_string(map.back() + 1);
-}
-
-static std::string make_uuid5(const std::string& ns_str, const std::string& name) {
-  boost::uuids::string_generator sgen;
-  boost::uuids::uuid ns = sgen(ns_str);
-#if BOOST_VERSION >= 106700
-  boost::uuids::name_generator_sha1 ngen(ns);
-#else
-  boost::uuids::name_generator ngen(ns);
-#endif
-  return boost::uuids::to_string(ngen(name));
 }
 
 static std::string make_version() {
@@ -216,11 +197,11 @@ bool NmosManager::init() {
   for (const auto& sink : session_manager_->get_sinks())
     register_sink_local(sink.id);
 
-  BOOST_LOG_TRIVIAL(info) << "NmosManager:: starting async server thread";
+  BOOST_LOG_TRIVIAL(debug) << "NmosManager:: starting async server thread";
   svr_res_ = std::async(std::launch::async, &NmosManager::server_worker, this);
-  BOOST_LOG_TRIVIAL(info) << "NmosManager:: starting async registration thread";
+  BOOST_LOG_TRIVIAL(debug) << "NmosManager:: starting async registration thread";
   reg_res_ = std::async(std::launch::async, &NmosManager::registration_worker, this);
-  BOOST_LOG_TRIVIAL(info) << "NmosManager::init() complete";
+  BOOST_LOG_TRIVIAL(debug) << "NmosManager::init() complete";
   return true;
 }
 
@@ -1048,11 +1029,11 @@ void NmosManager::fetch_remote_sender_sdp(const std::string& sender_uuid,
 
   // Step 1: query registry query API for sender
   const std::string reg_host = config_->get_nmos_registry_address();
-  const uint16_t    reg_port = config_->get_nmos_registry_port();
+  const uint16_t    query_port = config_->get_nmos_query_port();
   std::string manifest_href;
 
   {
-    Client cli(reg_host.c_str(), reg_port);
+    Client cli(reg_host.c_str(), query_port);
     cli.set_connection_timeout(3);
     cli.set_read_timeout(3);
     const std::string path = "/x-nmos/query/v1.3/senders/" + sender_uuid;
@@ -1071,7 +1052,7 @@ void NmosManager::fetch_remote_sender_sdp(const std::string& sender_uuid,
     } else {
       BOOST_LOG_TRIVIAL(warning)
           << "NmosManager:: IS-05 remote sender lookup: registry query failed for "
-          << sender_uuid << " (registry " << reg_host << ":" << reg_port << ")";
+          << sender_uuid << " (registry " << reg_host << ":" << query_port << ")";
     }
   }
 

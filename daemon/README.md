@@ -141,10 +141,10 @@ In case of failure the server returns a **text/plain** content type with the cat
 * **Body** [RTP Streams params](#rtp-streams)
 
 ### Get remote RTP Sources ###
-* **Description** retrieve the remote sources collected via SAP, via mDNS or both
-* **URL** /api/browse/sources/[all|mdns|sap]
+* **Description** retrieve the remote sources collected via NMOS, SAP, via mDNS or both
+* **URL** /api/browse/sources/[all|mdns|sap|nmos]
 * **Method** GET    
-* **URL Params** all=[all sources], mdns=[mDNS sources only], sap=[sap sources only]    
+* **URL Params** all=[all sources], mdns=[mDNS sources only], sap=[sap sources only], nmos=[NMOS sources only]
 * **Body type** application/json    
 * **Body** [RTP Remote Sources params](#rtp-remote-sources)
 
@@ -224,7 +224,9 @@ Example
       "streamer_player_buffer_files_num": 1
       "nmos_enabled": false,
       "nmos_registry_address": "127.0.0.1",
-      "nmos_registry_port": 8010,
+      "nmos_registry_port": 3210,
+      "nmos_query_address": "127.0.0.1",
+      "nmos_query_port": 3211,
       "nmos_node_port": 3212,
       "nmos_label": "AES67 Daemon"
     }
@@ -234,7 +236,7 @@ where:
 > **interface\_name**
 > JSON string specifying the network interface/s used by the daemon and the driver.
 > Two interfaces separated by a comma can be specified (eg: "enp1s0,enp1s1"), in such case ST-2022-7 is enabled.
-> SAP and mDNS run only on all interfaces, while PTP and RTP run on the primaray and secondary interfaces, see Support for ST-2022-7 in [README](../README.md)
+> NMOS, SAP and mDNS run only on all interfaces, while PTP and RTP run on the primaray and secondary interfaces, see Support for ST-2022-7 in [README](../README.md)
 
 > **http\_port**
 > JSON number specifying the HTTP port number used by the web server in the daemon implementing the REST interface.
@@ -356,6 +358,12 @@ where:
 
 > **nmos\_registry\_port**
 > JSON number specifying the port of the NMOS registry to connect to.
+
+> **nmos\_query\_address**
+> JSON string specifying the address of the NMOS query server used by the browser.
+
+> **nmos\_query\_port**
+> JSON number specifying the port of the NMOS query server used by the browser.
 
 > **nmos\_node\_port**
 > JSON number specifying the port of the local NMOS node.

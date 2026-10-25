@@ -118,11 +118,9 @@ struct Client {
     cli_.set_read_timeout(30);
     cli_.set_write_timeout(30);
 
-#ifdef _USE_NMOS_
     nmos_cli_.set_connection_timeout(30);
     nmos_cli_.set_read_timeout(30);
     nmos_cli_.set_write_timeout(30);
-#endif
   }
 
   bool is_alive() {
@@ -366,6 +364,13 @@ struct Client {
     return {res->status == 200, res->body};
   }
 
+  std::pair<bool, std::string> get_remote_nmos_sources() {
+    std::string url = std::string("/api/browse/sources/nmos");
+    auto res = cli_.Get(url.c_str());
+    BOOST_REQUIRE_MESSAGE(res != nullptr, "server returned response");
+    return {res->status == 200, res->body};
+  }
+
   bool wait_for_remote_mdns_sources(unsigned int num) {
     boost::property_tree::ptree pt;
     int retry = 20;
@@ -380,7 +385,6 @@ struct Client {
     return (retry > 0);
   }
 
-#ifdef _USE_NMOS_
   auto nmos_get(const char* path, int expected_status = 200) {
     std::optional<httplib::Result> res;
     for (int retry = 10; retry-- && !res;) {
@@ -396,13 +400,10 @@ struct Client {
                 std::string("Unexpected NMOS response: ") + path);
     return res->value().body;
   };
-#endif
 
  private:
   httplib::Client cli_{g_daemon_address, g_daemon_port};
-#ifdef _USE_NMOS_
   httplib::Client nmos_cli_{g_daemon_address, g_nmos_node_port};
-#endif
 #if BOOST_VERSION < 108700
   io_service io_service_;
 #else
@@ -462,6 +463,8 @@ BOOST_AUTO_TEST_CASE(get_config) {
   auto nmos_enabled = pt.get<bool>("nmos_enabled");
   auto nmos_registry_address = pt.get<std::string>("nmos_registry_address");
   auto nmos_registry_port = pt.get<int>("nmos_registry_port");
+  auto nmos_query_address = pt.get<std::string>("nmos_query_address");
+  auto nmos_query_port = pt.get<int>("nmos_query_port");
   auto nmos_node_port = pt.get<int>("nmos_node_port");
   auto nmos_label = pt.get<std::string>("nmos_label");
   BOOST_CHECK_MESSAGE(http_port == 9999, "config as excepcted");
@@ -503,11 +506,13 @@ BOOST_AUTO_TEST_CASE(get_config) {
   BOOST_CHECK_MESSAGE(nmos_registry_address == "127.0.0.2",
                       "config as excepcted");
   BOOST_CHECK_MESSAGE(nmos_registry_port == 3410, "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_query_address == "127.0.0.3", "config as excepcted");
+  BOOST_CHECK_MESSAGE(nmos_query_port == 3411, "config as excepcted");
   BOOST_CHECK_MESSAGE(nmos_node_port == 3418, "config as excepcted");
   BOOST_CHECK_MESSAGE(nmos_label == "AES67 Daemon test", "config as excepcted");
 }
 
-#ifdef _USE_NMOS_
+
 BOOST_AUTO_TEST_CASE(nmos_node_api) {
   Client cli;
   BOOST_CHECK_EQUAL(cli.nmos_get("/x-nmos/"), "[\"node/\"]");
@@ -739,7 +744,6 @@ BOOST_AUTO_TEST_CASE(nmos_node_api) {
       BOOST_CHECK(pt.empty());
   }
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(get_ptp_status) {
   Client cli;
@@ -864,6 +868,19 @@ BOOST_AUTO_TEST_CASE(source_check_sap_browser) {
   boost::property_tree::read_json(ss1, pt);
   BOOST_REQUIRE_MESSAGE(pt.get_child("remote_sources").size() == 0,
                         "no remote sap sources");
+}
+
+BOOST_AUTO_TEST_CASE(source_check_nmos_browser_filter) {
+  Client cli;
+  const auto json = cli.get_remote_nmos_sources();
+  BOOST_REQUIRE_MESSAGE(json.first, "got remote NMOS sources");
+
+  boost::property_tree::ptree pt;
+  std::stringstream ss(json.second);
+  boost::property_tree::read_json(ss, pt);
+  BOOST_FOREACH (auto const& source, pt.get_child("remote_sources")) {
+    BOOST_CHECK_EQUAL(source.second.get<std::string>("source"), "NMOS");
+  }
 }
 
 #ifdef _USE_AVAHI_

@@ -77,6 +77,8 @@ class Config {
   bool get_nmos_enabled() const { return nmos_enabled_; }
   const std::string& get_nmos_registry_address() const { return nmos_registry_address_; }
   uint16_t get_nmos_registry_port() const { return nmos_registry_port_; }
+  const std::string& get_nmos_query_address() const { return nmos_query_address_; }
+  uint16_t get_nmos_query_port() const { return nmos_query_port_; }  
   uint16_t get_nmos_node_port() const { return nmos_node_port_; }
   const std::string& get_nmos_label() const { return nmos_label_; }
 
@@ -180,6 +182,8 @@ class Config {
   void set_nmos_enabled(bool v) { nmos_enabled_ = v; }
   void set_nmos_registry_address(std::string_view v) { nmos_registry_address_ = v; }
   void set_nmos_registry_port(uint16_t v) { nmos_registry_port_ = v; }
+  void set_nmos_query_port(uint16_t v) { nmos_query_port_ = v; }
+  void set_nmos_query_address(std::string_view v) { nmos_query_address_ = v; }
   void set_nmos_node_port(uint16_t v) { nmos_node_port_ = v; }
   void set_nmos_label(std::string_view v) { nmos_label_ = v; }
 
@@ -218,6 +222,8 @@ class Config {
            lhs.get_nmos_enabled() != rhs.get_nmos_enabled() ||
            lhs.get_nmos_registry_address() != rhs.get_nmos_registry_address() ||
            lhs.get_nmos_registry_port() != rhs.get_nmos_registry_port() ||
+           lhs.get_nmos_query_address() != rhs.get_nmos_query_address() ||
+           lhs.get_nmos_query_port() != rhs.get_nmos_query_port() ||
            lhs.get_nmos_node_port() != rhs.get_nmos_node_port() ||
            lhs.get_nmos_label() != rhs.get_nmos_label();
   };
@@ -263,6 +269,8 @@ class Config {
   bool nmos_enabled_{false};
   std::string nmos_registry_address_;
   uint16_t nmos_registry_port_{8010};
+  std::string nmos_query_address_;
+  uint16_t nmos_query_port_{8010};
   uint16_t nmos_node_port_{3212};
   std::string nmos_label_{"AES67 Daemon"};
 

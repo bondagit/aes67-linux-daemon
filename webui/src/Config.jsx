@@ -82,6 +82,10 @@ class Config extends Component {
       nmosRegistryAddressErr: false,
       nmosRegistryPort: '',
       nmosRegistryPortErr: false,
+      nmosQueryAddress: '',
+      nmosQueryAddressErr: false,
+      nmosQueryPort: '',
+      nmosQueryPortErr: false,
       nmosNodePort: '',
       nmosNodePortErr: false,
     };
@@ -140,6 +144,8 @@ class Config extends Component {
             nmosEnabled: data.nmos_enabled,
             nmosRegistryAddress: data.nmos_registry_address,
             nmosRegistryPort: data.nmos_registry_port,
+            nmosQueryAddress: data.nmos_query_address,
+            nmosQueryPort: data.nmos_query_port,            
             nmosNodePort: data.nmos_node_port,
             isConfigLoading: false
 	  }))
@@ -168,6 +174,10 @@ class Config extends Component {
       !this.state.streamerFileDurationIntervalErr &&
       !this.state.syslogServerErr &&
       (!this.state.customNodeIdErr || this.state.customNodeId  === '') &&
+      !this.state.nmosQueryAddressErr &&
+      !this.state.nmosRegistryPortErr &&      
+      !this.state.nmosQueryAddressErr &&      
+      !this.state.nmosQueryPortErr &&      
       !this.state.isVersionLoading &&
       !this.state.isConfigLoading;
   }
@@ -200,6 +210,8 @@ class Config extends Component {
       this.state.nmosEnabled,
       this.state.nmosRegistryAddress,
       this.state.nmosRegistryPort,
+      this.state.nmosQueryAddress,      
+      this.state.nmosQueryPort,
       this.state.nmosNodePort)
     .then(response => toast.success('Applying new configuration ...'));
   }
@@ -356,6 +368,14 @@ class Config extends Component {
           <tr>
             <th align="left"> <label>NMOS Registry Port</label> </th>
             <th align="left"> <input type='number' min='0' max='65535' value={this.state.nmosRegistryPort} onChange={e => this.setState({nmosRegistryPort: e.target.value, nmosRegistryPortErr: !e.currentTarget.checkValidity()})} /> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>NMOS Query Address</label> </th>
+            <th align="left"> <input value={this.state.nmosQueryAddress} onChange={e => this.setState({nmosQueryAddress: e.target.value, nmosQueryAddressErr: !e.currentTarget.checkValidity()})} /> </th>
+          </tr>
+          <tr>
+            <th align="left"> <label>NMOS Query Port</label> </th>
+            <th align="left"> <input type='number' min='1' max='65535' value={this.state.nmosQueryPort} onChange={e => this.setState({nmosQueryPort: e.target.value, nmosQueryPortErr: !e.currentTarget.checkValidity()})} /> </th>
           </tr>
           <tr>
             <th align="left"> <label>NMOS Node Port</label> </th>

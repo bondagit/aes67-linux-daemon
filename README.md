@@ -24,7 +24,7 @@ The driver handles the PTP and RTP packets processing and acts as a PTP clock sl
 
 The daemon communicates with the driver for control, configuration and status monitoring only by using _netlink_ sockets.
 The daemon implements a REST interface to configure and monitor the _Sources_, the _Sinks_ and PTP slave. See [README](daemon/README.md) for additional info.
-It also implements SAP sources discovery and advertisement compatible with AES67 standard and mDNS sources discovery and advertisement compatible with Ravenna standard.
+It also implements SAP sources discovery and advertisement compatible with AES67 standard, mDNS sources discovery and advertisement compatible with Ravenna standard and NMOS sources discovery using the configured NMOS query server.
 
 A WebUI is provided to allow daemon and driver configuration and monitoring. The WebUI uses the daemon REST API and exposes all the supported configuration paramaters for the daemon, the PTP slave clock, the _Sources_ and the _Sinks_. The WebUI can also be used to monitor the PTP slave status and the _Sinks_ status and to browse the remote SAP and mDNS sources.
 
@@ -117,9 +117,9 @@ automatically.
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
 ## Support for NMOS ##
-Starting from daemon version 4.x the support for NMOS (IS-04 and IS-05) was added.
-
-To enable it recompile the daemon with the CMake option _-DWITH_NMOS=ON_
+Starting from daemon version 4.0.x the support for NMOS (IS-04 and IS-05) was added.
+Starting from daemon version 4.1.x the daemon Browser was extended to support the discovery of NMOS sources using a Query server via the IS-04 Query API.
+To enable NMOS support make sure the daemon parameter _nmos_enabled_ is set to true.
 
 In order to test NMOS consider using the following tools:
  - [NMOS C++ from Sony](https://github.com/sony/nmos-cpp)
@@ -132,7 +132,18 @@ Once the build is complete, start the NMOS Registry from the checkout directory:
      cd build
      ./nmos-cpp-registry
 
-By default, the registry listens on port 3210, while the NMOS Node listens on port 3212.
+By default, the registry listens on port 3210, the query sever listens on port 3211 while the NMOS node listens on port 3212.
+Search in the logs the addresses and the ports used by the Registry and the Query API:
+
+For example:
+
+```
+2026-10-25 14:24:54.385: info: 791eb77f66c0: Registered advertisement for: nmos-cpp_query_192-168-1-17_3211._nmos-query._tcp..
+2026-10-25 14:24:54.386: info: 791eb8ff96c0: Registered advertisement for: nmos-cpp_registration_192-168-1-17_3210._nmos-registration._tcp..
+2026-10-25 14:24:54.387: info: 791eb9ffb6c0: Registered advertisement for: nmos-cpp_registration_192-168-1-17_3210._nmos-register._tcp..
+2026-10-25 14:24:54.390: info: 791ebaffd6c0: Registered advertisement for: nmos-cpp_node_192-168-1-17_3212._nmos-node._tcp..
+2026-10-25 14:24:54.391: info: 791ec2bfe6c0: Registered advertisement for: nmos-cpp_system_192-168-1-17_10641._nmos-system._tcp..
+```
 
 Download and extract the Riedel NMOS Explorer, then run the start.sh script from its main directory.
 
@@ -142,8 +153,12 @@ Start the daemon and open the WebUI. In the NMOS Config section, verify that the
 NMOS Enabled              Yes
 NMOS Registry Address     127.0.0.1
 NMOS Registry Port        3210
+NMOS Query Address        127.0.0.1
+NMOS Query Port           3211
 NMOS Node Port            3218
 ```
+
+You may have to adjust the Registry and the Query addresses to match your local addresses (see above).
 
 Using the daemon WebUI, create a Source and a Sink.
 

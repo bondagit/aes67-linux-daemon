@@ -35,6 +35,8 @@ std::tuple<bool /* res */,
 parse_url(const std::string& _url);
 
 std::string get_host_node_id(uint32_t ip_addr);
+std::string make_uuid5(const std::string& namespace_id,
+                       const std::string& name);
 
 std::string sdp_get_subject(const std::string& sdp);
 

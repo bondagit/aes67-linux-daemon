@@ -23,6 +23,15 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 106700
+#include <boost/uuid/name_generator_sha1.hpp>
+#else
+#include <boost/uuid/name_generator.hpp>
+#endif
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 uint16_t crc16(const uint8_t* p, size_t len) {
   uint8_t x;
@@ -35,6 +44,18 @@ uint16_t crc16(const uint8_t* p, size_t len) {
           (static_cast<uint16_t>(x << 5)) ^ (static_cast<uint16_t>(x));
   }
   return crc;
+}
+
+std::string make_uuid5(const std::string& namespace_id,
+                       const std::string& name) {
+  boost::uuids::string_generator parse_uuid;
+  const boost::uuids::uuid namespace_uuid = parse_uuid(namespace_id);
+#if BOOST_VERSION >= 106700
+  boost::uuids::name_generator_sha1 generate_uuid(namespace_uuid);
+#else
+  boost::uuids::name_generator generate_uuid(namespace_uuid);
+#endif
+  return boost::uuids::to_string(generate_uuid(name));
 }
 
 std::tuple<bool /* res */,
@@ -106,7 +127,7 @@ SDPOrigin sdp_get_origin(const std::string& sdp) {
     std::string line;
     while (getline(sstream, line, '\n')) {
       boost::trim(line);
-      if (line[1] != '=') {
+      if (line.size() < 2 || line[1] != '=') {
         BOOST_LOG_TRIVIAL(error) << "session_manager:: invalid SDP file";
         break;
       }

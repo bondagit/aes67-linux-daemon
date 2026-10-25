@@ -18,7 +18,9 @@
 //
 
 #include <boost/algorithm/string.hpp>
+#include <set>
 
+#include "nmos_browser.hpp"
 #include "browser.hpp"
 
 using namespace boost::algorithm;
@@ -149,6 +151,83 @@ bool Browser::worker() {
   return true;
 }
 
+bool Browser::nmos_worker() {
+  BOOST_LOG_TRIVIAL(info) << "browser:: NMOS worked started";
+  while (running_) {
+    update_nmos_sources();
+    for (int i = 0; i < 100 && running_; ++i) {
+      std::this_thread::sleep_for(milliseconds(100));
+    }
+  }
+  BOOST_LOG_TRIVIAL(info) << "browser:: NMOS worked terminating";
+  return true;
+}
+
+bool Browser::update_nmos_sources() {
+  std::list<NmosSource> discovered;
+  if (!nmos_browser_.get_remote_sources(discovered)) {
+    return false;
+  }
+
+  std::set<std::string> discovered_ids;
+  const auto now = steady_clock::now();
+  const auto elapsed =
+      static_cast<uint32_t>(duration_cast<second_t>(now - startup_).count());
+  std::unique_lock sources_lock(sources_mutex_);
+  auto& ids = sources_.get<id_tag>();
+  for (auto& nmosSource : discovered) {
+    RemoteSource source {
+      nmosSource.id,
+      "NMOS",
+      nmosSource.address,
+      nmosSource.name,
+      "",
+      nmosSource.origin,
+      nmosSource.sdp,
+      elapsed,
+      0,
+      now
+    };
+    discovered_ids.insert(source.id);
+    auto existing = ids.find(source.id);
+    if (existing == ids.end()) {
+      BOOST_LOG_TRIVIAL(info)
+          << "browser:: adding  NMOS source " << source.id
+          << " name " << source.name;
+      ids.insert(std::move(source));
+      last_update_ = elapsed == 0 ? 1 : elapsed;
+      continue;
+    }
+
+    if (existing->name != source.name || existing->address != source.address ||
+        existing->sdp != source.sdp) {
+      BOOST_LOG_TRIVIAL(info) << "browser:: updating NMOS source " << source.id
+                              << " name " << source.name;
+      ids.replace(existing, std::move(source));
+      last_update_ = elapsed == 0 ? 1 : elapsed;
+    } else {
+      auto refreshed = *existing;
+      refreshed.last_seen = elapsed;
+      refreshed.last_seen_timepoint = now;
+      ids.replace(existing, std::move(refreshed));
+    }
+  }
+
+  for (auto it = ids.begin(); it != ids.end();) {
+    if (it->source == "NMOS" &&
+        discovered_ids.find(it->id) == discovered_ids.end()) {
+      BOOST_LOG_TRIVIAL(info) << "browser:: removing NMOS source " << it->id;
+      it = ids.erase(it);
+      last_update_ = elapsed == 0 ? 1 : elapsed;
+    } else {
+      ++it;
+    }
+  }
+
+  return true;
+}
+
+
 void Browser::on_change_rtsp_source(const std::string& name,
                                     const std::string& domain,
                                     const RtspSource& s) {
@@ -204,14 +283,17 @@ void Browser::on_remove_rtsp_source(const std::string& name,
 
 bool Browser::init() {
   if (!running_) {
+    last_update_ = 0;
     /* init mDNS client */
     if (config_->get_mdns_enabled() && !MDNSClient::init()) {
       return false;
     }
     running_ = true;
     res_ = std::async(std::launch::async, &Browser::worker, this);
+    if (config_->get_nmos_enabled()) {
+      nmos_res_ = std::async(std::launch::async, &Browser::nmos_worker, this);
+    }
   }
-  last_update_ = 0;
   return true;
 }
 
@@ -221,6 +303,10 @@ bool Browser::terminate() {
     /* wait for worker to exit */
     sap_.terminate();
     res_.get();
+    /* terminate NMOS browser */
+    if (nmos_res_.valid()) {
+      nmos_res_.get();
+    }
     /* terminate mDNS client */
     if (config_->get_mdns_enabled()) {
       MDNSClient::terminate();

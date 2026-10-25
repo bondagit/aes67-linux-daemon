@@ -34,6 +34,7 @@
 #include "config.hpp"
 #include "igmp.hpp"
 #include "mdns_client.hpp"
+#include "nmos_browser.hpp"
 #include "sap.hpp"
 #include "utils.hpp"
 
@@ -72,6 +73,9 @@ class Browser : public MDNSClient {
   explicit Browser(std::shared_ptr<Config> config) : MDNSClient(config){};
 
   bool worker();
+  bool nmos_worker();
+
+  bool update_nmos_sources();
 
   void on_change_rtsp_source(const std::string& name,
                              const std::string& domain,
@@ -81,6 +85,7 @@ class Browser : public MDNSClient {
 
  private:
   std::future<bool> res_;
+  std::future<bool> nmos_res_;
   std::atomic_bool running_{false};
 
   /* current sources */
@@ -103,6 +108,8 @@ class Browser : public MDNSClient {
   std::chrono::time_point<std::chrono::steady_clock> startup_{
       std::chrono::steady_clock::now()};
   uint32_t last_update_{0}; /* seconds from daemon startup */
+
+  NmosBrowser nmos_browser_{config_};
 };
 
 #endif

@@ -186,6 +186,8 @@ bool Config::save(const Config& config) {
         get_nmos_enabled() != config.get_nmos_enabled() ||
         get_nmos_registry_address() != config.get_nmos_registry_address() ||
         get_nmos_registry_port() != config.get_nmos_registry_port() ||
+        get_nmos_query_address() != config.get_nmos_query_address() ||
+        get_nmos_query_port() != config.get_nmos_query_port() ||
         get_nmos_node_port() != config.get_nmos_node_port() ||
         get_nmos_label() != config.get_nmos_label();
 
