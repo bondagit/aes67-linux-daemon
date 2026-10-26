@@ -117,8 +117,8 @@ automatically.
 See [Devices and interoperability tests with the AES67 daemon](DEVICES.md)
 
 ## Support for NMOS ##
-Starting from daemon version 4.0.x the support for NMOS (IS-04 and IS-05) was added.
-Starting from daemon version 4.1.x the daemon Browser was extended to support the discovery of NMOS sources using a Query server via the IS-04 Query API.
+Starting with daemon version 4.0.x, support was added for the NMOS IS-04 Node API and Registration. Additionally, version 4.1.x extended the daemon Browser to support discovering NMOS sources through a Query server via the IS-04 Query API.
+
 To enable NMOS support make sure the daemon parameter _nmos_enabled_ is set to true.
 
 In order to test NMOS consider using the following tools:
