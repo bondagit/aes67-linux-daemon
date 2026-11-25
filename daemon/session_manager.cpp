@@ -551,6 +551,10 @@ std::error_code SessionManager::add_source(const StreamSource& source) {
     return DaemonErrc::invalid_stream_id;
   }
 
+  if (source.map.size() > MAX_CHANNELS_BY_RTP_STREAM) {
+    return std::make_error_code(std::errc::invalid_argument);
+  }
+
   StreamInfo info;
   memset(&info.stream[0], 0, sizeof info.stream[0]);
   info.stream[0].m_bSource = 1;  // source
@@ -910,6 +914,10 @@ std::error_code SessionManager::add_sink(const StreamSink& sink) {
     BOOST_LOG_TRIVIAL(error) << "session_manager:: sink id "
                              << std::to_string(sink.id) << " is not valid";
     return DaemonErrc::invalid_stream_id;
+  }
+
+  if (sink.map.size() > MAX_CHANNELS_BY_RTP_STREAM) {
+    return std::make_error_code(std::errc::invalid_argument);
   }
 
   StreamInfo info;
